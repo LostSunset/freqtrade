@@ -990,6 +990,79 @@ async def test_telegram_balance_handle(default_conf, update, mocker, rpc_balance
     assert "*Estimated Value (Bot managed assets only)*:" in result
 
 
+async def test_telegram_balance_handle_futures(
+    default_conf, update, rpc_balance, mocker, tickers
+) -> None:
+    default_conf.update(
+        {
+            "dry_run": False,
+            "trading_mode": "futures",
+            "margin_mode": "isolated",
+        }
+    )
+    mock_pos = [
+        {
+            "symbol": "ETH/USDT:USDT",
+            "timestamp": None,
+            "datetime": None,
+            "initialMargin": 0.0,
+            "initialMarginPercentage": None,
+            "maintenanceMargin": 0.0,
+            "maintenanceMarginPercentage": 0.005,
+            "entryPrice": 0.0,
+            "notional": 10.0,
+            "leverage": 5.0,
+            "unrealizedPnl": 0.0,
+            "contracts": 1.0,
+            "contractSize": 1,
+            "marginRatio": None,
+            "liquidationPrice": 0.0,
+            "markPrice": 2896.41,
+            "collateral": 20,
+            "marginType": "isolated",
+            "side": "short",
+            "percentage": None,
+        },
+        {
+            "symbol": "XRP/USDT:USDT",
+            "timestamp": None,
+            "datetime": None,
+            "initialMargin": 0.0,
+            "initialMarginPercentage": None,
+            "maintenanceMargin": 0.0,
+            "maintenanceMarginPercentage": 0.005,
+            "entryPrice": 0.0,
+            "notional": 10.0,
+            "leverage": None,
+            "unrealizedPnl": 0.0,
+            "contracts": 1.0,
+            "contractSize": 1,
+            "marginRatio": None,
+            "liquidationPrice": 0.0,
+            "markPrice": 2896.41,
+            "collateral": 20,
+            "marginType": "isolated",
+            "side": "short",
+            "percentage": None,
+        },
+    ]
+    mocker.patch(f"{EXMS}.get_balances", return_value=rpc_balance)
+    mocker.patch(f"{EXMS}.fetch_positions", return_value=mock_pos)
+    mocker.patch(f"{EXMS}.get_tickers", tickers)
+    mocker.patch(f"{EXMS}.get_valid_pair_combination", side_effect=lambda a, b: f"{a}/{b}")
+
+    telegram, freqtradebot, msg_mock = get_telegram_testobject(mocker, default_conf)
+    patch_get_signal(freqtradebot)
+
+    await telegram._balance(update=update, context=MagicMock())
+    result = msg_mock.call_args_list[0][0][0]
+    assert msg_mock.call_count == 1
+
+    assert "ETH/USDT:USDT" in result
+    assert "`short: 10" in result
+    assert "XRP/USDT:USDT" in result
+
+
 async def test_balance_handle_empty_response(default_conf, update, mocker) -> None:
     default_conf["dry_run"] = False
     mocker.patch(f"{EXMS}.get_balances", return_value={})
@@ -2282,8 +2355,8 @@ def test_send_msg_exit_notification(default_conf, mocker) -> None:
             "*Direction:* `Long`\n"
             "*Amount:* `1333.33333333`\n"
             "*Open Rate:* `0.00075 ETH`\n"
-            "*Current Rate:* `0.00032 ETH`\n"
-            "*Exit Rate:* `0.00032 ETH`\n"
+            "*Current Rate:* `0.0003201 ETH`\n"
+            "*Exit Rate:* `0.0003201 ETH`\n"
             "*Duration:* `1:00:00 (60.0 min)`"
         )
 
@@ -2325,8 +2398,8 @@ def test_send_msg_exit_notification(default_conf, mocker) -> None:
             "*Direction:* `Long`\n"
             "*Amount:* `1333.33333333`\n"
             "*Open Rate:* `0.00075 ETH`\n"
-            "*Current Rate:* `0.00032 ETH`\n"
-            "*Exit Rate:* `0.00032 ETH`\n"
+            "*Current Rate:* `0.0003201 ETH`\n"
+            "*Exit Rate:* `0.0003201 ETH`\n"
             "*Remaining:* `0.01 ETH / -24.812 USD`"
         )
 
@@ -2364,8 +2437,8 @@ def test_send_msg_exit_notification(default_conf, mocker) -> None:
             "*Direction:* `Long`\n"
             "*Amount:* `1333.33333333`\n"
             "*Open Rate:* `0.00075 ETH`\n"
-            "*Current Rate:* `0.00032 ETH`\n"
-            "*Exit Rate:* `0.00032 ETH`\n"
+            "*Current Rate:* `0.0003201 ETH`\n"
+            "*Exit Rate:* `0.0003201 ETH`\n"
             "*Duration:* `1 day, 2:30:00 (1590.0 min)`"
         )
         # Reset singleton function to avoid random breaks
@@ -2463,7 +2536,7 @@ def test_send_msg_exit_fill_notification(
             f"{leverage_text}"
             "*Amount:* `1333.33333333`\n"
             "*Open Rate:* `0.00075 ETH`\n"
-            "*Exit Rate:* `0.00032 ETH`\n"
+            "*Exit Rate:* `0.0003201 ETH`\n"
             "*Duration:* `1 day, 2:30:00 (1590.0 min)`"
         )
 
@@ -2613,8 +2686,8 @@ def test_send_msg_exit_notification_no_fiat(
         f"{leverage_text}`\n"
         "*Amount:* `1333.33333333`\n"
         "*Open Rate:* `0.00075 ETH`\n"
-        "*Current Rate:* `0.00032 ETH`\n"
-        "*Exit Rate:* `0.00032 ETH`\n"
+        "*Current Rate:* `0.0003201 ETH`\n"
+        "*Exit Rate:* `0.0003201 ETH`\n"
         "*Duration:* `2:35:03 (155.1 min)`"
     )
 
@@ -2812,3 +2885,85 @@ async def test_telegram_list_custom_data(default_conf_usdt, update, ticker, fee,
     ) in msg_mock.call_args_list[2][0][0]
 
     msg_mock.reset_mock()
+
+
+def test_noficiation_settings(default_conf_usdt, mocker):
+    (telegram, _, _) = get_telegram_testobject(mocker, default_conf_usdt)
+    telegram._config["telegram"].update(
+        {
+            "notification_settings": {
+                "status": "silent",
+                "warning": "on",
+                "startup": "off",
+                "entry": "silent",
+                "entry_fill": "on",
+                "entry_cancel": "silent",
+                "exit": {
+                    "roi": "silent",
+                    "emergency_exit": "on",
+                    "force_exit": "on",
+                    "exit_signal": "silent",
+                    "trailing_stop_loss": "on",
+                    "stop_loss": "on",
+                    "stoploss_on_exchange": "on",
+                    "custom_exit": "silent",
+                    "partial_exit": "off",
+                },
+                "exit_fill": {
+                    "roi": "silent",
+                    "partial_exit": "off",
+                    "*": "silent",  # Default to silent
+                },
+                "exit_cancel": "on",
+                "protection_trigger": "off",
+                "protection_trigger_global": "on",
+                "strategy_msg": "off",
+                "show_candle": "off",
+            }
+        }
+    )
+
+    loudness = telegram._message_loudness
+
+    assert loudness({"type": RPCMessageType.ENTRY, "exit_reason": ""}) == "silent"
+    assert loudness({"type": RPCMessageType.ENTRY_FILL, "exit_reason": ""}) == "on"
+    assert loudness({"type": RPCMessageType.EXIT, "exit_reason": ""}) == "on"
+    # Default to silent due to "*" definition
+    assert loudness({"type": RPCMessageType.EXIT_FILL, "exit_reason": ""}) == "silent"
+    assert loudness({"type": RPCMessageType.PROTECTION_TRIGGER, "exit_reason": ""}) == "off"
+    assert loudness({"type": RPCMessageType.EXIT, "exit_reason": "roi"}) == "silent"
+    assert loudness({"type": RPCMessageType.EXIT, "exit_reason": "partial_exit"}) == "off"
+    # Not given key defaults to on
+    assert loudness({"type": RPCMessageType.EXIT, "exit_reason": "cust_exit112"}) == "on"
+
+    assert loudness({"type": RPCMessageType.EXIT_FILL, "exit_reason": "roi"}) == "silent"
+    assert loudness({"type": RPCMessageType.EXIT_FILL, "exit_reason": "partial_exit"}) == "off"
+    # Default to silent due to "*" definition
+    assert loudness({"type": RPCMessageType.EXIT_FILL, "exit_reason": "cust_exit112"}) == "silent"
+
+    # Simplified setup for exit
+    telegram._config["telegram"].update(
+        {
+            "notification_settings": {
+                "status": "silent",
+                "warning": "on",
+                "startup": "off",
+                "entry": "silent",
+                "entry_fill": "on",
+                "entry_cancel": "silent",
+                "exit": "off",
+                "exit_cancel": "on",
+                "exit_fill": "on",
+                "protection_trigger": "off",
+                "protection_trigger_global": "on",
+                "strategy_msg": "off",
+                "show_candle": "off",
+            }
+        }
+    )
+
+    assert loudness({"type": RPCMessageType.EXIT_FILL, "exit_reason": "roi"}) == "on"
+    # All regular exits are off
+    assert loudness({"type": RPCMessageType.EXIT, "exit_reason": "roi"}) == "off"
+    assert loudness({"type": RPCMessageType.EXIT, "exit_reason": "partial_exit"}) == "off"
+    assert loudness({"type": RPCMessageType.EXIT, "exit_reason": "cust_exit112"}) == "off"

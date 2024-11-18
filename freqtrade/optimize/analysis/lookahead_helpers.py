@@ -1,7 +1,7 @@
 import logging
 import time
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 import pandas as pd
 from rich.text import Text
@@ -19,7 +19,9 @@ logger = logging.getLogger(__name__)
 class LookaheadAnalysisSubFunctions:
     @staticmethod
     def text_table_lookahead_analysis_instances(
-        config: Dict[str, Any], lookahead_instances: List[LookaheadAnalysis]
+        config: dict[str, Any],
+        lookahead_instances: list[LookaheadAnalysis],
+        caption: str | None = None,
     ):
         headers = [
             "filename",
@@ -65,11 +67,13 @@ class LookaheadAnalysisSubFunctions:
                     ]
                 )
 
-        print_rich_table(data, headers, summary="Lookahead Analysis")
+        print_rich_table(
+            data, headers, summary="Lookahead Analysis", table_kwargs={"caption": caption}
+        )
         return data
 
     @staticmethod
-    def export_to_csv(config: Dict[str, Any], lookahead_analysis: List[LookaheadAnalysis]):
+    def export_to_csv(config: dict[str, Any], lookahead_analysis: list[LookaheadAnalysis]):
         def add_or_update_row(df, row_data):
             if (
                 (df["filename"] == row_data["filename"]) & (df["strategy"] == row_data["strategy"])
@@ -194,7 +198,7 @@ class LookaheadAnalysisSubFunctions:
         return config
 
     @staticmethod
-    def initialize_single_lookahead_analysis(config: Config, strategy_obj: Dict[str, Any]):
+    def initialize_single_lookahead_analysis(config: Config, strategy_obj: dict[str, Any]):
         logger.info(f"Bias test of {Path(strategy_obj['location']).name} started.")
         start = time.perf_counter()
         current_instance = LookaheadAnalysis(config, strategy_obj)
@@ -239,8 +243,24 @@ class LookaheadAnalysisSubFunctions:
 
         # report the results
         if lookaheadAnalysis_instances:
+            caption: str | None = None
+            if any(
+                [
+                    any(
+                        [
+                            indicator.startswith("&")
+                            for indicator in inst.current_analysis.false_indicators
+                        ]
+                    )
+                    for inst in lookaheadAnalysis_instances
+                ]
+            ):
+                caption = (
+                    "Any indicators in 'biased_indicators' which are used within "
+                    "set_freqai_targets() can be ignored."
+                )
             LookaheadAnalysisSubFunctions.text_table_lookahead_analysis_instances(
-                config, lookaheadAnalysis_instances
+                config, lookaheadAnalysis_instances, caption=caption
             )
             if config.get("lookahead_analysis_exportfilename") is not None:
                 LookaheadAnalysisSubFunctions.export_to_csv(config, lookaheadAnalysis_instances)

@@ -2,9 +2,10 @@
 Exchange support utils
 """
 
+import inspect
 from datetime import datetime, timedelta, timezone
 from math import ceil, floor
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import ccxt
 from ccxt import (
@@ -25,27 +26,25 @@ from freqtrade.exchange.common import (
     SUPPORTED_EXCHANGES,
 )
 from freqtrade.exchange.exchange_utils_timeframe import timeframe_to_minutes, timeframe_to_prev_date
-from freqtrade.types import ValidExchangesType
+from freqtrade.ft_types import ValidExchangesType
 from freqtrade.util import FtPrecise
 
 
 CcxtModuleType = Any
 
 
-def is_exchange_known_ccxt(
-    exchange_name: str, ccxt_module: Optional[CcxtModuleType] = None
-) -> bool:
+def is_exchange_known_ccxt(exchange_name: str, ccxt_module: CcxtModuleType | None = None) -> bool:
     return exchange_name in ccxt_exchanges(ccxt_module)
 
 
-def ccxt_exchanges(ccxt_module: Optional[CcxtModuleType] = None) -> List[str]:
+def ccxt_exchanges(ccxt_module: CcxtModuleType | None = None) -> list[str]:
     """
     Return the list of all exchanges known to ccxt
     """
     return ccxt_module.exchanges if ccxt_module is not None else ccxt.exchanges
 
 
-def available_exchanges(ccxt_module: Optional[CcxtModuleType] = None) -> List[str]:
+def available_exchanges(ccxt_module: CcxtModuleType | None = None) -> list[str]:
     """
     Return exchanges available to the bot, i.e. non-bad exchanges in the ccxt list
     """
@@ -53,9 +52,9 @@ def available_exchanges(ccxt_module: Optional[CcxtModuleType] = None) -> List[st
     return [x for x in exchanges if validate_exchange(x)[0]]
 
 
-def validate_exchange(exchange: str) -> Tuple[bool, str, bool]:
+def validate_exchange(exchange: str) -> tuple[bool, str, ccxt.Exchange | None]:
     """
-    returns: can_use, reason
+    returns: can_use, reason, exchange_object
         with Reason including both missing and missing_opt
     """
     try:
@@ -64,11 +63,10 @@ def validate_exchange(exchange: str) -> Tuple[bool, str, bool]:
         ex_mod = getattr(ccxt.async_support, exchange.lower())()
 
     if not ex_mod or not ex_mod.has:
-        return False, "", False
+        return False, "", None
 
     result = True
     reason = ""
-    is_dex = getattr(ex_mod, "dex", False)
     missing = [
         k
         for k, v in EXCHANGE_HAS_REQUIRED.items()
@@ -87,19 +85,24 @@ def validate_exchange(exchange: str) -> Tuple[bool, str, bool]:
     if missing_opt:
         reason += f"{'. ' if reason else ''}missing opt: {', '.join(missing_opt)}. "
 
-    return result, reason, is_dex
+    return result, reason, ex_mod
 
 
 def _build_exchange_list_entry(
-    exchange_name: str, exchangeClasses: Dict[str, Any]
+    exchange_name: str, exchangeClasses: dict[str, Any]
 ) -> ValidExchangesType:
-    valid, comment, is_dex = validate_exchange(exchange_name)
+    valid, comment, ex_mod = validate_exchange(exchange_name)
     result: ValidExchangesType = {
-        "name": exchange_name,
+        "name": getattr(ex_mod, "name", exchange_name),
+        "classname": exchange_name,
         "valid": valid,
         "supported": exchange_name.lower() in SUPPORTED_EXCHANGES,
         "comment": comment,
-        "dex": is_dex,
+        "dex": getattr(ex_mod, "dex", False),
+        "is_alias": getattr(ex_mod, "alias", False),
+        "alias_for": inspect.getmro(ex_mod.__class__)[1]().id
+        if getattr(ex_mod, "alias", False)
+        else None,
         "trade_modes": [{"trading_mode": "spot", "margin_mode": ""}],
     }
     if resolved := exchangeClasses.get(exchange_name.lower()):
@@ -116,7 +119,7 @@ def _build_exchange_list_entry(
     return result
 
 
-def list_available_exchanges(all_exchanges: bool) -> List[ValidExchangesType]:
+def list_available_exchanges(all_exchanges: bool) -> list[ValidExchangesType]:
     """
     :return: List of tuples with exchangename, valid, reason.
     """
@@ -125,16 +128,14 @@ def list_available_exchanges(all_exchanges: bool) -> List[ValidExchangesType]:
 
     subclassed = {e["name"].lower(): e for e in ExchangeResolver.search_all_objects({}, False)}
 
-    exchanges_valid: List[ValidExchangesType] = [
+    exchanges_valid: list[ValidExchangesType] = [
         _build_exchange_list_entry(e, subclassed) for e in exchanges
     ]
 
     return exchanges_valid
 
 
-def date_minus_candles(
-    timeframe: str, candle_count: int, date: Optional[datetime] = None
-) -> datetime:
+def date_minus_candles(timeframe: str, candle_count: int, date: datetime | None = None) -> datetime:
     """
     subtract X candles from a date.
     :param timeframe: timeframe in string format (e.g. "5m")
@@ -150,7 +151,7 @@ def date_minus_candles(
     return new_date
 
 
-def market_is_active(market: Dict) -> bool:
+def market_is_active(market: dict) -> bool:
     """
     Return True if the market is active.
     """
@@ -161,7 +162,7 @@ def market_is_active(market: Dict) -> bool:
     return market.get("active", True) is not False
 
 
-def amount_to_contracts(amount: float, contract_size: Optional[float]) -> float:
+def amount_to_contracts(amount: float, contract_size: float | None) -> float:
     """
     Convert amount to contracts.
     :param amount: amount to convert
@@ -174,7 +175,7 @@ def amount_to_contracts(amount: float, contract_size: Optional[float]) -> float:
         return amount
 
 
-def contracts_to_amount(num_contracts: float, contract_size: Optional[float]) -> float:
+def contracts_to_amount(num_contracts: float, contract_size: float | None) -> float:
     """
     Takes num-contracts and converts it to contract size
     :param num_contracts: number of contracts
@@ -189,7 +190,7 @@ def contracts_to_amount(num_contracts: float, contract_size: Optional[float]) ->
 
 
 def amount_to_precision(
-    amount: float, amount_precision: Optional[float], precisionMode: Optional[int]
+    amount: float, amount_precision: float | None, precisionMode: int | None
 ) -> float:
     """
     Returns the amount to buy or sell to a precision the Exchange accepts
@@ -219,9 +220,9 @@ def amount_to_precision(
 
 def amount_to_contract_precision(
     amount,
-    amount_precision: Optional[float],
-    precisionMode: Optional[int],
-    contract_size: Optional[float],
+    amount_precision: float | None,
+    precisionMode: int | None,
+    contract_size: float | None,
 ) -> float:
     """
     Returns the amount to buy or sell to a precision the Exchange accepts
@@ -280,8 +281,8 @@ def __price_to_precision_significant_digits(
 
 def price_to_precision(
     price: float,
-    price_precision: Optional[float],
-    precisionMode: Optional[int],
+    price_precision: float | None,
+    precisionMode: int | None,
     *,
     rounding_mode: int = ROUND,
 ) -> float:

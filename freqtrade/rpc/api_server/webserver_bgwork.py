@@ -1,4 +1,4 @@
-from typing import Any, Dict, Literal, Optional, TypedDict
+from typing import Any, Literal, TypedDict
 from uuid import uuid4
 
 from freqtrade.exchange.exchange import Exchange
@@ -8,14 +8,14 @@ class JobsContainer(TypedDict):
     category: Literal["pairlist"]
     is_running: bool
     status: str
-    progress: Optional[float]
+    progress: float | None
     result: Any
-    error: Optional[str]
+    error: str | None
 
 
 class ApiBG:
     # Backtesting type: Backtesting
-    bt: Dict[str, Any] = {
+    bt: dict[str, Any] = {
         "bt": None,
         "data": None,
         "timerange": None,
@@ -24,12 +24,12 @@ class ApiBG:
     }
     bgtask_running: bool = False
     # Exchange - only available in webserver mode.
-    exchanges: Dict[str, Exchange] = {}
+    exchanges: dict[str, Exchange] = {}
 
     # Generic background jobs
 
     # TODO: Change this to TTLCache
-    jobs: Dict[str, JobsContainer] = {}
+    jobs: dict[str, JobsContainer] = {}
     # Pairlist evaluate things
     pairlist_running: bool = False
 

@@ -5,7 +5,6 @@ import logging
 import time
 from copy import deepcopy
 from datetime import timedelta
-from typing import List
 from unittest.mock import ANY, MagicMock, PropertyMock, patch
 
 import pytest
@@ -553,7 +552,7 @@ def test_enter_positions_global_pairlock(
 
 @pytest.mark.parametrize("is_short", [False, True])
 def test_handle_protections(mocker, default_conf_usdt, fee, is_short):
-    default_conf_usdt["protections"] = [
+    default_conf_usdt["_strategy_protections"] = [
         {"method": "CooldownPeriod", "stop_duration": 60},
         {
             "method": "StoplossGuard",
@@ -689,13 +688,29 @@ def test_process_trade_creation(
     assert trade.open_date is not None
     assert trade.exchange == "binance"
     assert trade.open_rate == ticker_usdt.return_value[ticker_side]
-    assert pytest.approx(trade.amount) == 60 / ticker_usdt.return_value[ticker_side]
+    # Trade opens with 0 amount. Only trade filling will set the amount
+    assert pytest.approx(trade.amount) == 0
+    assert pytest.approx(trade.amount_requested) == 60 / ticker_usdt.return_value[ticker_side]
 
     assert log_has(
         f'{"Short" if is_short else "Long"} signal found: about create a new trade for ETH/USDT '
         "with stake_amount: 60.0 ...",
         caplog,
     )
+    mocker.patch("freqtrade.freqtradebot.FreqtradeBot._check_and_execute_exit")
+
+    # Fill trade.
+    freqtrade.process()
+    trades = Trade.get_open_trades()
+    assert len(trades) == 1
+    trade = trades[0]
+    assert trade is not None
+    assert trade.is_open
+    assert trade.open_date is not None
+    assert trade.exchange == "binance"
+    assert trade.open_rate == limit_order[entry_side(is_short)]["price"]
+    # Filled trade has amount set to filled order amount
+    assert pytest.approx(trade.amount) == limit_order[entry_side(is_short)]["filled"]
 
 
 def test_process_exchange_failures(default_conf_usdt, ticker_usdt, mocker) -> None:
@@ -1684,7 +1699,7 @@ def test_handle_trade_roi(
         create_order=MagicMock(
             side_effect=[
                 open_order,
-                {"id": 1234553382},
+                {"id": 1234553382, "amount": open_order["amount"]},
             ]
         ),
         get_fee=fee,
@@ -2204,7 +2219,6 @@ def test_manage_open_orders_buy_exception(
     patch_exchange(mocker)
     mocker.patch.multiple(
         EXMS,
-        validate_pairs=MagicMock(),
         fetch_ticker=ticker_usdt,
         fetch_order=MagicMock(side_effect=ExchangeError),
         cancel_order=cancel_order_mock,
@@ -2883,7 +2897,7 @@ def test_execute_trade_exit_up(
         EXMS,
         fetch_ticker=ticker_usdt,
         get_fee=fee,
-        _dry_is_price_crossed=MagicMock(return_value=False),
+        _dry_is_price_crossed=MagicMock(side_effect=[True, False]),
     )
     patch_whitelist(mocker, default_conf_usdt)
     freqtrade = FreqtradeBot(default_conf_usdt)
@@ -2975,7 +2989,7 @@ def test_execute_trade_exit_down(
         EXMS,
         fetch_ticker=ticker_usdt,
         get_fee=fee,
-        _dry_is_price_crossed=MagicMock(return_value=False),
+        _dry_is_price_crossed=MagicMock(side_effect=[True, False]),
     )
     patch_whitelist(mocker, default_conf_usdt)
     freqtrade = FreqtradeBot(default_conf_usdt)
@@ -2998,7 +3012,7 @@ def test_execute_trade_exit_down(
         exit_check=ExitCheckTuple(exit_type=ExitType.STOP_LOSS),
     )
 
-    assert rpc_mock.call_count == 2
+    assert rpc_mock.call_count == 3
     last_msg = rpc_mock.call_args_list[-1][0][0]
     assert {
         "type": RPCMessageType.EXIT,
@@ -3062,7 +3076,7 @@ def test_execute_trade_exit_custom_exit_price(
         EXMS,
         fetch_ticker=ticker_usdt,
         get_fee=fee,
-        _dry_is_price_crossed=MagicMock(return_value=False),
+        _dry_is_price_crossed=MagicMock(side_effect=[True, False]),
     )
     config = deepcopy(default_conf_usdt)
     config["custom_price_max_distance_ratio"] = 0.1
@@ -3469,16 +3483,17 @@ def test_locked_pairs(
         exit_check=ExitCheckTuple(exit_type=ExitType.STOP_LOSS),
     )
     trade.close(ticker_usdt_sell_down()["bid"])
-    assert freqtrade.strategy.is_pair_locked(trade.pair, side="*")
+    assert not freqtrade.strategy.is_pair_locked(trade.pair, side="*")
     # Both sides are locked
-    assert freqtrade.strategy.is_pair_locked(trade.pair, side="long")
-    assert freqtrade.strategy.is_pair_locked(trade.pair, side="short")
+    assert freqtrade.strategy.is_pair_locked(trade.pair, side="long") != is_short
+    assert freqtrade.strategy.is_pair_locked(trade.pair, side="short") == is_short
 
     # reinit - should buy other pair.
     caplog.clear()
     freqtrade.enter_positions()
+    direction = "short" if is_short else "long"
 
-    assert log_has_re(rf"Pair {trade.pair} \* is locked.*", caplog)
+    assert log_has_re(rf"Pair {trade.pair} {direction} is locked.*", caplog)
 
 
 @pytest.mark.parametrize("is_short", [False, True])
@@ -3830,7 +3845,7 @@ def test_get_real_amount_no_trade(default_conf_usdt, buy_order_fee, caplog, mock
     assert log_has(
         "Applying fee on amount for Trade(id=None, pair=LTC/ETH, amount=8.00000000, "
         "is_short=False, leverage=1.0, open_rate=0.24544100, open_since=closed) failed: "
-        "myTrade-Dict empty found",
+        "myTrade-dict empty found",
         caplog,
     )
 
@@ -4909,7 +4924,7 @@ def test_handle_onexchange_order_changed_amount(
         leverage=1,
     )
     freqtrade.wallets = MagicMock()
-    freqtrade.wallets.get_total = MagicMock(return_value=entry_order["amount"] * factor)
+    freqtrade.wallets.get_owned = MagicMock(return_value=entry_order["amount"] * factor)
 
     trade.orders.append(Order.parse_from_ccxt_object(entry_order, "ADA/USDT", entry_side(is_short)))
     Trade.session.add(trade)
@@ -5427,7 +5442,7 @@ def test_position_adjust(mocker, default_conf_usdt, fee) -> None:
     assert trade.amount == 10
     assert trade.stake_amount == 110
     assert not trade.fee_updated("buy")
-    trades: List[Trade] = Trade.get_open_trades_without_assigned_fees()
+    trades: list[Trade] = Trade.get_open_trades_without_assigned_fees()
     assert len(trades) == 1
     assert trade.is_open
     assert not trade.fee_updated("buy")
@@ -5453,7 +5468,7 @@ def test_position_adjust(mocker, default_conf_usdt, fee) -> None:
     assert orders
     assert len(orders) == 2
     # Assert that the trade is found as open and without fees
-    trades: List[Trade] = Trade.get_open_trades_without_assigned_fees()
+    trades: list[Trade] = Trade.get_open_trades_without_assigned_fees()
     assert len(trades) == 1
     # Assert trade is as expected
     trade = Trade.session.scalars(select(Trade)).first()
@@ -5510,7 +5525,7 @@ def test_position_adjust(mocker, default_conf_usdt, fee) -> None:
     assert order.order_id == "651"
 
     # Assert that the trade is not found as open and without fees
-    trades: List[Trade] = Trade.get_open_trades_without_assigned_fees()
+    trades: list[Trade] = Trade.get_open_trades_without_assigned_fees()
     assert len(trades) == 1
 
     # Add a second DCA
@@ -5710,7 +5725,7 @@ def test_position_adjust2(mocker, default_conf_usdt, fee) -> None:
         exit_check=ExitCheckTuple(exit_type=ExitType.PARTIAL_EXIT),
         sub_trade_amt=amount,
     )
-    trades: List[Trade] = trade.get_open_trades_without_assigned_fees()
+    trades: list[Trade] = trade.get_open_trades_without_assigned_fees()
     assert len(trades) == 1
     # Assert trade is as expected (averaged dca)
 

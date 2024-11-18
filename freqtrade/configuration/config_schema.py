@@ -1,10 +1,8 @@
 # Required json-schema for user specified config
-from typing import Dict
 
 from freqtrade.constants import (
     AVAILABLE_DATAHANDLERS,
     AVAILABLE_PAIRLISTS,
-    AVAILABLE_PROTECTIONS,
     BACKTEST_BREAKDOWNS,
     DRY_RUN_WALLET,
     EXPORT_OPTIONS,
@@ -24,7 +22,7 @@ from freqtrade.constants import (
 from freqtrade.enums import RPCMessageType
 
 
-__MESSAGE_TYPE_DICT: Dict[str, Dict[str, str]] = {x: {"type": "object"} for x in RPCMessageType}
+__MESSAGE_TYPE_DICT: dict[str, dict[str, str]] = {x: {"type": "object"} for x in RPCMessageType}
 
 __IN_STRATEGY = "\nUsually specified in the strategy and missing in the configuration."
 
@@ -449,54 +447,6 @@ CONF_SCHEMA = {
                 "required": ["method"],
             },
         },
-        "protections": {
-            "description": "Configuration for various protections.",
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "method": {
-                        "description": "Method used for the protection.",
-                        "type": "string",
-                        "enum": AVAILABLE_PROTECTIONS,
-                    },
-                    "stop_duration": {
-                        "description": (
-                            "Duration to lock the pair after a protection is triggered, "
-                            "in minutes."
-                        ),
-                        "type": "number",
-                        "minimum": 0.0,
-                    },
-                    "stop_duration_candles": {
-                        "description": (
-                            "Duration to lock the pair after a protection is triggered, in "
-                            "number of candles."
-                        ),
-                        "type": "number",
-                        "minimum": 0,
-                    },
-                    "trade_limit": {
-                        "description": "Minimum number of trades required during lookback period.",
-                        "type": "number",
-                        "minimum": 1,
-                    },
-                    "lookback_period": {
-                        "description": "Period to look back for protection checks, in minutes.",
-                        "type": "number",
-                        "minimum": 1,
-                    },
-                    "lookback_period_candles": {
-                        "description": (
-                            "Period to look back for protection checks, in number " "of candles."
-                        ),
-                        "type": "number",
-                        "minimum": 1,
-                    },
-                },
-                "required": ["method"],
-            },
-        },
         # RPC section
         "telegram": {
             "description": "Telegram settings.",
@@ -567,8 +517,11 @@ CONF_SCHEMA = {
                         },
                         "exit_fill": {
                             "description": "Telegram setting for exit fill signals.",
-                            "type": "string",
-                            "enum": TELEGRAM_SETTING_OPTIONS,
+                            "type": ["string", "object"],
+                            "additionalProperties": {
+                                "type": "string",
+                                "enum": TELEGRAM_SETTING_OPTIONS,
+                            },
                             "default": "on",
                         },
                         "exit_cancel": {
@@ -776,6 +729,11 @@ CONF_SCHEMA = {
             "type": ["integer", "number"],
             "minimum": -1,
         },
+        "add_config_files": {
+            "description": "Additional configuration files to load.",
+            "type": "array",
+            "items": {"type": "string"},
+        },
         "orderflow": {
             "description": "Settings related to order flow.",
             "type": "object",
@@ -860,6 +818,14 @@ CONF_SCHEMA = {
                     "type": "array",
                     "items": {"type": "string"},
                     "uniqueItems": True,
+                },
+                "log_responses": {
+                    "description": (
+                        "Log responses from the exchange."
+                        "Useful/required to debug issues with order processing."
+                    ),
+                    "type": "boolean",
+                    "default": False,
                 },
                 "unknown_fee_rate": {
                     "description": "Fee rate for unknown markets.",
@@ -1031,6 +997,13 @@ CONF_SCHEMA = {
                     ),
                     "type": "string",
                     "default": "example",
+                },
+                "wait_for_training_iteration_on_reload": {
+                    "description": (
+                        "Wait for the next training iteration to complete after /reload or ctrl+c."
+                    ),
+                    "type": "boolean",
+                    "default": True,
                 },
                 "feature_parameters": {
                     "description": "The parameters used to engineer the feature set",

@@ -1,6 +1,5 @@
 from copy import deepcopy
 from pathlib import Path
-from typing import Tuple
 
 import pytest
 
@@ -10,8 +9,8 @@ from freqtrade.resolvers.exchange_resolver import ExchangeResolver
 from tests.conftest import EXMS, get_default_conf_usdt
 
 
-EXCHANGE_FIXTURE_TYPE = Tuple[Exchange, str]
-EXCHANGE_WS_FIXTURE_TYPE = Tuple[Exchange, str, str]
+EXCHANGE_FIXTURE_TYPE = tuple[Exchange, str]
+EXCHANGE_WS_FIXTURE_TYPE = tuple[Exchange, str, str]
 
 
 # Exchanges that should be tested online
@@ -74,6 +73,7 @@ EXCHANGES = {
         "hasQuoteVolume": True,
         "timeframe": "1h",
         "futures": False,
+        "skip_ws_tests": True,
         "sample_order": [
             {
                 "symbol": "SOLUSDT",
@@ -225,7 +225,7 @@ EXCHANGES = {
                 "id": "123412341234",
                 "create_time": "167997798",
                 "create_time_ms": "167997798825.566200",
-                "currency_pair": "ETH_USDT",
+                "currency_pair": "SOL_USDT",
                 "side": "sell",
                 "role": "taker",
                 "amount": "0.0115",
@@ -339,6 +339,18 @@ EXCHANGES = {
             },
         ],
     },
+    "hyperliquid": {
+        "pair": "PURR/USDC",
+        "stake_currency": "USDC",
+        "hasQuoteVolume": False,
+        "timeframe": "1h",
+        "futures": True,
+        "orderbook_max_entries": 20,
+        "futures_pair": "BTC/USDC:USDC",
+        "hasQuoteVolumeFutures": True,
+        "leverage_tiers_public": False,
+        "leverage_in_spot_market": False,
+    },
 }
 
 
@@ -424,14 +436,17 @@ def exchange_mode(request):
 def exchange_ws(request, exchange_conf, exchange_mode, class_mocker):
     class_mocker.patch("freqtrade.exchange.bybit.Bybit.additional_exchange_init")
     exchange_conf["exchange"]["enable_ws"] = True
+    exchange_param = EXCHANGES[request.param]
+    if exchange_param.get("skip_ws_tests"):
+        pytest.skip(f"{request.param} does not support websocket tests.")
     if exchange_mode == "spot":
         exchange, name = get_exchange(request.param, exchange_conf)
-        pair = EXCHANGES[request.param]["pair"]
-    elif EXCHANGES[request.param].get("futures"):
+        pair = exchange_param["pair"]
+    elif exchange_param.get("futures"):
         exchange, name = get_futures_exchange(
             request.param, exchange_conf, class_mocker=class_mocker
         )
-        pair = EXCHANGES[request.param]["futures_pair"]
+        pair = exchange_param["futures_pair"]
     else:
         pytest.skip("Exchange does not support futures.")
 

@@ -1,13 +1,12 @@
 import logging
 from pathlib import Path
-from typing import Dict, Optional
 
 from pandas import DataFrame
 
 from freqtrade.constants import LAST_BT_RESULT_FN
+from freqtrade.ft_types import BacktestResultType
 from freqtrade.misc import file_dump_joblib, file_dump_json
 from freqtrade.optimize.backtest_caching import get_backtest_metadata_filename
-from freqtrade.types import BacktestResultType
 
 
 logger = logging.getLogger(__name__)
@@ -35,7 +34,7 @@ def store_backtest_stats(
     stats: BacktestResultType,
     dtappendix: str,
     *,
-    market_change_data: Optional[DataFrame] = None,
+    market_change_data: DataFrame | None = None,
 ) -> Path:
     """
     Stores backtest results
@@ -70,7 +69,7 @@ def store_backtest_stats(
 
 
 def _store_backtest_analysis_data(
-    recordfilename: Path, data: Dict[str, Dict], dtappendix: str, name: str
+    recordfilename: Path, data: dict[str, dict], dtappendix: str, name: str
 ) -> Path:
     """
     Stores backtest trade candles for analysis
@@ -90,7 +89,12 @@ def _store_backtest_analysis_data(
 
 
 def store_backtest_analysis_results(
-    recordfilename: Path, candles: Dict[str, Dict], trades: Dict[str, Dict], dtappendix: str
+    recordfilename: Path,
+    candles: dict[str, dict],
+    trades: dict[str, dict],
+    exited: dict[str, dict],
+    dtappendix: str,
 ) -> None:
     _store_backtest_analysis_data(recordfilename, candles, dtappendix, "signals")
     _store_backtest_analysis_data(recordfilename, trades, dtappendix, "rejected")
+    _store_backtest_analysis_data(recordfilename, exited, dtappendix, "exited")

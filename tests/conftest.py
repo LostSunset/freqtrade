@@ -5,7 +5,6 @@ import re
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Optional
 from unittest.mock import MagicMock, Mock, PropertyMock
 
 import numpy as np
@@ -124,7 +123,7 @@ def get_args(args):
     return Arguments(args).get_parsed_arg()
 
 
-def generate_trades_history(n_rows, start_date: Optional[datetime] = None, days=5):
+def generate_trades_history(n_rows, start_date: datetime | None = None, days=5):
     np.random.seed(42)
     if not start_date:
         start_date = datetime(2020, 1, 1, tzinfo=timezone.utc)
@@ -206,7 +205,7 @@ def generate_test_data_raw(timeframe: str, size: int, start: str = "2020-07-05",
     """Generates data in the ohlcv format used by ccxt"""
     df = generate_test_data(timeframe, size, start, random_seed)
     df["date"] = df.loc[:, "date"].astype(np.int64) // 1000 // 1000
-    return list(list(x) for x in zip(*(df[x].values.tolist() for x in df.columns)))
+    return list(list(x) for x in zip(*(df[x].values.tolist() for x in df.columns), strict=False))
 
 
 # Source: https://stackoverflow.com/questions/29881236/how-to-mock-asyncio-coroutines
@@ -243,6 +242,7 @@ def patch_exchange(
     mocker.patch(f"{EXMS}.id", PropertyMock(return_value=exchange))
     mocker.patch(f"{EXMS}.name", PropertyMock(return_value=exchange.title()))
     mocker.patch(f"{EXMS}.precisionMode", PropertyMock(return_value=2))
+    mocker.patch(f"{EXMS}.precision_mode_price", PropertyMock(return_value=2))
     # Temporary patch ...
     mocker.patch("freqtrade.exchange.bybit.Bybit.cache_leverage_tiers")
 
@@ -362,8 +362,8 @@ def patch_get_signal(
     exit_long=False,
     enter_short=False,
     exit_short=False,
-    enter_tag: Optional[str] = None,
-    exit_tag: Optional[str] = None,
+    enter_tag: str | None = None,
+    exit_tag: str | None = None,
 ) -> None:
     """
     :param mocker: mocker to patch IStrategy class
@@ -394,7 +394,7 @@ def patch_get_signal(
     freqtrade.exchange.refresh_latest_ohlcv = lambda p: None
 
 
-def create_mock_trades(fee, is_short: Optional[bool] = False, use_db: bool = True):
+def create_mock_trades(fee, is_short: bool | None = False, use_db: bool = True):
     """
     Create some fake trades ...
     :param is_short: Optional bool, None creates a mix of long and short trades.
@@ -473,7 +473,7 @@ def create_mock_trades_with_leverage(fee, use_db: bool = True):
         Trade.session.flush()
 
 
-def create_mock_trades_usdt(fee, is_short: Optional[bool] = False, use_db: bool = True):
+def create_mock_trades_usdt(fee, is_short: bool | None = False, use_db: bool = True):
     """
     Create some fake trades ...
     """
@@ -616,6 +616,8 @@ def get_default_conf(testdatadir):
         "dataformat_ohlcv": "feather",
         "dataformat_trades": "feather",
         "runmode": "dry_run",
+        "trading_mode": "spot",
+        "margin_mode": "",
         "candle_type_def": CandleType.SPOT,
     }
     return configuration

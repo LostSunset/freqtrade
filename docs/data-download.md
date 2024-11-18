@@ -11,9 +11,8 @@ Without provided configuration, `--exchange` becomes mandatory.
 You can use a relative timerange (`--days 20`) or an absolute starting point (`--timerange 20200101-`). For incremental downloads, the relative approach should be used.
 
 !!! Tip "Tip: Updating existing data"
-    If you already have backtesting data available in your data-directory and would like to refresh this data up to today, freqtrade will automatically calculate the data missing for the existing pairs and the download will occur from the latest available point until "now", neither --days or --timerange parameters are required. Freqtrade will keep the available data and only download the missing data.
-    If you are updating existing data after inserting new pairs that you have no data for, use `--new-pairs-days xx` parameter. Specified number of days will be downloaded for new pairs while old pairs will be updated with missing data only.
-    If you use `--days xx` parameter alone - data for specified number of days will be downloaded for _all_ pairs. Be careful, if specified number of days is smaller than gap between now and last downloaded candle - freqtrade will delete all existing data to avoid gaps in candle data.
+    If you already have backtesting data available in your data-directory and would like to refresh this data up to today, freqtrade will automatically calculate the missing timerange for the existing pairs and the download will occur from the latest available point until "now", neither `--days` or `--timerange` parameters are required. Freqtrade will keep the available data and only download the missing data.  
+    If you are updating existing data after inserting new pairs that you have no data for, use the `--new-pairs-days xx` parameter. Specified number of days will be downloaded for new pairs while old pairs will be updated with missing data only.  
 
 ### Usage
 
@@ -123,10 +122,11 @@ freqtrade download-data --exchange binance --pairs .*/USDT
 ### Other Notes
 
 * To use a different directory than the exchange specific default, use `--datadir user_data/data/some_directory`.
-* To change the exchange used to download the historical data from, please use a different configuration file (you'll probably need to adjust rate limits etc.)
+* To change the exchange used to download the historical data from, either use `--exchange <exchange>` - or specify a different configuration file.
 * To use `pairs.json` from some other directory, use `--pairs-file some_other_dir/pairs.json`.
 * To download historical candle (OHLCV) data for only 10 days, use `--days 10` (defaults to 30 days).
 * To download historical candle (OHLCV) data from a fixed starting point, use `--timerange 20200101-` - which will download all data from January 1st, 2020.
+* Given starting points are ignored if data is already available, downloading only missing data up to today.
 * Use `--timeframes` to specify what timeframe download the historical candle (OHLCV) data for. Default is `--timeframes 1m 5m` which will download 1-minute and 5-minute data.
 * To use exchange, timeframe and list of pairs as defined in your configuration file, use the `-c/--config` option. With this, the script uses the whitelist defined in the config as the list of currency pairs to download data for and does not require the pairs.json file. You can combine `-c/--config` with most other options.
 
@@ -423,7 +423,8 @@ You can get a list of downloaded data using the `list-data` sub-command.
 usage: freqtrade list-data [-h] [-v] [--logfile FILE] [-V] [-c PATH] [-d PATH]
                            [--userdir PATH] [--exchange EXCHANGE]
                            [--data-format-ohlcv {json,jsongz,hdf5,feather,parquet}]
-                           [-p PAIRS [PAIRS ...]]
+                           [--data-format-trades {json,jsongz,hdf5,feather,parquet}]
+                           [--trades] [-p PAIRS [PAIRS ...]]
                            [--trading-mode {spot,margin,futures}]
                            [--show-timerange]
 
@@ -433,6 +434,10 @@ options:
   --data-format-ohlcv {json,jsongz,hdf5,feather,parquet}
                         Storage format for downloaded candle (OHLCV) data.
                         (default: `feather`).
+  --data-format-trades {json,jsongz,hdf5,feather,parquet}
+                        Storage format for downloaded trades data. (default:
+                        `feather`).
+  --trades              Work on trades data instead of OHLCV data.
   -p PAIRS [PAIRS ...], --pairs PAIRS [PAIRS ...]
                         Limit command to these pairs. Pairs are space-
                         separated.
@@ -465,13 +470,29 @@ Common arguments:
 ```bash
 > freqtrade list-data --userdir ~/.freqtrade/user_data/
 
-Found 33 pair / timeframe combinations.
-pairs       timeframe
-----------  -----------------------------------------
-ADA/BTC     5m, 15m, 30m, 1h, 2h, 4h, 6h, 12h, 1d
-ADA/ETH     5m, 15m, 30m, 1h, 2h, 4h, 6h, 12h, 1d
-ETH/BTC     5m, 15m, 30m, 1h, 2h, 4h, 6h, 12h, 1d
-ETH/USDT    5m, 15m, 30m, 1h, 2h, 4h
+              Found 33 pair / timeframe combinations.
+┏━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━┓
+┃          Pair ┃                                 Timeframe ┃ Type ┃
+┡━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━┩
+│       ADA/BTC │     5m, 15m, 30m, 1h, 2h, 4h, 6h, 12h, 1d │ spot │
+│       ADA/ETH │     5m, 15m, 30m, 1h, 2h, 4h, 6h, 12h, 1d │ spot │
+│       ETH/BTC │     5m, 15m, 30m, 1h, 2h, 4h, 6h, 12h, 1d │ spot │
+│      ETH/USDT │                  5m, 15m, 30m, 1h, 2h, 4h │ spot │
+└───────────────┴───────────────────────────────────────────┴──────┘
+
+```
+
+Show all trades data including from/to timerange
+
+``` bash
+> freqtrade list-data --show --trades
+                     Found trades data for 1 pair.                     
+┏━━━━━━━━━┳━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┓
+┃    Pair ┃ Type ┃                From ┃                  To ┃ Trades ┃
+┡━━━━━━━━━╇━━━━━━╇━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━┩
+│ XRP/ETH │ spot │ 2019-10-11 00:00:11 │ 2019-10-13 11:19:28 │  12477 │
+└─────────┴──────┴─────────────────────┴─────────────────────┴────────┘
+
 ```
 
 ## Trades (tick) data

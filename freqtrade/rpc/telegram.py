@@ -8,6 +8,7 @@ import asyncio
 import json
 import logging
 import re
+from collections.abc import Callable, Coroutine
 from copy import deepcopy
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
@@ -16,7 +17,7 @@ from html import escape
 from itertools import chain
 from math import isnan
 from threading import Thread
-from typing import Any, Callable, Coroutine, Dict, List, Literal, Optional, Union
+from typing import Any, Literal
 
 from tabulate import tabulate
 from telegram import (
@@ -40,7 +41,14 @@ from freqtrade.misc import chunks, plural
 from freqtrade.persistence import Trade
 from freqtrade.rpc import RPC, RPCException, RPCHandler
 from freqtrade.rpc.rpc_types import RPCEntryMsg, RPCExitMsg, RPCOrderMsg, RPCSendMsg
-from freqtrade.util import dt_from_ts, dt_humanize_delta, fmt_coin, format_date, round_value
+from freqtrade.util import (
+    dt_from_ts,
+    dt_humanize_delta,
+    fmt_coin,
+    fmt_coin2,
+    format_date,
+    round_value,
+)
 
 
 MAX_MESSAGE_LENGTH = MessageLimit.MAX_TEXT_LENGTH
@@ -145,7 +153,7 @@ class Telegram(RPCHandler):
         Validates the keyboard configuration from telegram config
         section.
         """
-        self._keyboard: List[List[Union[str, KeyboardButton]]] = [
+        self._keyboard: list[list[str | KeyboardButton]] = [
             ["/daily", "/profit", "/balance"],
             ["/status", "/status table", "/performance"],
             ["/count", "/start", "/stop", "/help"],
@@ -154,7 +162,7 @@ class Telegram(RPCHandler):
         # TODO: DRY! - its not good to list all valid cmds here. But otherwise
         #       this needs refactoring of the whole telegram module (same
         #       problem in _help()).
-        valid_keys: List[str] = [
+        valid_keys: list[str] = [
             r"/start$",
             r"/stop$",
             r"/status$",
@@ -398,10 +406,10 @@ class Telegram(RPCHandler):
         if msg.get("leverage") and msg.get("leverage", 1.0) != 1.0:
             message += f" ({msg['leverage']:.3g}x)"
         message += "`\n"
-        message += f"*Open Rate:* `{round_value(msg['open_rate'], 8)} {msg['quote_currency']}`\n"
+        message += f"*Open Rate:* `{fmt_coin2(msg['open_rate'], msg['quote_currency'])}`\n"
         if msg["type"] == RPCMessageType.ENTRY and msg["current_rate"]:
             message += (
-                f"*Current Rate:* `{round_value(msg['current_rate'], 8)} {msg['quote_currency']}`\n"
+                f"*Current Rate:* `{fmt_coin2(msg['current_rate'], msg['quote_currency'])}`\n"
             )
 
         profit_fiat_extra = self.__format_profit_fiat(msg, "stake_amount")  # type: ignore
@@ -466,14 +474,16 @@ class Telegram(RPCHandler):
             f"*Direction:* `{msg['direction']}"
             f"{leverage_text}`\n"
             f"*Amount:* `{round_value(msg['amount'], 8)}`\n"
-            f"*Open Rate:* `{fmt_coin(msg['open_rate'], msg['quote_currency'])}`\n"
+            f"*Open Rate:* `{fmt_coin2(msg['open_rate'], msg['quote_currency'])}`\n"
         )
         if msg["type"] == RPCMessageType.EXIT and msg["current_rate"]:
-            message += f"*Current Rate:* `{fmt_coin(msg['current_rate'], msg['quote_currency'])}`\n"
+            message += (
+                f"*Current Rate:* `{fmt_coin2(msg['current_rate'], msg['quote_currency'])}`\n"
+            )
             if msg["order_rate"]:
-                message += f"*Exit Rate:* `{fmt_coin(msg['order_rate'], msg['quote_currency'])}`"
+                message += f"*Exit Rate:* `{fmt_coin2(msg['order_rate'], msg['quote_currency'])}`"
         elif msg["type"] == RPCMessageType.EXIT_FILL:
-            message += f"*Exit Rate:* `{fmt_coin(msg['close_rate'], msg['quote_currency'])}`"
+            message += f"*Exit Rate:* `{fmt_coin2(msg['close_rate'], msg['quote_currency'])}`"
 
         if is_sub_trade:
             stake_amount_fiat = self.__format_profit_fiat(msg, "stake_amount")
@@ -498,7 +508,7 @@ class Telegram(RPCHandler):
             profit_fiat_extra = f" / {profit_fiat:.3f} {fiat_currency}"
         return profit_fiat_extra
 
-    def compose_message(self, msg: RPCSendMsg) -> Optional[str]:
+    def compose_message(self, msg: RPCSendMsg) -> str | None:
         if msg["type"] == RPCMessageType.ENTRY or msg["type"] == RPCMessageType.ENTRY_FILL:
             message = self._format_entry_msg(msg)
 
@@ -546,21 +556,22 @@ class Telegram(RPCHandler):
             return None
         return message
 
-    def send_msg(self, msg: RPCSendMsg) -> None:
-        """Send a message to telegram channel"""
-
+    def _message_loudness(self, msg: RPCSendMsg) -> str:
+        """Determine the loudness of the message - on, off or silent"""
         default_noti = "on"
 
         msg_type = msg["type"]
         noti = ""
-        if msg["type"] == RPCMessageType.EXIT:
+        if msg["type"] == RPCMessageType.EXIT or msg["type"] == RPCMessageType.EXIT_FILL:
             sell_noti = (
                 self._config["telegram"].get("notification_settings", {}).get(str(msg_type), {})
             )
+
             # For backward compatibility sell still can be string
             if isinstance(sell_noti, str):
                 noti = sell_noti
             else:
+                default_noti = sell_noti.get("*", default_noti)
                 noti = sell_noti.get(str(msg["exit_reason"]), default_noti)
         else:
             noti = (
@@ -569,8 +580,14 @@ class Telegram(RPCHandler):
                 .get(str(msg_type), default_noti)
             )
 
+        return noti
+
+    def send_msg(self, msg: RPCSendMsg) -> None:
+        """Send a message to telegram channel"""
+        noti = self._message_loudness(msg)
+
         if noti == "off":
-            logger.info(f"Notification '{msg_type}' not sent.")
+            logger.info(f"Notification '{msg['type']}' not sent.")
             # Notification disabled
             return
 
@@ -594,16 +611,16 @@ class Telegram(RPCHandler):
         else:
             return "\N{CROSS MARK}"
 
-    def _prepare_order_details(self, filled_orders: List, quote_currency: str, is_open: bool):
+    def _prepare_order_details(self, filled_orders: list, quote_currency: str, is_open: bool):
         """
         Prepare details of trade with entry adjustment enabled
         """
-        lines_detail: List[str] = []
+        lines_detail: list[str] = []
         if len(filled_orders) > 0:
             first_avg = filled_orders[0]["safe_price"]
         order_nr = 0
         for order in filled_orders:
-            lines: List[str] = []
+            lines: list[str] = []
             if order["is_open"] is True:
                 continue
             order_nr += 1
@@ -662,7 +679,7 @@ class Telegram(RPCHandler):
             lines.extend(lines_detail if lines_detail else "")
             await self.__send_order_msg(lines, r)
 
-    async def __send_order_msg(self, lines: List[str], r: Dict[str, Any]) -> None:
+    async def __send_order_msg(self, lines: list[str], r: dict[str, Any]) -> None:
         """
         Send status message.
         """
@@ -805,7 +822,7 @@ class Telegram(RPCHandler):
 
             await self.__send_status_msg(lines, r)
 
-    async def __send_status_msg(self, lines: List[str], r: Dict[str, Any]) -> None:
+    async def __send_status_msg(self, lines: list[str], r: dict[str, Any]) -> None:
         """
         Send status message.
         """
@@ -1133,7 +1150,6 @@ class Telegram(RPCHandler):
                     curr_output = (
                         f"*{curr['currency']}:*\n"
                         f"\t`{curr['side']}: {curr['position']:.8f}`\n"
-                        f"\t`Leverage: {curr['leverage']:.1f}`\n"
                         f"\t`Est. {curr['stake']}: "
                         f"{fmt_coin(curr['est_stake'], curr['stake'], False)}`\n"
                     )
@@ -1275,7 +1291,7 @@ class Telegram(RPCHandler):
                 InlineKeyboardButton(text=trade[1], callback_data=f"force_exit__{trade[0]}")
                 for trade in trades
             ]
-            buttons_aligned = self._layout_inline_keyboard_onecol(trade_buttons)
+            buttons_aligned = self._layout_inline_keyboard(trade_buttons, cols=1)
 
             buttons_aligned.append(
                 [InlineKeyboardButton(text="Cancel", callback_data="force_exit__cancel")]
@@ -1301,7 +1317,7 @@ class Telegram(RPCHandler):
                     await query.answer()
                     await query.edit_message_text(text="Force exit canceled.")
                     return
-                trade: Optional[Trade] = Trade.get_trades(trade_filter=Trade.id == trade_id).first()
+                trade: Trade | None = Trade.get_trades(trade_filter=Trade.id == trade_id).first()
                 await query.answer()
                 if trade:
                     await query.edit_message_text(
@@ -1311,7 +1327,7 @@ class Telegram(RPCHandler):
                 else:
                     await query.edit_message_text(text=f"Trade {trade_id} not found.")
 
-    async def _force_enter_action(self, pair, price: Optional[float], order_side: SignalDirection):
+    async def _force_enter_action(self, pair, price: float | None, order_side: SignalDirection):
         if pair != "cancel":
             try:
 
@@ -1345,14 +1361,8 @@ class Telegram(RPCHandler):
 
     @staticmethod
     def _layout_inline_keyboard(
-        buttons: List[InlineKeyboardButton], cols=3
-    ) -> List[List[InlineKeyboardButton]]:
-        return [buttons[i : i + cols] for i in range(0, len(buttons), cols)]
-
-    @staticmethod
-    def _layout_inline_keyboard_onecol(
-        buttons: List[InlineKeyboardButton], cols=1
-    ) -> List[List[InlineKeyboardButton]]:
+        buttons: list[InlineKeyboardButton], cols=3
+    ) -> list[list[InlineKeyboardButton]]:
         return [buttons[i : i + cols] for i in range(0, len(buttons), cols)]
 
     @authorized_only
@@ -1696,7 +1706,7 @@ class Telegram(RPCHandler):
         """
         await self.send_blacklist_msg(self._rpc._rpc_blacklist(context.args))
 
-    async def send_blacklist_msg(self, blacklist: Dict):
+    async def send_blacklist_msg(self, blacklist: dict):
         errmsgs = []
         for _, error in blacklist["errors"].items():
             errmsgs.append(f"Error: {error['error_msg']}")
@@ -2005,10 +2015,10 @@ class Telegram(RPCHandler):
         msg: str,
         parse_mode: str = ParseMode.MARKDOWN,
         disable_notification: bool = False,
-        keyboard: Optional[List[List[InlineKeyboardButton]]] = None,
+        keyboard: list[list[InlineKeyboardButton]] | None = None,
         callback_path: str = "",
         reload_able: bool = False,
-        query: Optional[CallbackQuery] = None,
+        query: CallbackQuery | None = None,
     ) -> None:
         """
         Send given markdown message
@@ -2017,7 +2027,7 @@ class Telegram(RPCHandler):
         :param parse_mode: telegram parse mode
         :return: None
         """
-        reply_markup: Union[InlineKeyboardMarkup, ReplyKeyboardMarkup]
+        reply_markup: InlineKeyboardMarkup | ReplyKeyboardMarkup
         if query:
             await self._update_msg(
                 query=query,

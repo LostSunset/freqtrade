@@ -30,11 +30,17 @@ class SuperDuperHyperOptLoss(IHyperOptLoss):
     """
 
     @staticmethod
-    def hyperopt_loss_function(results: DataFrame, trade_count: int,
-                               min_date: datetime, max_date: datetime,
-                               config: Config, processed: Dict[str, DataFrame],
-                               backtest_stats: Dict[str, Any],
-                               *args, **kwargs) -> float:
+    def hyperopt_loss_function(
+        *,
+        results: DataFrame,
+        trade_count: int,
+        min_date: datetime,
+        max_date: datetime,
+        config: Config,
+        processed: dict[str, DataFrame],
+        backtest_stats: dict[str, Any],
+        **kwargs,
+    ) -> float:
         """
         Objective function, returns smaller number for better results
         This is the legacy algorithm (used until now in freqtrade).
@@ -97,7 +103,7 @@ class MyAwesomeStrategy(IStrategy):
                 SKDecimal(0.01, 0.20, decimals=3, name='roi_p3'),
             ]
 
-        def generate_roi_table(params: Dict) -> Dict[int, float]:
+        def generate_roi_table(params: Dict) -> dict[int, float]:
 
             roi_table = {}
             roi_table[0] = params['roi_p1'] + params['roi_p2'] + params['roi_p3']

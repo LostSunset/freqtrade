@@ -92,9 +92,8 @@ class TestCCXTExchange:
         if trades := EXCHANGES[exchange_name].get("sample_my_trades"):
             pair = "SOL/USDT"
             for trade in trades:
-                market = exch._api.markets[pair]
                 po = exch._api.parse_trade(trade)
-                (trade, market)
+                assert po["symbol"] == pair
                 assert isinstance(po["id"], str)
                 assert isinstance(po["side"], str)
                 assert isinstance(po["amount"], float)
@@ -106,9 +105,7 @@ class TestCCXTExchange:
                     assert isinstance(fees, list)
                     for fee in fees:
                         assert isinstance(fee, dict)
-                        assert isinstance(fee["cost"], str)
-                        # TODO: this should be a float!
-                        # assert isinstance(fee["cost"], float)
+                        assert isinstance(fee["cost"], float)
                         assert isinstance(fee["currency"], str)
 
         else:
@@ -121,9 +118,10 @@ class TestCCXTExchange:
         tickers = exch.get_tickers()
         assert pair in tickers
         assert "ask" in tickers[pair]
-        assert tickers[pair]["ask"] is not None
         assert "bid" in tickers[pair]
-        assert tickers[pair]["bid"] is not None
+        if EXCHANGES[exchangename].get("tickers_have_bid_ask"):
+            assert tickers[pair]["bid"] is not None
+            assert tickers[pair]["ask"] is not None
         assert "quoteVolume" in tickers[pair]
         if EXCHANGES[exchangename].get("hasQuoteVolume"):
             assert tickers[pair]["quoteVolume"] is not None
@@ -153,9 +151,10 @@ class TestCCXTExchange:
 
         ticker = exch.fetch_ticker(pair)
         assert "ask" in ticker
-        assert ticker["ask"] is not None
         assert "bid" in ticker
-        assert ticker["bid"] is not None
+        if EXCHANGES[exchangename].get("tickers_have_bid_ask"):
+            assert ticker["ask"] is not None
+            assert ticker["bid"] is not None
         assert "quoteVolume" in ticker
         if EXCHANGES[exchangename].get("hasQuoteVolume"):
             assert ticker["quoteVolume"] is not None
@@ -460,6 +459,7 @@ class TestCCXTExchange:
                 stake_amount=100,
                 leverage=5,
                 wallet_balance=100,
+                open_trades=[],
             )
             assert isinstance(liquidation_price, float)
             assert liquidation_price >= 0.0
@@ -472,6 +472,7 @@ class TestCCXTExchange:
                 stake_amount=100,
                 leverage=5,
                 wallet_balance=100,
+                open_trades=[],
             )
             assert isinstance(liquidation_price, float)
             assert liquidation_price >= 0.0

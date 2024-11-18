@@ -168,14 +168,6 @@ AVAILABLE_CLI_OPTIONS = {
         action="store_true",
         default=False,
     ),
-    "use_max_market_positions": Arg(
-        "--dmmp",
-        "--disable-max-market-positions",
-        help="Disable applying `max_open_trades` during backtest "
-        "(same as setting `max_open_trades` to a very high number).",
-        action="store_false",
-        default=True,
-    ),
     "backtest_show_pair_list": Arg(
         "--show-pair-list",
         help="Show backtesting pairlist sorted by profit.",
@@ -446,8 +438,12 @@ AVAILABLE_CLI_OPTIONS = {
     ),
     "download_trades": Arg(
         "--dl-trades",
-        help="Download trades instead of OHLCV data. The bot will resample trades to the "
-        "desired timeframe as specified as --timeframes/-t.",
+        help="Download trades instead of OHLCV data.",
+        action="store_true",
+    ),
+    "trades": Arg(
+        "--trades",
+        help="Work on trades data instead of OHLCV data.",
         action="store_true",
     ),
     "convert_trades": Arg(
@@ -714,6 +710,12 @@ AVAILABLE_CLI_OPTIONS = {
         ),
         nargs="+",
         default=[],
+    ),
+    "entry_only": Arg(
+        "--entry-only", help=("Only analyze entry signals."), action="store_true", default=False
+    ),
+    "exit_only": Arg(
+        "--exit-only", help=("Only analyze exit signals."), action="store_true", default=False
     ),
     "analysis_rejected": Arg(
         "--rejected-signals",

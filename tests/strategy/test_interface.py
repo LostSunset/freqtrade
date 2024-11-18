@@ -296,13 +296,6 @@ def test_assert_df(ohlcv_history, caplog):
             ohlcv_history.loc[df_len, "close"],
             ohlcv_history.loc[0, "date"],
         )
-    with pytest.raises(StrategyError, match="enter_long/buy column not set."):
-        _STRATEGY.assert_df(
-            ohlcv_history.drop("enter_long", axis=1),
-            len(ohlcv_history),
-            ohlcv_history.loc[df_len, "close"],
-            ohlcv_history.loc[0, "date"],
-        )
 
     _STRATEGY.disable_dataframe_checks = True
     caplog.clear()
@@ -579,6 +572,7 @@ def test_ft_stoploss_reached(
         liquidation_price=liq,
         price_precision=4,
         precision_mode=2,
+        precision_mode_price=2,
     )
     trade.adjust_min_max_rates(trade.open_rate, trade.open_rate)
     strategy.trailing_stop = trailing

@@ -1404,6 +1404,7 @@ def test_to_json(fee):
         exchange="binance",
         enter_tag=None,
         precision_mode=1,
+        precision_mode_price=1,
         amount_precision=8.0,
         price_precision=7.0,
         contract_size=1,
@@ -1473,6 +1474,7 @@ def test_to_json(fee):
         "amount_precision": 8.0,
         "price_precision": 7.0,
         "precision_mode": 1,
+        "precision_mode_price": 1,
         "contract_size": 1,
         "orders": [],
         "has_open_orders": False,
@@ -1493,6 +1495,7 @@ def test_to_json(fee):
         enter_tag="buys_signal_001",
         exchange="binance",
         precision_mode=2,
+        precision_mode_price=1,
         amount_precision=7.0,
         price_precision=8.0,
         contract_size=1,
@@ -1562,6 +1565,7 @@ def test_to_json(fee):
         "amount_precision": 7.0,
         "price_precision": 8.0,
         "precision_mode": 2,
+        "precision_mode_price": 1,
         "contract_size": 1,
         "orders": [],
         "has_open_orders": False,
@@ -2136,11 +2140,12 @@ def test_Trade_object_idem():
         "custom_data",
     )
     EXCLUDES2 = (
-        "trades",
-        "trades_open",
+        "bt_trades",
+        "bt_trades_open",
         "bt_trades_open_pp",
         "bt_open_open_trade_count",
-        "total_profit",
+        "bt_open_open_trade_count_candle",
+        "bt_total_profit",
         "from_json",
     )
 
@@ -2571,7 +2576,7 @@ def test_recalc_trade_from_orders_ignores_bad_orders(fee, is_short):
     assert trade.amount == 2 * o1_amount
     assert trade.stake_amount == 2 * o1_amount
     assert trade.open_rate == o1_rate
-    assert trade.fee_open_cost == 2 * o1_fee_cost
+    assert trade.fee_open_cost == trade.nr_of_successful_entries * o1_fee_cost
     assert trade.open_trade_value == 2 * o1_trade_val
     assert trade.nr_of_successful_entries == 2
 
@@ -2598,7 +2603,7 @@ def test_recalc_trade_from_orders_ignores_bad_orders(fee, is_short):
     assert trade.amount == o1_amount
     assert trade.stake_amount == o1_amount
     assert trade.open_rate == o1_rate
-    assert trade.fee_open_cost == o1_fee_cost
+    assert trade.fee_open_cost == trade.nr_of_successful_entries * o1_fee_cost
     assert trade.open_trade_value == o1_trade_val
     assert trade.nr_of_successful_entries == 2
 
@@ -2626,7 +2631,7 @@ def test_recalc_trade_from_orders_ignores_bad_orders(fee, is_short):
     assert trade.amount == 2 * o1_amount
     assert trade.stake_amount == 2 * o1_amount
     assert trade.open_rate == o1_rate
-    assert trade.fee_open_cost == 2 * o1_fee_cost
+    assert trade.fee_open_cost == trade.nr_of_successful_entries * o1_fee_cost
     assert trade.open_trade_value == 2 * o1_trade_val
     assert trade.nr_of_successful_entries == 3
 
@@ -2676,6 +2681,36 @@ def test_select_filled_orders(fee):
     orders = trades[4].select_filled_orders("sell")
     assert isinstance(orders, list)
     assert len(orders) == 0
+
+
+@pytest.mark.usefixtures("init_persistence")
+def test_select_filled_orders_usdt(fee):
+    create_mock_trades_usdt(fee)
+
+    trades = Trade.get_trades().all()
+
+    # Closed buy order, no sell order
+    orders = trades[0].select_filled_orders("buy")
+    assert isinstance(orders, list)
+    assert len(orders) == 1
+    assert orders[0].amount == 2.0
+    assert orders[0].filled == 2.0
+    assert orders[0].side == "buy"
+    assert orders[0].price == 10.0
+    assert orders[0].stake_amount == 20
+    assert orders[0].stake_amount_filled == 20
+
+    orders = trades[3].select_filled_orders("buy")
+    assert isinstance(orders, list)
+    assert len(orders) == 0
+    orders = trades[3].select_filled_or_open_orders()
+    assert isinstance(orders, list)
+    assert len(orders) == 1
+    assert orders[0].price == 2.0
+    assert orders[0].amount == 10
+    assert orders[0].filled == 0
+    assert orders[0].stake_amount == 20
+    assert orders[0].stake_amount_filled == 0
 
 
 @pytest.mark.usefixtures("init_persistence")

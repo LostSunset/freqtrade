@@ -1,38 +1,34 @@
 import csv
 import logging
 import sys
-from typing import Any, Dict, List, Union
+from typing import Any
 
-import rapidjson
-from rich.console import Console
-from rich.table import Table
-from rich.text import Text
-
-from freqtrade.configuration import setup_utils_configuration
 from freqtrade.enums import RunMode
 from freqtrade.exceptions import ConfigurationError, OperationalException
-from freqtrade.exchange import list_available_exchanges, market_is_active
-from freqtrade.misc import parse_db_uri_for_logging, plural
-from freqtrade.resolvers import ExchangeResolver, StrategyResolver
-from freqtrade.types.valid_exchanges_type import ValidExchangesType
-from freqtrade.util import print_rich_table
+from freqtrade.ft_types import ValidExchangesType
 
 
 logger = logging.getLogger(__name__)
 
 
-def start_list_exchanges(args: Dict[str, Any]) -> None:
+def start_list_exchanges(args: dict[str, Any]) -> None:
     """
     Print available exchanges
     :param args: Cli args from Arguments()
     :return: None
     """
-    available_exchanges: List[ValidExchangesType] = list_available_exchanges(
+    from rich.console import Console
+    from rich.table import Table
+    from rich.text import Text
+
+    from freqtrade.exchange import list_available_exchanges
+
+    available_exchanges: list[ValidExchangesType] = list_available_exchanges(
         args["list_exchanges_all"]
     )
 
     if args["print_one_column"]:
-        print("\n".join([e["name"] for e in available_exchanges]))
+        print("\n".join([e["classname"] for e in available_exchanges]))
     else:
         if args["list_exchanges_all"]:
             title = (
@@ -46,14 +42,20 @@ def start_list_exchanges(args: Dict[str, Any]) -> None:
         table = Table(title=title)
 
         table.add_column("Exchange Name")
+        table.add_column("Class Name")
         table.add_column("Markets")
         table.add_column("Reason")
 
         for exchange in available_exchanges:
             name = Text(exchange["name"])
             if exchange["supported"]:
-                name.append(" (Official)", style="italic")
+                name.append(" (Supported)", style="italic")
                 name.stylize("green bold")
+            classname = Text(exchange["classname"])
+            if exchange["is_alias"]:
+                name.stylize("strike")
+                classname.stylize("strike")
+                classname.append(f" (use {exchange['alias_for']})", style="italic")
 
             trade_modes = Text(
                 ", ".join(
@@ -68,6 +70,7 @@ def start_list_exchanges(args: Dict[str, Any]) -> None:
 
             table.add_row(
                 name,
+                classname,
                 trade_modes,
                 exchange["comment"],
                 style=None if exchange["valid"] else "red",
@@ -78,9 +81,13 @@ def start_list_exchanges(args: Dict[str, Any]) -> None:
         console.print(table)
 
 
-def _print_objs_tabular(objs: List, print_colorized: bool) -> None:
+def _print_objs_tabular(objs: list, print_colorized: bool) -> None:
+    from rich.console import Console
+    from rich.table import Table
+    from rich.text import Text
+
     names = [s["name"] for s in objs]
-    objs_to_print: List[Dict[str, Union[Text, str]]] = [
+    objs_to_print: list[dict[str, Text | str]] = [
         {
             "name": Text(s["name"] if s["name"] else "--"),
             "location": s["location_rel"],
@@ -118,10 +125,13 @@ def _print_objs_tabular(objs: List, print_colorized: bool) -> None:
     console.print(table)
 
 
-def start_list_strategies(args: Dict[str, Any]) -> None:
+def start_list_strategies(args: dict[str, Any]) -> None:
     """
     Print files with Strategy custom classes available in the directory
     """
+    from freqtrade.configuration import setup_utils_configuration
+    from freqtrade.resolvers import StrategyResolver
+
     config = setup_utils_configuration(args, RunMode.UTIL_NO_EXCHANGE)
 
     strategy_objs = StrategyResolver.search_all_objects(
@@ -141,12 +151,14 @@ def start_list_strategies(args: Dict[str, Any]) -> None:
         _print_objs_tabular(strategy_objs, config.get("print_colorized", False))
 
 
-def start_list_freqAI_models(args: Dict[str, Any]) -> None:
+def start_list_freqAI_models(args: dict[str, Any]) -> None:
     """
     Print files with FreqAI models custom classes available in the directory
     """
-    config = setup_utils_configuration(args, RunMode.UTIL_NO_EXCHANGE)
+    from freqtrade.configuration import setup_utils_configuration
     from freqtrade.resolvers.freqaimodel_resolver import FreqaiModelResolver
+
+    config = setup_utils_configuration(args, RunMode.UTIL_NO_EXCHANGE)
 
     model_objs = FreqaiModelResolver.search_all_objects(config, not args["print_one_column"])
     # Sort alphabetically
@@ -157,10 +169,31 @@ def start_list_freqAI_models(args: Dict[str, Any]) -> None:
         _print_objs_tabular(model_objs, config.get("print_colorized", False))
 
 
-def start_list_timeframes(args: Dict[str, Any]) -> None:
+def start_list_hyperopt_loss_functions(args: dict[str, Any]) -> None:
+    """
+    Print files with FreqAI models custom classes available in the directory
+    """
+    from freqtrade.configuration import setup_utils_configuration
+    from freqtrade.resolvers.hyperopt_resolver import HyperOptLossResolver
+
+    config = setup_utils_configuration(args, RunMode.UTIL_NO_EXCHANGE)
+
+    model_objs = HyperOptLossResolver.search_all_objects(config, not args["print_one_column"])
+    # Sort alphabetically
+    model_objs = sorted(model_objs, key=lambda x: x["name"])
+    if args["print_one_column"]:
+        print("\n".join([s["name"] for s in model_objs]))
+    else:
+        _print_objs_tabular(model_objs, config.get("print_colorized", False))
+
+
+def start_list_timeframes(args: dict[str, Any]) -> None:
     """
     Print timeframes available on Exchange
     """
+    from freqtrade.configuration import setup_utils_configuration
+    from freqtrade.resolvers import ExchangeResolver
+
     config = setup_utils_configuration(args, RunMode.UTIL_EXCHANGE)
     # Do not use timeframe set in the config
     config["timeframe"] = None
@@ -177,13 +210,19 @@ def start_list_timeframes(args: Dict[str, Any]) -> None:
         )
 
 
-def start_list_markets(args: Dict[str, Any], pairs_only: bool = False) -> None:
+def start_list_markets(args: dict[str, Any], pairs_only: bool = False) -> None:
     """
     Print pairs/markets on the exchange
     :param args: Cli args from Arguments()
     :param pairs_only: if True print only pairs, otherwise print all instruments (markets)
     :return: None
     """
+    from freqtrade.configuration import setup_utils_configuration
+    from freqtrade.exchange import market_is_active
+    from freqtrade.misc import plural
+    from freqtrade.resolvers import ExchangeResolver
+    from freqtrade.util import print_rich_table
+
     config = setup_utils_configuration(args, RunMode.UTIL_EXCHANGE)
 
     # Init exchange
@@ -274,6 +313,8 @@ def start_list_markets(args: Dict[str, Any], pairs_only: bool = False) -> None:
             elif args.get("print_one_column", False):
                 print("\n".join(pairs.keys()))
             elif args.get("list_pairs_print_json", False):
+                import rapidjson
+
                 print(rapidjson.dumps(list(pairs.keys()), default=str))
             elif args.get("print_csv", False):
                 writer = csv.DictWriter(sys.stdout, fieldnames=headers)
@@ -289,12 +330,14 @@ def start_list_markets(args: Dict[str, Any], pairs_only: bool = False) -> None:
             print(f"{summary_str}.")
 
 
-def start_show_trades(args: Dict[str, Any]) -> None:
+def start_show_trades(args: dict[str, Any]) -> None:
     """
     Show trades
     """
     import json
 
+    from freqtrade.configuration import setup_utils_configuration
+    from freqtrade.misc import parse_db_uri_for_logging
     from freqtrade.persistence import Trade, init_db
 
     config = setup_utils_configuration(args, RunMode.UTIL_NO_EXCHANGE)

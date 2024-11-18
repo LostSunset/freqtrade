@@ -7,6 +7,7 @@ import pytest
 
 from freqtrade.enums import CandleType, MarginMode, TradingMode
 from freqtrade.exceptions import DependencyException, InvalidOrderException, OperationalException
+from freqtrade.persistence import Trade
 from tests.conftest import EXMS, get_mock_coro, get_patched_exchange, log_has_re
 from tests.exchange.test_exchange import ccxt_exceptionhandlers
 
@@ -168,6 +169,176 @@ def test_stoploss_adjust_binance(mocker, default_conf, sl1, sl2, sl3, side):
     }
     assert exchange.stoploss_adjust(sl1, order, side=side)
     assert not exchange.stoploss_adjust(sl2, order, side=side)
+
+
+@pytest.mark.parametrize(
+    "pair, is_short, trading_mode, margin_mode, wallet_balance, "
+    "maintenance_amt, amount, open_rate, open_trades,"
+    "mm_ratio, expected",
+    [
+        (
+            "ETH/USDT:USDT",
+            False,
+            "futures",
+            "isolated",
+            1535443.01,
+            135365.00,
+            3683.979,
+            1456.84,
+            [],
+            0.10,
+            1114.78,
+        ),
+        (
+            "ETH/USDT:USDT",
+            False,
+            "futures",
+            "isolated",
+            1535443.01,
+            16300.000,
+            109.488,
+            32481.980,
+            [],
+            0.025,
+            18778.73,
+        ),
+        (
+            "ETH/USDT:USDT",
+            False,
+            "futures",
+            "cross",
+            1535443.01,
+            135365.00,
+            3683.979,  # amount
+            1456.84,  # open_rate
+            [
+                {
+                    # From calc example
+                    "pair": "BTC/USDT:USDT",
+                    "open_rate": 32481.98,
+                    "amount": 109.488,
+                    "stake_amount": 3556387.02624,  # open_rate * amount
+                    "mark_price": 31967.27,
+                    "mm_ratio": 0.025,
+                    "maintenance_amt": 16300.0,
+                },
+                {
+                    # From calc example
+                    "pair": "ETH/USDT:USDT",
+                    "open_rate": 1456.84,
+                    "amount": 3683.979,
+                    "stake_amount": 5366967.96,
+                    "mark_price": 1335.18,
+                    "mm_ratio": 0.10,
+                    "maintenance_amt": 135365.00,
+                },
+            ],
+            0.10,
+            1153.26,
+        ),
+        (
+            "BTC/USDT:USDT",
+            False,
+            "futures",
+            "cross",
+            1535443.01,
+            16300.0,
+            109.488,  # amount
+            32481.980,  # open_rate
+            [
+                {
+                    # From calc example
+                    "pair": "BTC/USDT:USDT",
+                    "open_rate": 32481.98,
+                    "amount": 109.488,
+                    "stake_amount": 3556387.02624,  # open_rate * amount
+                    "mark_price": 31967.27,
+                    "mm_ratio": 0.025,
+                    "maintenance_amt": 16300.0,
+                },
+                {
+                    # From calc example
+                    "pair": "ETH/USDT:USDT",
+                    "open_rate": 1456.84,
+                    "amount": 3683.979,
+                    "stake_amount": 5366967.96,
+                    "mark_price": 1335.18,
+                    "mm_ratio": 0.10,
+                    "maintenance_amt": 135365.00,
+                },
+            ],
+            0.025,
+            26316.89,
+        ),
+    ],
+)
+def test_liquidation_price_binance(
+    mocker,
+    default_conf,
+    pair,
+    is_short,
+    trading_mode,
+    margin_mode,
+    wallet_balance,
+    maintenance_amt,
+    amount,
+    open_rate,
+    open_trades,
+    mm_ratio,
+    expected,
+):
+    default_conf["trading_mode"] = trading_mode
+    default_conf["margin_mode"] = margin_mode
+    default_conf["liquidation_buffer"] = 0.0
+    exchange = get_patched_exchange(mocker, default_conf, exchange="binance")
+
+    def get_maint_ratio(pair_, stake_amount):
+        if pair_ != pair:
+            oc = [c for c in open_trades if c["pair"] == pair_][0]
+            return oc["mm_ratio"], oc["maintenance_amt"]
+        return mm_ratio, maintenance_amt
+
+    def fetch_funding_rates(*args, **kwargs):
+        return {
+            t["pair"]: {
+                "symbol": t["pair"],
+                "markPrice": t["mark_price"],
+            }
+            for t in open_trades
+        }
+
+    exchange.get_maintenance_ratio_and_amt = get_maint_ratio
+    exchange.fetch_funding_rates = fetch_funding_rates
+
+    open_trade_objects = [
+        Trade(
+            pair=t["pair"],
+            open_rate=t["open_rate"],
+            amount=t["amount"],
+            stake_amount=t["stake_amount"],
+            fee_open=0,
+        )
+        for t in open_trades
+    ]
+
+    assert (
+        pytest.approx(
+            round(
+                exchange.get_liquidation_price(
+                    pair=pair,
+                    open_rate=open_rate,
+                    is_short=is_short,
+                    wallet_balance=wallet_balance,
+                    amount=amount,
+                    stake_amount=open_rate * amount,
+                    leverage=5,
+                    open_trades=open_trade_objects,
+                ),
+                2,
+            )
+        )
+        == expected
+    )
 
 
 def test_fill_leverage_tiers_binance(default_conf, mocker):
@@ -560,7 +731,6 @@ def test__set_leverage_binance(mocker, default_conf):
     )
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("candle_type", [CandleType.MARK, ""])
 async def test__async_get_historic_ohlcv_binance(default_conf, mocker, caplog, candle_type):
     ohlcv = [
@@ -624,3 +794,57 @@ def test_get_maintenance_ratio_and_amt_binance(
     exchange._leverage_tiers = leverage_tiers
     (result_ratio, result_amt) = exchange.get_maintenance_ratio_and_amt(pair, notional_value)
     assert (round(result_ratio, 8), round(result_amt, 8)) == (mm_ratio, amt)
+
+
+async def test__async_get_trade_history_id_binance(default_conf_usdt, mocker, fetch_trades_result):
+    exchange = get_patched_exchange(mocker, default_conf_usdt, exchange="binance")
+
+    async def mock_get_trade_hist(pair, *args, **kwargs):
+        if "since" in kwargs:
+            # older than initial call
+            if kwargs["since"] < 1565798399752:
+                return []
+            else:
+                # Don't expect to get here
+                raise ValueError("Unexpected call")
+                # return fetch_trades_result[:-2]
+        elif kwargs.get("params", {}).get(exchange._trades_pagination_arg) == "0":
+            # Return first 3
+            return fetch_trades_result[:-2]
+        elif kwargs.get("params", {}).get(exchange._trades_pagination_arg) in (
+            fetch_trades_result[-3]["id"],
+            1565798399752,
+        ):
+            # Return 2
+            return fetch_trades_result[-3:-1]
+        else:
+            # Return last 2
+            return fetch_trades_result[-2:]
+
+    exchange._api_async.fetch_trades = MagicMock(side_effect=mock_get_trade_hist)
+
+    pair = "ETH/BTC"
+    ret = await exchange._async_get_trade_history_id(
+        pair,
+        since=fetch_trades_result[0]["timestamp"],
+        until=fetch_trades_result[-1]["timestamp"] - 1,
+    )
+    assert ret[0] == pair
+    assert isinstance(ret[1], list)
+    assert exchange._api_async.fetch_trades.call_count == 4
+
+    fetch_trades_cal = exchange._api_async.fetch_trades.call_args_list
+    # first call (using since, not fromId)
+    assert fetch_trades_cal[0][0][0] == pair
+    assert fetch_trades_cal[0][1]["since"] == fetch_trades_result[0]["timestamp"]
+
+    # 2nd call
+    assert fetch_trades_cal[1][0][0] == pair
+    assert "params" in fetch_trades_cal[1][1]
+    pagination_arg = exchange._ft_has["trades_pagination_arg"]
+    assert pagination_arg in fetch_trades_cal[1][1]["params"]
+    # Initial call was with from_id = "0"
+    assert fetch_trades_cal[1][1]["params"][pagination_arg] == "0"
+
+    assert fetch_trades_cal[2][1]["params"][pagination_arg] != "0"
+    assert fetch_trades_cal[3][1]["params"][pagination_arg] != "0"

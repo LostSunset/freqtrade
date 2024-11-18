@@ -1,5 +1,4 @@
 import logging
-from typing import List, Optional
 
 from sqlalchemy import inspect, select, text, update
 
@@ -10,19 +9,19 @@ from freqtrade.persistence.trade_model import Order, Trade
 logger = logging.getLogger(__name__)
 
 
-def get_table_names_for_table(inspector, tabletype) -> List[str]:
+def get_table_names_for_table(inspector, tabletype) -> list[str]:
     return [t for t in inspector.get_table_names() if t.startswith(tabletype)]
 
 
-def has_column(columns: List, searchname: str) -> bool:
+def has_column(columns: list, searchname: str) -> bool:
     return len(list(filter(lambda x: x["name"] == searchname, columns))) == 1
 
 
-def get_column_def(columns: List, column: str, default: str) -> str:
+def get_column_def(columns: list, column: str, default: str) -> str:
     return default if not has_column(columns, column) else column
 
 
-def get_backup_name(tabs: List[str], backup_prefix: str):
+def get_backup_name(tabs: list[str], backup_prefix: str):
     table_back_name = backup_prefix
     for i, table_back_name in enumerate(tabs):
         table_back_name = f"{backup_prefix}{i}"
@@ -32,8 +31,8 @@ def get_backup_name(tabs: List[str], backup_prefix: str):
 
 
 def get_last_sequence_ids(engine, trade_back_name: str, order_back_name: str):
-    order_id: Optional[int] = None
-    trade_id: Optional[int] = None
+    order_id: int | None = None
+    trade_id: int | None = None
 
     if engine.name == "postgresql":
         with engine.begin() as connection:
@@ -77,9 +76,9 @@ def migrate_trades_and_orders_table(
     inspector,
     engine,
     trade_back_name: str,
-    cols: List,
+    cols: list,
     order_back_name: str,
-    cols_order: List,
+    cols_order: list,
 ):
     base_currency = get_column_def(cols, "base_currency", "null")
     stake_currency = get_column_def(cols, "stake_currency", "null")
@@ -147,6 +146,9 @@ def migrate_trades_and_orders_table(
     price_precision = get_column_def(cols, "price_precision", "null")
     precision_mode = get_column_def(cols, "precision_mode", "null")
     contract_size = get_column_def(cols, "contract_size", "null")
+    precision_mode_price = get_column_def(
+        cols, "precision_mode_price", get_column_def(cols, "precision_mode", "null")
+    )
 
     # Schema migration necessary
     with engine.begin() as connection:
@@ -177,7 +179,7 @@ def migrate_trades_and_orders_table(
             timeframe, open_trade_value, close_profit_abs,
             trading_mode, leverage, liquidation_price, is_short,
             interest_rate, funding_fees, funding_fee_running, realized_profit,
-            amount_precision, price_precision, precision_mode, contract_size,
+            amount_precision, price_precision, precision_mode, precision_mode_price, contract_size,
             max_stake_amount
             )
         select id, lower(exchange), pair, {base_currency} base_currency,
@@ -207,8 +209,8 @@ def migrate_trades_and_orders_table(
             {funding_fees} funding_fees, {funding_fee_running} funding_fee_running,
             {realized_profit} realized_profit,
             {amount_precision} amount_precision, {price_precision} price_precision,
-            {precision_mode} precision_mode, {contract_size} contract_size,
-            {max_stake_amount} max_stake_amount
+            {precision_mode} precision_mode, {precision_mode_price} precision_mode_price,
+            {contract_size} contract_size, {max_stake_amount} max_stake_amount
             from {trade_back_name}
             """
             )
@@ -227,7 +229,7 @@ def drop_orders_table(engine, table_back_name: str):
         connection.execute(text("drop table orders"))
 
 
-def migrate_orders_table(engine, table_back_name: str, cols_order: List):
+def migrate_orders_table(engine, table_back_name: str, cols_order: list):
     ft_fee_base = get_column_def(cols_order, "ft_fee_base", "null")
     average = get_column_def(cols_order, "average", "null")
     stop_price = get_column_def(cols_order, "stop_price", "null")
@@ -259,7 +261,7 @@ def migrate_orders_table(engine, table_back_name: str, cols_order: List):
         )
 
 
-def migrate_pairlocks_table(decl_base, inspector, engine, pairlock_back_name: str, cols: List):
+def migrate_pairlocks_table(decl_base, inspector, engine, pairlock_back_name: str, cols: list):
     # Schema migration necessary
     with engine.begin() as connection:
         connection.execute(text(f"alter table pairlocks rename to {pairlock_back_name}"))
@@ -348,8 +350,8 @@ def check_migrate(engine, decl_base, previous_tables) -> None:
     # if ('orders' not in previous_tables
     # or not has_column(cols_orders, 'funding_fee')):
     migrating = False
-    # if not has_column(cols_trades, 'funding_fee_running'):
-    if not has_column(cols_orders, "ft_order_tag"):
+    if not has_column(cols_trades, "precision_mode_price"):
+        # if not has_column(cols_orders, "ft_order_tag"):
         migrating = True
         logger.info(
             f"Running database migration for trades - "

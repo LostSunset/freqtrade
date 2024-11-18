@@ -1121,6 +1121,70 @@ tc53 = BTContainer(
     trades=[BTrade(exit_reason=ExitType.STOP_LOSS, open_tick=1, close_tick=2, is_short=True)],
 )
 
+# Test 54: Switch position from long to short
+tc54 = BTContainer(
+    data=[
+        # D   O     H     L     C    V    EL XL ES Xs  BT
+        [0, 5000, 5050, 4950, 5000, 6172, 1, 0, 0, 0],
+        [1, 5000, 5000, 4951, 5000, 6172, 0, 0, 0, 0],
+        [2, 4910, 5150, 4910, 5100, 6172, 0, 0, 1, 0],  # Enter short signal being ignored
+        [3, 5100, 5100, 4950, 4950, 6172, 0, 1, 1, 0],  # exit - re-enter short
+        [4, 5000, 5100, 4950, 4950, 6172, 0, 0, 0, 1],
+        [5, 5000, 5100, 4950, 4950, 6172, 0, 0, 0, 0],
+    ],
+    stop_loss=-0.10,
+    roi={"0": 0.10},
+    profit_perc=0.00,
+    use_exit_signal=True,
+    trades=[
+        BTrade(exit_reason=ExitType.EXIT_SIGNAL, open_tick=1, close_tick=4, is_short=False),
+        BTrade(exit_reason=ExitType.EXIT_SIGNAL, open_tick=4, close_tick=5, is_short=True),
+    ],
+)
+
+# Test 55: Switch position from short to long
+tc55 = BTContainer(
+    data=[
+        # D   O     H     L     C    V    EL XL ES Xs  BT
+        [0, 5000, 5050, 4950, 5000, 6172, 0, 0, 1, 0],
+        [1, 5000, 5000, 4951, 5000, 6172, 1, 0, 0, 0],  # Enter long signal being ignored
+        [2, 4910, 5150, 4910, 5100, 6172, 1, 0, 0, 1],  # Exit - reenter long
+        [3, 5100, 5100, 4950, 4950, 6172, 0, 0, 0, 0],
+        [4, 5000, 5100, 4950, 4950, 6172, 0, 1, 0, 0],
+        [5, 5000, 5100, 4950, 4950, 6172, 0, 0, 0, 0],
+    ],
+    stop_loss=-0.10,
+    roi={"0": 0.10},
+    profit_perc=-0.04,
+    use_exit_signal=True,
+    trades=[
+        BTrade(exit_reason=ExitType.EXIT_SIGNAL, open_tick=1, close_tick=3, is_short=True),
+        BTrade(exit_reason=ExitType.EXIT_SIGNAL, open_tick=3, close_tick=5, is_short=False),
+    ],
+)
+
+# Test 56: Switch position from long to short
+tc56 = BTContainer(
+    data=[
+        # D   O     H     L     C    V    EL XL ES Xs  BT
+        [0, 5000, 5050, 4950, 5000, 6172, 1, 0, 0, 0],
+        [1, 5000, 5000, 4951, 5000, 6172, 0, 0, 0, 0],
+        [2, 4910, 5150, 4910, 5100, 6172, 0, 0, 1, 0],  # exit on stoploss - re-enter short
+        [3, 5100, 5100, 4888, 4950, 6172, 0, 0, 0, 0],
+        [4, 5000, 5100, 4950, 4950, 6172, 0, 0, 0, 1],
+        [5, 5000, 5100, 4950, 4950, 6172, 0, 0, 0, 0],
+    ],
+    stop_loss=-0.02,
+    roi={"0": 0.10},
+    profit_perc=-0.0,
+    use_exit_signal=True,
+    trades=[
+        BTrade(exit_reason=ExitType.STOP_LOSS, open_tick=1, close_tick=3, is_short=False),
+        BTrade(exit_reason=ExitType.EXIT_SIGNAL, open_tick=3, close_tick=5, is_short=True),
+    ],
+)
+
+
 TESTS = [
     tc0,
     tc1,
@@ -1176,6 +1240,9 @@ TESTS = [
     tc51,
     tc52,
     tc53,
+    tc54,
+    tc55,
+    tc56,
 ]
 
 
@@ -1249,7 +1316,7 @@ def test_backtest_results(default_conf, mocker, caplog, data: BTContainer) -> No
         assert res.open_date == _get_frame_time_from_offset(trade.open_tick)
         assert res.close_date == _get_frame_time_from_offset(trade.close_tick)
         assert res.is_short == trade.is_short
-    assert len(LocalTrade.trades) == len(data.trades)
-    assert len(LocalTrade.trades_open) == 0
+    assert len(LocalTrade.bt_trades) == len(data.trades)
+    assert len(LocalTrade.bt_trades_open) == 0
     backtesting.cleanup()
     del backtesting

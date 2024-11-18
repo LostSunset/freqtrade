@@ -96,6 +96,7 @@ def test_rpc_trade_status(default_conf, ticker, fee, mocker) -> None:
         "amount_precision": 8.0,
         "price_precision": 8.0,
         "precision_mode": 2,
+        "precision_mode_price": 2,
         "contract_size": 1,
         "has_open_orders": False,
         "orders": [
@@ -148,7 +149,10 @@ def test_rpc_trade_status(default_conf, ticker, fee, mocker) -> None:
     # Different from "filled" response:
     response_unfilled.update(
         {
-            "amount": 91.07468124,
+            "amount": 0.0,
+            "open_trade_value": 0.0,
+            "stoploss_entry_dist": 0.0,
+            "stoploss_entry_dist_ratio": 0.0,
             "profit_ratio": 0.0,
             "profit_pct": 0.0,
             "profit_abs": 0.0,
@@ -600,7 +604,6 @@ def test_rpc_balance_handle(default_conf_usdt, mocker, tickers):
             "est_stake_bot": 0,
             "stake": "USDT",
             "side": "long",
-            "leverage": 1,
             "position": 0,
             "is_bot_managed": False,
             "is_position": False,
@@ -615,7 +618,6 @@ def test_rpc_balance_handle(default_conf_usdt, mocker, tickers):
             "est_stake_bot": 0,
             "stake": "USDT",
             "side": "long",
-            "leverage": 1,
             "position": 0,
             "is_bot_managed": False,
             "is_position": False,
@@ -630,7 +632,6 @@ def test_rpc_balance_handle(default_conf_usdt, mocker, tickers):
             "est_stake_bot": 49.5,
             "stake": "USDT",
             "side": "long",
-            "leverage": 1,
             "position": 0,
             "is_bot_managed": True,
             "is_position": False,
@@ -644,7 +645,6 @@ def test_rpc_balance_handle(default_conf_usdt, mocker, tickers):
             "est_stake": 20,
             "est_stake_bot": 20,
             "stake": "USDT",
-            "leverage": 5.0,
             "side": "short",
             "is_bot_managed": True,
             "is_position": True,
@@ -765,7 +765,7 @@ def test_rpc_force_exit(default_conf, ticker, fee, mocker) -> None:
     freqtradebot.enter_positions()
     # make an limit-buy open trade
     trade = Trade.session.scalars(select(Trade).filter(Trade.id == "3")).first()
-    filled_amount = trade.amount / 2
+    filled_amount = trade.amount_requested / 2
     # Fetch order - it's open first, and closed after cancel_order is called.
     mocker.patch(
         f"{EXMS}.fetch_order",
@@ -802,7 +802,7 @@ def test_rpc_force_exit(default_conf, ticker, fee, mocker) -> None:
 
     cancel_order_mock.reset_mock()
     trade = Trade.session.scalars(select(Trade).filter(Trade.id == "3")).first()
-    amount = trade.amount
+    amount = trade.amount_requested
     # make an limit-sell open order trade
     mocker.patch(
         f"{EXMS}.fetch_order",
@@ -835,7 +835,7 @@ def test_rpc_force_exit(default_conf, ticker, fee, mocker) -> None:
     assert cancel_order_mock.call_count == 0
 
     trade = Trade.session.scalars(select(Trade).filter(Trade.id == "4")).first()
-    amount = trade.amount
+    amount = trade.amount_requested
     # make an limit-buy open trade, if there is no 'filled', don't sell it
     mocker.patch(
         f"{EXMS}.fetch_order",

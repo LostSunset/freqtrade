@@ -4,9 +4,10 @@ Various tool function for Freqtrade and scripts
 
 import gzip
 import logging
+from collections.abc import Iterator, Mapping
 from io import StringIO
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Mapping, Optional, TextIO, Union
+from typing import Any, TextIO
 from urllib.parse import urlparse
 
 import pandas as pd
@@ -128,7 +129,10 @@ def round_dict(d, n):
     return {k: (round(v, n) if isinstance(v, float) else v) for k, v in d.items()}
 
 
-def safe_value_fallback(obj: dict, key1: str, key2: Optional[str] = None, default_value=None):
+DictMap = dict[str, Any] | Mapping[str, Any]
+
+
+def safe_value_fallback(obj: DictMap, key1: str, key2: str | None = None, default_value=None):
     """
     Search a value in obj, return this if it's not None.
     Then search key2 in obj - return that if it's not none - then use default_value.
@@ -142,10 +146,7 @@ def safe_value_fallback(obj: dict, key1: str, key2: Optional[str] = None, defaul
     return default_value
 
 
-dictMap = Union[Dict[str, Any], Mapping[str, Any]]
-
-
-def safe_value_fallback2(dict1: dictMap, dict2: dictMap, key1: str, key2: str, default_value=None):
+def safe_value_fallback2(dict1: DictMap, dict2: DictMap, key1: str, key2: str, default_value=None):
     """
     Search a value in dict1, return this if it's not None.
     Fall back to dict2 - return key2 from dict2 if it's not None.
@@ -160,11 +161,11 @@ def safe_value_fallback2(dict1: dictMap, dict2: dictMap, key1: str, key2: str, d
     return default_value
 
 
-def plural(num: float, singular: str, plural: Optional[str] = None) -> str:
+def plural(num: float, singular: str, plural: str | None = None) -> str:
     return singular if (num == 1 or num == -1) else plural or singular + "s"
 
 
-def chunks(lst: List[Any], n: int) -> Iterator[List[Any]]:
+def chunks(lst: list[Any], n: int) -> Iterator[list[Any]]:
     """
     Split lst into chunks of the size n.
     :param lst: list to split into chunks
