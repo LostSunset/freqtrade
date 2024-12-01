@@ -199,8 +199,8 @@ class Exchange:
         # Timestamp of last markets refresh
         self._last_markets_refresh: int = 0
 
-        # Cache for 10 minutes ...
         self._cache_lock = Lock()
+        # Cache for 10 minutes ...
         self._fetch_tickers_cache: TTLCache = TTLCache(maxsize=2, ttl=60 * 10)
         # Cache values for 300 to avoid frequent polling of the exchange for prices
         # Caching only applies to RPC methods, so prices for open trades are still
@@ -526,6 +526,7 @@ class Exchange:
     def market_is_future(self, market: dict[str, Any]) -> bool:
         return (
             market.get(self._ft_has["ccxt_futures_name"], False) is True
+            and market.get("type", False) == "swap"
             and market.get("linear", False) is True
         )
 
@@ -1656,6 +1657,7 @@ class Exchange:
             balances.pop("total", None)
             balances.pop("used", None)
 
+            self._log_exchange_response("fetch_balances", balances)
             return balances
         except ccxt.DDoSProtection as e:
             raise DDosProtection(e) from e
@@ -1766,7 +1768,7 @@ class Exchange:
             raise OperationalException(e) from e
 
     @retrier
-    def fetch_bids_asks(self, symbols: list[str] | None = None, cached: bool = False) -> dict:
+    def fetch_bids_asks(self, symbols: list[str] | None = None, *, cached: bool = False) -> dict:
         """
         :param symbols: List of symbols to fetch
         :param cached: Allow cached result
@@ -1799,8 +1801,9 @@ class Exchange:
             raise OperationalException(e) from e
 
     @retrier
-    def get_tickers(self, symbols: list[str] | None = None, cached: bool = False) -> Tickers:
+    def get_tickers(self, symbols: list[str] | None = None, *, cached: bool = False) -> Tickers:
         """
+        :param symbols: List of symbols to fetch
         :param cached: Allow cached result
         :return: fetch_tickers result
         """

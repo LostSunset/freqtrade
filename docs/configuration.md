@@ -146,10 +146,10 @@ Freqtrade can also load many options via command line (CLI) arguments (check out
 
 The prevalence for all Options is as follows:
 
-- CLI arguments override any other option
-- [Environment Variables](#environment-variables)
-- Configuration files are used in sequence (the last file wins) and override Strategy configurations.
-- Strategy configurations are only used if they are not set via configuration or command-line arguments. These options are marked with [Strategy Override](#parameters-in-the-strategy) in the below table.
+* CLI arguments override any other option
+* [Environment Variables](#environment-variables)
+* Configuration files are used in sequence (the last file wins) and override Strategy configurations.
+* Strategy configurations are only used if they are not set via configuration or command-line arguments. These options are marked with [Strategy Override](#parameters-in-the-strategy) in the below table.
 
 ### Parameters table
 
@@ -295,10 +295,10 @@ Values set in the configuration file always overwrite values set in the strategy
 * `order_time_in_force`
 * `unfilledtimeout`
 * `disable_dataframe_checks`
-- `use_exit_signal`
+* `use_exit_signal`
 * `exit_profit_only`
-- `exit_profit_offset`
-- `ignore_roi_if_entry_signal`
+* `exit_profit_offset`
+* `ignore_roi_if_entry_signal`
 * `ignore_buying_expired_candle_after`
 * `position_adjustment_enable`
 * `max_entry_position_adjustment`
@@ -311,12 +311,12 @@ There are several methods to configure how much of the stake currency the bot wi
 
 The minimum stake amount will depend on exchange and pair and is usually listed in the exchange support pages.
 
-Assuming the minimum tradable amount for XRP/USD is 20 XRP (given by the exchange), and the price is 0.6$, the minimum stake amount to buy this pair is `20 * 0.6 ~= 12`.
-This exchange has also a limit on USD - where all orders must be > 10$ - which however does not apply in this case.
+Assuming the minimum tradable amount for XRP/USD is 20 XRP (given by the exchange), and the price is 0.6\$, the minimum stake amount to buy this pair is `20 * 0.6 ~= 12`.
+This exchange has also a limit on USD - where all orders must be > 10\$ - which however does not apply in this case.
 
-To guarantee safe execution, freqtrade will not allow buying with a stake-amount of 10.1$, instead, it'll make sure that there's enough space to place a stoploss below the pair (+ an offset, defined by `amount_reserve_percent`, which defaults to 5%).
+To guarantee safe execution, freqtrade will not allow buying with a stake-amount of 10.1\$, instead, it'll make sure that there's enough space to place a stoploss below the pair (+ an offset, defined by `amount_reserve_percent`, which defaults to 5%).
 
-With a reserve of 5%, the minimum stake amount would be ~12.6$ (`12 * (1 + 0.05)`). If we take into account a stoploss of 10% on top of that - we'd end up with a value of ~14$ (`12.6 / (1 - 0.1)`).
+With a reserve of 5%, the minimum stake amount would be ~12.6\$ (`12 * (1 + 0.05)`). If we take into account a stoploss of 10% on top of that - we'd end up with a value of ~14\$ (`12.6 / (1 - 0.1)`).
 
 To limit this calculation in case of large stoploss values, the calculated minimum stake-limit will never be more than 50% above the real limit.
 
@@ -362,9 +362,9 @@ To overcome this, the option `amend_last_stake_amount` can be set to `True`, whi
 
 In the example above this would mean:
 
-- Trade1: 400 USDT
-- Trade2: 400 USDT
-- Trade3: 200 USDT
+* Trade1: 400 USDT
+* Trade2: 400 USDT
+* Trade3: 200 USDT
 
 !!! Note
     This option only applies with [Static stake amount](#static-stake-amount) - since [Dynamic stake amount](#dynamic-stake-amount) divides the balances evenly.
