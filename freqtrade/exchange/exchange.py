@@ -201,7 +201,7 @@ class Exchange:
 
         self._cache_lock = Lock()
         # Cache for 10 minutes ...
-        self._fetch_tickers_cache: TTLCache = TTLCache(maxsize=2, ttl=60 * 10)
+        self._fetch_tickers_cache: TTLCache = TTLCache(maxsize=4, ttl=60 * 10)
         # Cache values for 300 to avoid frequent polling of the exchange for prices
         # Caching only applies to RPC methods, so prices for open trades are still
         # refreshed once every iteration.
@@ -1801,24 +1801,37 @@ class Exchange:
             raise OperationalException(e) from e
 
     @retrier
-    def get_tickers(self, symbols: list[str] | None = None, *, cached: bool = False) -> Tickers:
+    def get_tickers(
+        self,
+        symbols: list[str] | None = None,
+        *,
+        cached: bool = False,
+        market_type: TradingMode | None = None,
+    ) -> Tickers:
         """
         :param symbols: List of symbols to fetch
         :param cached: Allow cached result
+        :param market_type: Market type to fetch - either spot or futures.
         :return: fetch_tickers result
         """
         tickers: Tickers
         if not self.exchange_has("fetchTickers"):
             return {}
+        cache_key = f"fetch_tickers_{market_type}" if market_type else "fetch_tickers"
         if cached:
             with self._cache_lock:
-                tickers = self._fetch_tickers_cache.get("fetch_tickers")  # type: ignore
+                tickers = self._fetch_tickers_cache.get(cache_key)  # type: ignore
             if tickers:
                 return tickers
         try:
-            tickers = self._api.fetch_tickers(symbols)
+            # Re-map futures to swap
+            market_types = {
+                TradingMode.FUTURES: "swap",
+            }
+            params = {"type": market_types.get(market_type, market_type)} if market_type else {}
+            tickers = self._api.fetch_tickers(symbols, params)
             with self._cache_lock:
-                self._fetch_tickers_cache["fetch_tickers"] = tickers
+                self._fetch_tickers_cache[cache_key] = tickers
             return tickers
         except ccxt.NotSupported as e:
             raise OperationalException(
@@ -2244,8 +2257,9 @@ class Exchange:
         :param pair: Pair to download
         :param timeframe: Timeframe to get data for
         :param since_ms: Timestamp in milliseconds to get history from
-        :param until_ms: Timestamp in milliseconds to get history up to
         :param candle_type: '', mark, index, premiumIndex, or funding_rate
+        :param is_new_pair: used by binance subclass to allow "fast" new pair downloading
+        :param until_ms: Timestamp in milliseconds to get history up to
         :return: Dataframe with candle (OHLCV) data
         """
         pair, _, _, data, _ = self.loop.run_until_complete(
@@ -2254,11 +2268,10 @@ class Exchange:
                 timeframe=timeframe,
                 since_ms=since_ms,
                 until_ms=until_ms,
-                is_new_pair=is_new_pair,
                 candle_type=candle_type,
             )
         )
-        logger.info(f"Downloaded data for {pair} with length {len(data)}.")
+        logger.debug(f"Downloaded data for {pair} from ccxt with length {len(data)}.")
         return ohlcv_to_dataframe(data, timeframe, pair, fill_missing=False, drop_incomplete=True)
 
     async def _async_get_historic_ohlcv(
@@ -2267,13 +2280,11 @@ class Exchange:
         timeframe: str,
         since_ms: int,
         candle_type: CandleType,
-        is_new_pair: bool = False,
         raise_: bool = False,
         until_ms: int | None = None,
     ) -> OHLCVResponse:
         """
         Download historic ohlcv
-        :param is_new_pair: used by binance subclass to allow "fast" new pair downloading
         :param candle_type: Any of the enum CandleType (must match trading mode!)
         """
 
