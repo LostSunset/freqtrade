@@ -73,6 +73,18 @@ class Wallets:
         else:
             return 0
 
+    def get_collateral(self) -> float:
+        """
+        Get total collateral for liquidation price calculation.
+        """
+        if self._config.get("margin_mode") == "cross":
+            # free includes all balances and, combined with position collateral,
+            # is used as "wallet balance".
+            return self.get_free(self._stake_currency) + sum(
+                pos.collateral for pos in self._positions.values()
+            )
+        return self.get_total(self._stake_currency)
+
     def get_owned(self, pair: str, base_currency: str) -> float:
         """
         Get currently owned value.
@@ -124,42 +136,41 @@ class Wallets:
                     pending,
                     trade.amount + curr_wallet_bal,
                 )
-
-            current_stake = (
-                self._start_cap.get(self._stake_currency, 0) + tot_profit - tot_in_trades
-            )
-            total_stake = current_stake + used_stake
         else:
-            tot_in_trades = 0
             for position in open_trades:
-                # size = self._exchange._contracts_to_amount(position.pair, position['contracts'])
-                size = position.amount
-                collateral = position.stake_amount
-                leverage = position.leverage
-                tot_in_trades += collateral
                 _positions[position.pair] = PositionWallet(
                     position.pair,
-                    position=size,
-                    leverage=leverage,
-                    collateral=collateral,
+                    position=position.amount,
+                    leverage=position.leverage,
+                    collateral=position.stake_amount,
                     side=position.trade_direction,
                 )
-            current_stake = (
-                self._start_cap.get(self._stake_currency, 0) + tot_profit - tot_in_trades
-            )
 
             used_stake = tot_in_trades
-            total_stake = current_stake + tot_in_trades
+
+        cross_margin = 0.0
+        if self._config.get("margin_mode") == "cross":
+            # In cross-margin mode, the total balance is used as collateral.
+            # This is moved as "free" into the stake currency balance.
+            # strongly tied to the get_collateral() implementation.
+            for curr, bal in self._start_cap.items():
+                if curr == self._stake_currency:
+                    continue
+                rate = self._exchange.get_conversion_rate(curr, self._stake_currency)
+                if rate:
+                    cross_margin += bal * rate
+
+        current_stake = self._start_cap.get(self._stake_currency, 0) + tot_profit - tot_in_trades
+        total_stake = current_stake + used_stake
 
         _wallets[self._stake_currency] = Wallet(
             currency=self._stake_currency,
-            free=current_stake,
+            free=current_stake + cross_margin,
             used=used_stake,
             total=total_stake,
         )
-        for currency in self._start_cap:
+        for currency, bal in self._start_cap.items():
             if currency not in _wallets:
-                bal = self._start_cap[currency]
                 _wallets[currency] = Wallet(currency, bal, 0, bal)
 
         self._wallets = _wallets
@@ -339,7 +350,7 @@ class Wallets:
                 f"lower than stake amount ({stake_amount} {self._config['stake_currency']})"
             )
 
-        return stake_amount
+        return max(stake_amount, 0)
 
     def get_trade_stake_amount(
         self, pair: str, max_open_trades: IntOrInf, edge=None, update: bool = True
