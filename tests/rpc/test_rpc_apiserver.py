@@ -35,6 +35,7 @@ from tests.conftest import (
     CURRENT_TEST_STRATEGY,
     EXMS,
     create_mock_trades,
+    create_mock_trades_usdt,
     get_mock_coro,
     get_patched_freqtradebot,
     log_has,
@@ -284,7 +285,7 @@ def test_api_token_login(botclient):
     rc = client.get(
         f"{BASE_URI}/count",
         headers={
-            "Authorization": f'Bearer {rc.json()["access_token"]}',
+            "Authorization": f"Bearer {rc.json()['access_token']}",
             "Origin": "http://example.com",
         },
     )
@@ -299,7 +300,7 @@ def test_api_token_refresh(botclient):
         f"{BASE_URI}/token/refresh",
         data=None,
         headers={
-            "Authorization": f'Bearer {rc.json()["refresh_token"]}',
+            "Authorization": f"Bearer {rc.json()['refresh_token']}",
             "Origin": "http://example.com",
         },
     )
@@ -1156,59 +1157,35 @@ def test_api_performance(botclient, fee):
     ftbot, client = botclient
     patch_get_signal(ftbot)
 
-    trade = Trade(
-        pair="LTC/ETH",
-        amount=1,
-        exchange="binance",
-        stake_amount=1,
-        open_rate=0.245441,
-        is_open=False,
-        fee_close=fee.return_value,
-        fee_open=fee.return_value,
-        close_rate=0.265441,
-        leverage=1.0,
-    )
-    trade.close_profit = trade.calc_profit_ratio(trade.close_rate)
-    trade.close_profit_abs = trade.calc_profit(trade.close_rate)
-    Trade.session.add(trade)
-
-    trade = Trade(
-        pair="XRP/ETH",
-        amount=5,
-        stake_amount=1,
-        exchange="binance",
-        open_rate=0.412,
-        is_open=False,
-        fee_close=fee.return_value,
-        fee_open=fee.return_value,
-        close_rate=0.391,
-        leverage=1.0,
-    )
-    trade.close_profit = trade.calc_profit_ratio(trade.close_rate)
-    trade.close_profit_abs = trade.calc_profit(trade.close_rate)
-
-    Trade.session.add(trade)
-    Trade.commit()
+    create_mock_trades_usdt(fee)
 
     rc = client_get(client, f"{BASE_URI}/performance")
     assert_response(rc)
-    assert len(rc.json()) == 2
+    assert len(rc.json()) == 3
     assert rc.json() == [
         {
             "count": 1,
-            "pair": "LTC/ETH",
-            "profit": 7.61,
-            "profit_pct": 7.61,
-            "profit_ratio": 0.07609203,
-            "profit_abs": 0.0187228,
+            "pair": "NEO/USDT",
+            "profit": 5.0,
+            "profit_pct": 5,
+            "profit_ratio": 0.05,
+            "profit_abs": 3.9875,
         },
         {
             "count": 1,
-            "pair": "XRP/ETH",
-            "profit": -5.57,
-            "profit_pct": -5.57,
-            "profit_ratio": -0.05570419,
-            "profit_abs": -0.1150375,
+            "pair": "XRP/USDT",
+            "profit": 10.0,
+            "profit_abs": 2.8425,
+            "profit_pct": 10.0,
+            "profit_ratio": 0.1,
+        },
+        {
+            "count": 1,
+            "pair": "LTC/USDT",
+            "profit": -20.0,
+            "profit_abs": -4.09,
+            "profit_pct": -20.0,
+            "profit_ratio": -0.2,
         },
     ]
 
