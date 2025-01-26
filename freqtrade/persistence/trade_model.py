@@ -19,6 +19,7 @@ from sqlalchemy import (
     Select,
     String,
     UniqueConstraint,
+    case,
     desc,
     func,
     select,
@@ -269,6 +270,7 @@ class Order(ModelBase):
             "order_filled_timestamp": dt_ts_none(self.order_filled_utc),
             "ft_is_entry": self.ft_order_side == entry_side,
             "ft_order_tag": self.ft_order_tag,
+            "cost": self.cost if self.cost else 0,
         }
         if not minified:
             resp.update(
@@ -277,7 +279,6 @@ class Order(ModelBase):
                     "order_id": self.order_id,
                     "status": self.status,
                     "average": round(self.average, 8) if self.average else 0,
-                    "cost": self.cost if self.cost else 0,
                     "filled": self.filled,
                     "is_open": self.ft_is_open,
                     "order_date": (
@@ -392,7 +393,6 @@ class LocalTrade:
     # Copy of trades_open - but indexed by pair
     bt_trades_open_pp: dict[str, list["LocalTrade"]] = defaultdict(list)
     bt_open_open_trade_count: int = 0
-    bt_open_open_trade_count_candle: int = 0
     bt_total_profit: float = 0
     realized_profit: float = 0
 
@@ -768,7 +768,6 @@ class LocalTrade:
         LocalTrade.bt_trades_open = []
         LocalTrade.bt_trades_open_pp = defaultdict(list)
         LocalTrade.bt_open_open_trade_count = 0
-        LocalTrade.bt_open_open_trade_count_candle = 0
         LocalTrade.bt_total_profit = 0
 
     def adjust_min_max_rates(self, current_price: float, current_price_low: float) -> None:
@@ -1470,11 +1469,6 @@ class LocalTrade:
         LocalTrade.bt_trades_open.remove(trade)
         LocalTrade.bt_trades_open_pp[trade.pair].remove(trade)
         LocalTrade.bt_open_open_trade_count -= 1
-        if (trade.close_date_utc - trade.open_date_utc) > timedelta(minutes=trade.timeframe):
-            # Only subtract trades that are open for more than 1 candle
-            # To avoid exceeding max_open_trades.
-            # Must be reset at the start of every candle during backesting.
-            LocalTrade.bt_open_open_trade_count_candle -= 1
         LocalTrade.bt_trades.append(trade)
         LocalTrade.bt_total_profit += trade.close_profit_abs
 
@@ -1484,7 +1478,6 @@ class LocalTrade:
             LocalTrade.bt_trades_open.append(trade)
             LocalTrade.bt_trades_open_pp[trade.pair].append(trade)
             LocalTrade.bt_open_open_trade_count += 1
-            LocalTrade.bt_open_open_trade_count_candle += 1
         else:
             LocalTrade.bt_trades.append(trade)
 
@@ -1493,9 +1486,6 @@ class LocalTrade:
         LocalTrade.bt_trades_open.remove(trade)
         LocalTrade.bt_trades_open_pp[trade.pair].remove(trade)
         LocalTrade.bt_open_open_trade_count -= 1
-        # TODO: The below may have odd behavior in case of canceled entries
-        # It might need to be removed so the trade "counts" as open for this candle.
-        LocalTrade.bt_open_open_trade_count_candle -= 1
 
     @staticmethod
     def get_open_trades() -> list[Any]:
@@ -1934,17 +1924,49 @@ class Trade(ModelBase, LocalTrade):
             start_date = datetime.now(timezone.utc) - timedelta(minutes=minutes)
             filters.append(Trade.close_date >= start_date)
 
-        pair_rates = Trade.session.execute(
+        pair_costs = (
             select(
                 Trade.pair,
-                func.sum(Trade.close_profit).label("profit_sum"),
+                func.sum(
+                    (
+                        func.coalesce(Order.filled, Order.amount)
+                        * func.coalesce(Order.average, Order.price, Order.ft_price)
+                    )
+                    / func.coalesce(Trade.leverage, 1)
+                ).label("cost_per_pair"),
+            )
+            .join(Order, Trade.id == Order.ft_trade_id)
+            .filter(
+                *filters,
+                Order.ft_order_side == case((Trade.is_short.is_(True), "sell"), else_="buy"),
+            )
+            # Order.filled.gt > 0
+            .group_by(Trade.pair)
+            .cte("pair_costs")
+        )
+        trades_grouped = (
+            select(
+                Trade.pair,
                 func.sum(Trade.close_profit_abs).label("profit_sum_abs"),
                 func.count(Trade.pair).label("count"),
             )
             .filter(*filters)
             .group_by(Trade.pair)
+            .cte("trades_grouped")
+        )
+        q = (
+            select(
+                trades_grouped.c.pair,
+                (trades_grouped.c.profit_sum_abs / pair_costs.c.cost_per_pair).label(
+                    "profit_ratio"
+                ),
+                trades_grouped.c.profit_sum_abs,
+                trades_grouped.c.count,
+            )
+            .join(pair_costs, trades_grouped.c.pair == pair_costs.c.pair)
             .order_by(desc("profit_sum_abs"))
-        ).all()
+        )
+        pair_rates = Trade.session.execute(q).all()
 
         return [
             {
