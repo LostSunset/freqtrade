@@ -1366,8 +1366,8 @@ class Exchange:
             ordertype = available_order_Types[user_order_type]
         else:
             # Otherwise pick only one available
-            ordertype = list(available_order_Types.values())[0]
-            user_order_type = list(available_order_Types.keys())[0]
+            ordertype = next(iter(available_order_Types.values()))
+            user_order_type = next(iter(available_order_Types.keys()))
         return ordertype, user_order_type
 
     def _get_stop_limit_rate(self, stop_price: float, order_types: dict, side: str) -> float:
@@ -2798,7 +2798,7 @@ class Exchange:
         pair, timeframe, candle_type = pairwt
         since_ms = None
         new_ticks: list = []
-        all_stored_ticks_df = DataFrame(columns=DEFAULT_TRADES_COLUMNS + ["date"])
+        all_stored_ticks_df = DataFrame(columns=[*DEFAULT_TRADES_COLUMNS, "date"])
         first_candle_ms = self.needed_candle_for_trades_ms(timeframe, candle_type)
         # refresh, if
         # a. not in _trades
@@ -2843,7 +2843,7 @@ class Exchange:
                         else:
                             # Skip cache, it's too old
                             all_stored_ticks_df = DataFrame(
-                                columns=DEFAULT_TRADES_COLUMNS + ["date"]
+                                columns=[*DEFAULT_TRADES_COLUMNS, "date"]
                             )
 
                 # from_id overrules with exchange set to id paginate
