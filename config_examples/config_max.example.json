@@ -19,12 +19,37 @@
         "pair_whitelist": [
             "BTC/TWD",
             "ETH/TWD",
-            "USDT/TWD",
             "SOL/TWD",
+            "XRP/TWD",
+            "DOGE/TWD",
+            "ADA/TWD",
+            "AVAX/TWD",
+            "DOT/TWD",
+            "LINK/TWD",
+            "SHIB/TWD",
+            "ARB/TWD",
+            "BNB/TWD",
+            "LTC/TWD",
+            "TRX/TWD",
+            "USDT/TWD",
+            "USDC/TWD",
             "BTC/USDT",
-            "ETH/USDT"
+            "ETH/USDT",
+            "SOL/USDT",
+            "XRP/USDT",
+            "DOGE/USDT",
+            "ADA/USDT",
+            "AVAX/USDT",
+            "ARB/USDT",
+            "LINK/USDT",
+            "SHIB/USDT",
+            "BNB/USDT",
+            "ETH/BTC"
         ],
-        "pair_blacklist": []
+        "pair_blacklist": [
+            "MAX/TWD",
+            "MAX/USDT"
+        ]
     },
     "entry_pricing": {
         "price_side": "same",
