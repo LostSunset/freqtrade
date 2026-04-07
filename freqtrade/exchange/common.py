@@ -63,6 +63,7 @@ SUPPORTED_EXCHANGES = [
     "hyperliquid",
     "kraken",
     "krakenfutures",
+    "max",
     "okx",
     "myokx",
 ]
