@@ -11,6 +11,7 @@ from math import isinf, isnan
 from pandas import DataFrame
 from pydantic import ValidationError
 
+from freqtrade.configuration import TimeRange
 from freqtrade.constants import CUSTOM_TAG_MAX_LENGTH, Config, IntOrInf, ListPairsWithTimeframes
 from freqtrade.data.converter import populate_dataframe_with_trades
 from freqtrade.data.converter.converter import reduce_dataframe_footprint
@@ -40,7 +41,7 @@ from freqtrade.strategy.informative_decorator import (
 )
 from freqtrade.strategy.strategy_validation import StrategyResultValidator
 from freqtrade.strategy.strategy_wrapper import strategy_safe_wrapper
-from freqtrade.util import dt_now
+from freqtrade.util import dt_now, dt_ts
 from freqtrade.wallets import Wallets
 
 
@@ -151,7 +152,7 @@ class IStrategy(ABC, HyperStrategyMixin):
     def __init__(self, config: Config) -> None:
         self.config = config
         # Dict to determine if analysis is necessary
-        self._last_candle_seen_per_pair: dict[str, datetime] = {}
+        self.__last_candle_seen_per_pair: dict[str, datetime] = {}
         super().__init__(config)
 
         # Gather informative pairs from @informative-decorated methods.
@@ -221,7 +222,8 @@ class IStrategy(ABC, HyperStrategyMixin):
         """
         Clean up FreqAI and child threads
         """
-        self.freqai.shutdown()
+        if getattr(self, "freqai", None):
+            self.freqai.shutdown()
 
     @abstractmethod
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
@@ -366,7 +368,7 @@ class IStrategy(ABC, HyperStrategyMixin):
         Timing for this function is critical, so avoid doing heavy computations or
         network requests in this method.
 
-        For full documentation please go to https://www.freqtrade.io/en/latest/strategy-advanced/
+        For full documentation please go to https://www.freqtrade.io/en/stable/strategy-advanced/
 
         When not implemented by a strategy, returns True (always confirming).
 
@@ -402,7 +404,7 @@ class IStrategy(ABC, HyperStrategyMixin):
         Timing for this function is critical, so avoid doing heavy computations or
         network requests in this method.
 
-        For full documentation please go to https://www.freqtrade.io/en/latest/strategy-advanced/
+        For full documentation please go to https://www.freqtrade.io/en/stable/strategy-advanced/
 
         When not implemented by a strategy, returns True (always confirming).
 
@@ -452,7 +454,7 @@ class IStrategy(ABC, HyperStrategyMixin):
         e.g. returning -0.05 would create a stoploss 5% below current_rate.
         The custom stoploss can never be below self.stoploss, which serves as a hard maximum loss.
 
-        For full documentation please go to https://www.freqtrade.io/en/latest/strategy-advanced/
+        For full documentation please go to https://www.freqtrade.io/en/stable/strategy-advanced/
 
         When not implemented by a strategy, returns the initial stoploss value.
         Only called when use_custom_stoploss is set to True.
@@ -510,7 +512,7 @@ class IStrategy(ABC, HyperStrategyMixin):
         """
         Custom entry price logic, returning the new entry price.
 
-        For full documentation please go to https://www.freqtrade.io/en/latest/strategy-advanced/
+        For full documentation please go to https://www.freqtrade.io/en/stable/strategy-advanced/
 
         When not implemented by a strategy, returns None, orderbook is used to set entry price
 
@@ -538,7 +540,7 @@ class IStrategy(ABC, HyperStrategyMixin):
         """
         Custom exit price logic, returning the new exit price.
 
-        For full documentation please go to https://www.freqtrade.io/en/latest/strategy-advanced/
+        For full documentation please go to https://www.freqtrade.io/en/stable/strategy-advanced/
 
         When not implemented by a strategy, returns None, orderbook is used to set exit price
 
@@ -665,7 +667,7 @@ class IStrategy(ABC, HyperStrategyMixin):
         This means extra entry or exit orders with additional fees.
         Only called when `position_adjustment_enable` is set to True.
 
-        For full documentation please go to https://www.freqtrade.io/en/latest/strategy-advanced/
+        For full documentation please go to https://www.freqtrade.io/en/stable/strategy-advanced/
 
         When not implemented by a strategy, returns None
 
@@ -705,7 +707,7 @@ class IStrategy(ABC, HyperStrategyMixin):
         This only executes when a order was already placed, still open (unfilled fully or partially)
         and not timed out on subsequent candles after entry trigger.
 
-        For full documentation please go to https://www.freqtrade.io/en/latest/strategy-callbacks/
+        For full documentation please go to https://www.freqtrade.io/en/stable/strategy-callbacks/
 
         When not implemented by a strategy, returns current_order_rate as default.
         If current_order_rate is returned then the existing order is maintained.
@@ -742,7 +744,7 @@ class IStrategy(ABC, HyperStrategyMixin):
         This only executes when a order was already placed, still open (unfilled fully or partially)
         and not timed out on subsequent candles after entry trigger.
 
-        For full documentation please go to https://www.freqtrade.io/en/latest/strategy-callbacks/
+        For full documentation please go to https://www.freqtrade.io/en/stable/strategy-callbacks/
 
         When not implemented by a strategy, returns current_order_rate as default.
         If current_order_rate is returned then the existing order is maintained.
@@ -780,7 +782,7 @@ class IStrategy(ABC, HyperStrategyMixin):
         This only executes when a order was already placed, still open (unfilled fully or partially)
         and not timed out on subsequent candles after entry trigger.
 
-        For full documentation please go to https://www.freqtrade.io/en/latest/strategy-callbacks/
+        For full documentation please go to https://www.freqtrade.io/en/stable/strategy-callbacks/
 
         When not implemented by a strategy, returns current_order_rate as default.
         If current_order_rate is returned then the existing order is maintained.
@@ -924,9 +926,9 @@ class IStrategy(ABC, HyperStrategyMixin):
         More details on how these config defined parameters accelerate feature engineering
         in the documentation at:
 
-        https://www.freqtrade.io/en/latest/freqai-parameter-table/#feature-parameters
+        https://www.freqtrade.io/en/stable/freqai-parameter-table/#feature-parameters
 
-        https://www.freqtrade.io/en/latest/freqai-feature-engineering/#defining-the-features
+        https://www.freqtrade.io/en/stable/freqai-feature-engineering/#defining-the-features
 
         :param dataframe: strategy dataframe which will receive the features
         :param period: period of the indicator - usage example:
@@ -955,9 +957,9 @@ class IStrategy(ABC, HyperStrategyMixin):
         More details on how these config defined parameters accelerate feature engineering
         in the documentation at:
 
-        https://www.freqtrade.io/en/latest/freqai-parameter-table/#feature-parameters
+        https://www.freqtrade.io/en/stable/freqai-parameter-table/#feature-parameters
 
-        https://www.freqtrade.io/en/latest/freqai-feature-engineering/#defining-the-features
+        https://www.freqtrade.io/en/stable/freqai-feature-engineering/#defining-the-features
 
         :param dataframe: strategy dataframe which will receive the features
         :param metadata: metadata of current pair
@@ -984,7 +986,7 @@ class IStrategy(ABC, HyperStrategyMixin):
 
         More details about feature engineering available:
 
-        https://www.freqtrade.io/en/latest/freqai-feature-engineering
+        https://www.freqtrade.io/en/stable/freqai-feature-engineering
 
         :param dataframe: strategy dataframe which will receive the features
         :param metadata: metadata of current pair
@@ -1000,7 +1002,7 @@ class IStrategy(ABC, HyperStrategyMixin):
 
         More details about feature engineering available:
 
-        https://www.freqtrade.io/en/latest/freqai-feature-engineering
+        https://www.freqtrade.io/en/stable/freqai-feature-engineering
 
         :param dataframe: strategy dataframe which will receive the targets
         :param metadata: metadata of current pair
@@ -1208,14 +1210,14 @@ class IStrategy(ABC, HyperStrategyMixin):
         """
         pair = str(metadata.get("pair"))
 
-        new_candle = self._last_candle_seen_per_pair.get(pair, None) != dataframe.iloc[-1]["date"]
+        new_candle = self.__last_candle_seen_per_pair.get(pair, None) != dataframe.iloc[-1]["date"]
         # Test if seen this pair and last candle before.
         # always run if process_only_new_candles is set to false
         if not self.process_only_new_candles or new_candle:
             # Defs that only make change on new candle data.
             dataframe = self.analyze_ticker(dataframe, metadata)
 
-            self._last_candle_seen_per_pair[pair] = dataframe.iloc[-1]["date"]
+            self.__last_candle_seen_per_pair[pair] = dataframe.iloc[-1]["date"]
 
             candle_type = self.config.get("candle_type_def", CandleType.SPOT)
             self.dp._set_cached_df(pair, self.timeframe, dataframe, candle_type=candle_type)
@@ -1328,13 +1330,13 @@ class IStrategy(ABC, HyperStrategyMixin):
             return False, False, None
 
         if is_short:
-            enter = latest.get(SignalType.ENTER_SHORT.value, 0) == 1
-            exit_ = latest.get(SignalType.EXIT_SHORT.value, 0) == 1
+            enter = latest.get(SignalType.ENTER_SHORT, 0) == 1
+            exit_ = latest.get(SignalType.EXIT_SHORT, 0) == 1
 
         else:
-            enter = latest.get(SignalType.ENTER_LONG.value, 0) == 1
-            exit_ = latest.get(SignalType.EXIT_LONG.value, 0) == 1
-        exit_tag = latest.get(SignalTagType.EXIT_TAG.value, None)
+            enter = latest.get(SignalType.ENTER_LONG, 0) == 1
+            exit_ = latest.get(SignalType.EXIT_LONG, 0) == 1
+        exit_tag = latest.get(SignalTagType.EXIT_TAG, None)
         # Tags can be None, which does not resolve to False.
         exit_tag = exit_tag if isinstance(exit_tag, str) and exit_tag != "nan" else None
 
@@ -1361,16 +1363,16 @@ class IStrategy(ABC, HyperStrategyMixin):
         if latest is None or latest_date is None:
             return None, None
 
-        enter_long = latest.get(SignalType.ENTER_LONG.value, 0) == 1
-        exit_long = latest.get(SignalType.EXIT_LONG.value, 0) == 1
-        enter_short = latest.get(SignalType.ENTER_SHORT.value, 0) == 1
-        exit_short = latest.get(SignalType.EXIT_SHORT.value, 0) == 1
+        enter_long = latest.get(SignalType.ENTER_LONG, 0) == 1
+        exit_long = latest.get(SignalType.EXIT_LONG, 0) == 1
+        enter_short = latest.get(SignalType.ENTER_SHORT, 0) == 1
+        exit_short = latest.get(SignalType.EXIT_SHORT, 0) == 1
 
         enter_signal: SignalDirection | None = None
         enter_tag: str | None = None
         if enter_long == 1 and not any([exit_long, enter_short]):
             enter_signal = SignalDirection.LONG
-            enter_tag = latest.get(SignalTagType.ENTER_TAG.value, None)
+            enter_tag = latest.get(SignalTagType.ENTER_TAG, None)
         if (
             self.config.get("trading_mode", TradingMode.SPOT) != TradingMode.SPOT
             and self.can_short
@@ -1378,7 +1380,7 @@ class IStrategy(ABC, HyperStrategyMixin):
             and not any([exit_short, enter_long])
         ):
             enter_signal = SignalDirection.SHORT
-            enter_tag = latest.get(SignalTagType.ENTER_TAG.value, None)
+            enter_tag = latest.get(SignalTagType.ENTER_TAG, None)
 
         enter_tag = enter_tag if isinstance(enter_tag, str) and enter_tag != "nan" else None
 
@@ -1446,6 +1448,7 @@ class IStrategy(ABC, HyperStrategyMixin):
             force_stoploss=force_stoploss,
             low=low,
             high=high,
+            bound_profit=current_profit_best,
         )
 
         # if enter signal and ignore_roi is set, we don't need to evaluate min_roi.
@@ -1520,6 +1523,7 @@ class IStrategy(ABC, HyperStrategyMixin):
         force_stoploss: float,
         low: float | None = None,
         high: float | None = None,
+        bound_profit: float | None = None,
         after_fill: bool = False,
     ) -> None:
         """
@@ -1527,6 +1531,7 @@ class IStrategy(ABC, HyperStrategyMixin):
         :param current_profit: current profit as ratio
         :param low: Low value of this candle, only set in backtesting
         :param high: High value of this candle, only set in backtesting
+        :param bound_profit: profit at the candle bound (high for long, low for short)
         """
         if after_fill and not self._ft_stop_uses_after_fill:
             # Skip if the strategy doesn't support after fill.
@@ -1545,7 +1550,12 @@ class IStrategy(ABC, HyperStrategyMixin):
 
         # Make sure current_profit is calculated using high for backtesting.
         bound = low if trade.is_short else high
-        bound_profit = current_profit if not bound else trade.calc_profit_ratio(bound)
+        # should_exit forwards bound_profit (its current_profit_best); in dry/live, where
+        # low/high are None, that already equals current_profit. It's only None when called
+        # from the after-fill paths that don't forward it -- and those pass no candle bound,
+        # so this recompute likewise yields current_profit there.
+        if bound_profit is None:
+            bound_profit = current_profit if not bound else trade.calc_profit_ratio(bound)
         if self.use_custom_stoploss and dir_correct:
             stop_loss_value_custom = strategy_safe_wrapper(
                 self.custom_stoploss, default_retval=None, supress_error=True
@@ -1594,6 +1604,7 @@ class IStrategy(ABC, HyperStrategyMixin):
         force_stoploss: float,
         low: float | None = None,
         high: float | None = None,
+        bound_profit: float | None = None,
     ) -> ExitCheckTuple:
         """
         Based on current profit of the trade and configured (trailing) stoploss,
@@ -1601,9 +1612,17 @@ class IStrategy(ABC, HyperStrategyMixin):
         :param current_profit: current profit as ratio
         :param low: Low value of this candle, only set in backtesting
         :param high: High value of this candle, only set in backtesting
+        :param bound_profit: profit at the candle bound, forwarded to ft_stoploss_adjust
         """
         self.ft_stoploss_adjust(
-            current_rate, trade, current_time, current_profit, force_stoploss, low, high
+            current_rate,
+            trade,
+            current_time,
+            current_profit,
+            force_stoploss,
+            low,
+            high,
+            bound_profit=bound_profit,
         )
 
         sl_higher_long = trade.stop_loss >= (low or current_rate) and not trade.is_short
@@ -1717,7 +1736,7 @@ class IStrategy(ABC, HyperStrategyMixin):
             timeout_unit = self.config.get("unfilledtimeout", {}).get("unit", "minutes")
             timeout_kwargs = {timeout_unit: -timeout}
             timeout_threshold = current_time + timedelta(**timeout_kwargs)
-            timedout = order.status == "open" and order.order_date_utc < timeout_threshold
+            timedout = order.status == "open" and order.order_date_utc <= timeout_threshold
             if timedout:
                 return True
         time_method = (
@@ -1767,9 +1786,16 @@ class IStrategy(ABC, HyperStrategyMixin):
         use_public_trades = self.config.get("exchange", {}).get("use_public_trades", False)
         if use_public_trades:
             pair = metadata["pair"]
-            trades = self.dp.trades(pair=pair, copy=False)
+            # Build timerange from dataframe date column
+            if not dataframe.empty:
+                start_ts = dt_ts(dataframe["date"].iloc[0])
+                end_ts = dt_ts(dataframe["date"].iloc[-1])
+                timerange = TimeRange("date", "date", startts=start_ts, stopts=end_ts)
+            else:
+                timerange = None
 
-            # TODO: slice trades to size of dataframe for faster backtesting
+            trades = self.dp.trades(pair=pair, copy=False, timerange=timerange)
+
             cached_grouped_trades: DataFrame | None = self._cached_grouped_trades_per_pair.get(pair)
             dataframe, cached_grouped_trades = populate_dataframe_with_trades(
                 cached_grouped_trades, self.config, dataframe, trades
@@ -1863,7 +1889,9 @@ class IStrategy(ABC, HyperStrategyMixin):
                 if isinstance(annotation, dict):
                     # Convert to AnnotationType
                     try:
-                        AnnotationTypeTA.validate_python(annotation)
+                        # "forbid" extra fields to catch user errors
+                        # Can be questioned if this creates many problems
+                        AnnotationTypeTA.validate_python(annotation, extra="forbid")
                         annotations_new.append(annotation)
                     except ValidationError as e:
                         logger.error(f"Invalid annotation data: {annotation}. Error: {e}")

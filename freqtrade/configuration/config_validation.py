@@ -66,7 +66,8 @@ def validate_config_schema(conf: dict[str, Any], preliminary: bool = False) -> d
         return conf
     except ValidationError as e:
         logger.critical(f"Invalid configuration. Reason: {e}")
-        raise ValidationError(best_match(Draft4Validator(conf_schema).iter_errors(conf)).message)
+        result = best_match(FreqtradeValidator(conf_schema).iter_errors(conf))
+        raise ConfigurationError(result.message)
 
 
 def validate_config_consistency(conf: dict[str, Any], *, preliminary: bool = False) -> None:
@@ -91,6 +92,7 @@ def validate_config_consistency(conf: dict[str, Any], *, preliminary: bool = Fal
     _validate_consumers(conf)
     validate_migrated_strategy_settings(conf)
     _validate_orderflow(conf)
+    _validate_demo_trading(conf)
 
     # validate configuration before returning
     logger.info("Validating configuration ...")
@@ -112,7 +114,6 @@ def _validate_price_config(conf: dict[str, Any]) -> None:
     """
     When using market orders, price sides must be using the "other" side of the price
     """
-    # TODO: The below could be an enforced setting when using market orders
     if conf.get("order_types", {}).get("entry") == "market" and conf.get("entry_pricing", {}).get(
         "price_side"
     ) not in ("ask", "other"):
@@ -411,6 +412,11 @@ def _validate_orderflow(conf: dict[str, Any]) -> None:
             raise ConfigurationError(
                 "Orderflow is a required configuration key when using public trades."
             )
+
+
+def _validate_demo_trading(conf: dict[str, Any]) -> None:
+    if conf.get("exchange", {}).get("demo_trading", False) and conf.get("dry_run", False):
+        raise ConfigurationError("Demo trading cannot be used together with dry_run.")
 
 
 def _strategy_settings(conf: dict[str, Any]) -> None:

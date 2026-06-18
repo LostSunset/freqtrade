@@ -2,7 +2,7 @@
 
 ## Supported Markets
 
-Freqtrade supports spot trading, as well as (isolated) futures trading for some selected exchanges. Please refer to the [documentation start page](index.md#supported-futures-exchanges-experimental) for an up-to-date list of supported exchanges.
+Freqtrade supports spot trading, as well as futures trading for some selected exchanges. Please refer to the [documentation start page](index.md#supported-futures-exchanges) for an up-to-date list of supported exchanges.
 
 ### Can my bot open short positions?
 
@@ -14,7 +14,7 @@ In spot markets, you can in some cases use leveraged spot tokens, which reflect 
 
 ### Can my bot trade options or futures?
 
-Futures trading is supported for selected exchanges. Please refer to the [documentation start page](index.md#supported-futures-exchanges-experimental) for an up-to-date list of supported exchanges.
+Futures trading is supported for selected exchanges. Please refer to the [documentation start page](index.md#supported-futures-exchanges) for an up-to-date list of supported exchanges.
 
 ## Beginner Tips & Tricks
 
@@ -28,6 +28,13 @@ No. Freqtrade will only open one position per pair at a time.
 You can however use the [`adjust_trade_position()` callback](strategy-callbacks.md#adjust-trade-position) to adjust an open position.
 
 Backtesting provides an option for this in `--eps` - however this is only there to highlight "hidden" signals, and will not work in live.
+
+### Does freqtrade support sandbox accounts?
+
+No, but you can use dry-run mode to simulate trading without risking real funds.
+
+Sandbox markets are separate, simulated markets - which are not suitable to test your strategy in a realistic environment.
+These markets usually have different order books, liquidity and trading behaviour (usually with very few participants) - which makes them unsuitable for realistic tests of your strategy.
 
 ### The bot does not start
 
@@ -159,6 +166,14 @@ This warning can point to one of the below problems:
 * Barely traded pair -> Check the pair on the exchange webpage, look at the timeframe your strategy uses. If the pair does not have any volume in some candles (usually visualized with a "volume 0" bar, and a "_" as candle), this pair did not have any trades in this timeframe. These pairs should ideally be avoided, as they can cause problems with order-filling.
 * API problem -> API returns wrong data (this only here for completeness, and should not happen with supported exchanges).
 
+### I get the message "Couldn't reuse watch for xxx" in the log
+
+This is an informational message that the bot tried to use candles from the websocket, but the exchange didn't provide the right information.
+This can happen if there was an interruption to the websocket connection - or if the pair didn't have any trades happen in the timeframe you are using.
+
+Freqtrade will handle this gracefully by falling back to the REST api.
+While this makes the iteration slightly slower (due to the REST Api call) - it will not cause any problems to the bot's operation.
+
 ### I'm getting the "Exchange XXX does not support market orders." message and cannot run my strategy
 
 As the message says, your exchange does not support market orders and you have one of the [order types](configuration.md/#understand-order_types) set to "market". Your strategy was probably written with other exchanges in mind and sets "market" orders for "stoploss" orders, which is correct and preferable for most of the exchanges supporting market orders (but not for Gate.io).
@@ -288,6 +303,13 @@ Nobody affiliated with the freqtrade project will ask you about your exchange ke
 Should you be asked to expose your exchange keys or send funds to some random wallet, then please don't follow these instructions.
 
 Failing to follow these guidelines will not be responsibility of freqtrade.
+
+## Support policy
+
+We provide free support for Freqtrade on our [Discord server](https://discord.gg/p7nuUNVfP7) and via GitHub issues.
+We only support the most recent release (e.g. 2025.8) and the current development branch (e.g. 2025.9-dev).
+
+If you're on an older version, please follow the [upgrade instructions](updating.md) and see if your problem has already been addressed.
 
 ## "Freqtrade token"
 

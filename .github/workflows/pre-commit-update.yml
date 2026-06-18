@@ -2,33 +2,42 @@ name: Pre-commit auto-update
 
 on:
   schedule:
-    - cron: "0 3 * * 2"
+    - cron: "13 1 * * 2"
   # on demand
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   auto-update:
+    name: Auto-update pre-commit hooks
     runs-on: ubuntu-latest
+    environment:
+      name: develop
+
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       with:
         persist-credentials: false
 
-    - uses: actions/setup-python@v5
+    - name: Install uv and Python 🐍
+      uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
       with:
-        python-version: "3.12"
-
+        activate-environment: true
+        python-version: "3.13"
 
     - name: Install pre-commit
-      run: pip install pre-commit
+      run: uv pip install $(grep -E "^pre-commit==" requirements-dev.txt)
 
     - name: Run auto-update
       run: pre-commit autoupdate
 
-    - uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
+    - uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
       with:
         token: ${{ secrets.REPO_SCOPED_TOKEN }}
         add-paths: .pre-commit-config.yaml

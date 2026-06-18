@@ -25,9 +25,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.get(
-    "/pairlists/available", response_model=PairListsResponse, tags=["pairlists", "webserver"]
-)
+@router.get("/pairlists/available", response_model=PairListsResponse)
 def list_pairlists(config=Depends(get_config)):
     from freqtrade.resolvers import PairListResolver
 
@@ -54,6 +52,7 @@ def __run_pairlist(job_id: str, config_loc: Config):
 
         with FtNoDBContext():
             exchange = get_exchange(config_loc)
+            config_loc["candle_type_def"] = exchange._config["candle_type_def"]
             pairlists = PairListManager(exchange, config_loc)
             pairlists.refresh_pairlist()
             ApiBG.jobs[job_id]["result"] = {
@@ -71,7 +70,7 @@ def __run_pairlist(job_id: str, config_loc: Config):
         ApiBG.pairlist_running = False
 
 
-@router.post("/pairlists/evaluate", response_model=BgJobStarted, tags=["pairlists", "webserver"])
+@router.post("/pairlists/evaluate", response_model=BgJobStarted)
 def pairlists_evaluate(
     payload: PairListsPayload, background_tasks: BackgroundTasks, config=Depends(get_config)
 ):
@@ -125,11 +124,7 @@ def handleExchangePayload(payload: ExchangeModePayloadMixin, config_loc: Config)
         config_loc["margin_mode"] = payload.margin_mode
 
 
-@router.get(
-    "/pairlists/evaluate/{jobid}",
-    response_model=WhitelistEvaluateResponse,
-    tags=["pairlists", "webserver"],
-)
+@router.get("/pairlists/evaluate/{jobid}", response_model=WhitelistEvaluateResponse)
 def pairlists_evaluate_get(jobid: str):
     if not (job := ApiBG.jobs.get(jobid)):
         raise HTTPException(status_code=404, detail="Job not found.")

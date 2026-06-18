@@ -594,9 +594,9 @@ Features will now expand automatically. As such, the expansion loops, as well as
         More details on how these config defined parameters accelerate feature engineering
         in the documentation at:
 
-        https://www.freqtrade.io/en/latest/freqai-parameter-table/#feature-parameters
+        https://www.freqtrade.io/en/stable/freqai-parameter-table/#feature-parameters
 
-        https://www.freqtrade.io/en/latest/freqai-feature-engineering/#defining-the-features
+        https://www.freqtrade.io/en/stable/freqai-feature-engineering/#defining-the-features
 
         :param df: strategy dataframe which will receive the features
         :param period: period of the indicator - usage example:
@@ -657,9 +657,9 @@ Basic features. Make sure to remove the `{pair}` part from your features.
         More details on how these config defined parameters accelerate feature engineering
         in the documentation at:
 
-        https://www.freqtrade.io/en/latest/freqai-parameter-table/#feature-parameters
+        https://www.freqtrade.io/en/stable/freqai-parameter-table/#feature-parameters
 
-        https://www.freqtrade.io/en/latest/freqai-feature-engineering/#defining-the-features
+        https://www.freqtrade.io/en/stable/freqai-feature-engineering/#defining-the-features
 
         :param df: strategy dataframe which will receive the features
         dataframe["%-pct-change"] = dataframe["close"].pct_change()
@@ -690,7 +690,7 @@ Basic features. Make sure to remove the `{pair}` part from your features.
 
         More details about feature engineering available:
 
-        https://www.freqtrade.io/en/latest/freqai-feature-engineering
+        https://www.freqtrade.io/en/stable/freqai-feature-engineering
 
         :param df: strategy dataframe which will receive the features
         usage example: dataframe["%-day_of_week"] = (dataframe["date"].dt.dayofweek + 1) / 7
@@ -713,7 +713,7 @@ Targets now get their own, dedicated method.
 
         More details about feature engineering available:
 
-        https://www.freqtrade.io/en/latest/freqai-feature-engineering
+        https://www.freqtrade.io/en/stable/freqai-feature-engineering
 
         :param df: strategy dataframe which will receive the targets
         usage example: dataframe["&-target"] = dataframe["close"].shift(-1) / dataframe["close"]
@@ -729,7 +729,6 @@ Targets now get their own, dedicated method.
 
         return dataframe
 ```
-
 
 ### FreqAI - New data Pipeline
 
@@ -807,7 +806,6 @@ class MyCoolFreqaiModel(BaseRegressionModel):
         # ... your custom code
         return (pred_df, dk.do_predict)
 ```
-
 
 1. Data normalization and cleaning is now homogenized with the new pipeline definition. This is created in the new `define_data_pipeline()` and `define_label_pipeline()` functions. The `data_cleaning_train()` and `data_cleaning_predict()` functions are no longer used. You can override `define_data_pipeline()` to create your own custom pipeline if you wish.
 2. Data normalization and cleaning is now homogenized with the new pipeline definition. This is created in the new `define_data_pipeline()` and `define_label_pipeline()` functions. The `data_cleaning_train()` and `data_cleaning_predict()` functions are no longer used. You can override `define_data_pipeline()` to create your own custom pipeline if you wish.

@@ -18,7 +18,7 @@ from freqtrade.persistence import LocalTrade, Trade
 from freqtrade.plugins.pairlist.pairlist_helpers import dynamic_expand_pairlist, expand_pairlist
 from freqtrade.plugins.pairlistmanager import PairListManager
 from freqtrade.resolvers import PairListResolver
-from freqtrade.util.datetime_helpers import dt_now
+from freqtrade.util import dt_now, dt_utc
 from tests.conftest import (
     EXMS,
     create_mock_trades_usdt,
@@ -31,9 +31,11 @@ from tests.conftest import (
 )
 
 
-# Exclude RemotePairList from tests.
-# It has a mandatory parameter, and requires special handling, which happens in test_remotepairlist.
-TESTABLE_PAIRLISTS = [p for p in AVAILABLE_PAIRLISTS if p not in ["RemotePairList"]]
+# Exclude RemotePairList and PairInformationFilter from tests.
+# They have mandatory parameters, and require special handling, which happens in explicit tests.
+TESTABLE_PAIRLISTS = [
+    p for p in AVAILABLE_PAIRLISTS if p not in ["RemotePairList", "PairInformationFilter"]
+]
 
 
 @pytest.fixture(scope="function")
@@ -1274,11 +1276,23 @@ def test_ShuffleFilter_init(mocker, whitelist_conf, caplog) -> None:
         {"method": "StaticPairList"},
         {"method": "ShuffleFilter", "seed": 43},
     ]
-    whitelist_conf["runmode"] = "backtest"
+    whitelist_conf["runmode"] = RunMode.BACKTEST
 
     exchange = get_patched_exchange(mocker, whitelist_conf)
     plm = PairListManager(exchange, whitelist_conf)
     assert log_has("Backtesting mode detected, applying seed value: 43", caplog)
+
+    plm.refresh_pairlist()
+    pl1 = deepcopy(plm.whitelist)
+    plm.refresh_pairlist()
+    assert plm.whitelist != pl1
+    assert set(plm.whitelist) == set(pl1)
+
+    caplog.clear()
+    whitelist_conf["runmode"] = RunMode.DRY_RUN
+    plm = PairListManager(exchange, whitelist_conf)
+    assert not log_has("Backtesting mode detected, applying seed value: 42", caplog)
+    assert log_has("Live mode detected, not applying seed.", caplog)
 
     with time_machine.travel("2021-09-01 05:01:00 +00:00") as t:
         plm.refresh_pairlist()
@@ -1286,15 +1300,13 @@ def test_ShuffleFilter_init(mocker, whitelist_conf, caplog) -> None:
         plm.refresh_pairlist()
         assert plm.whitelist == pl1
 
+        target = plm._pairlist_handlers[1]._random
+        shuffle_mock = mocker.patch.object(target, "shuffle", wraps=target.shuffle)
+
         t.shift(timedelta(minutes=10))
         plm.refresh_pairlist()
-        assert plm.whitelist != pl1
-
-    caplog.clear()
-    whitelist_conf["runmode"] = RunMode.DRY_RUN
-    plm = PairListManager(exchange, whitelist_conf)
-    assert not log_has("Backtesting mode detected, applying seed value: 42", caplog)
-    assert log_has("Live mode detected, not applying seed.", caplog)
+        assert shuffle_mock.call_count == 1
+        assert set(plm.whitelist) == set(pl1)
 
 
 @pytest.mark.usefixtures("init_persistence")
@@ -1386,7 +1398,7 @@ def test_gen_pair_whitelist_not_supported(mocker, default_conf, tickers) -> None
     )
 
     with pytest.raises(
-        OperationalException, match=r"Exchange does not support dynamic whitelist.*"
+        OperationalException, match=r"Exchange .* does not support dynamic whitelist.*"
     ):
         get_patched_freqtradebot(mocker, default_conf)
 
@@ -1400,7 +1412,9 @@ def test_pair_whitelist_not_supported_Spread(mocker, default_conf, tickers) -> N
         exchange_has=MagicMock(return_value=False),
     )
 
-    with pytest.raises(OperationalException, match=r"Exchange does not support fetchTickers, .*"):
+    with pytest.raises(
+        OperationalException, match=r"Exchange .* does not support fetchTickers, .*"
+    ):
         get_patched_freqtradebot(mocker, default_conf)
 
     mocker.patch(f"{EXMS}.exchange_has", MagicMock(return_value=True))
@@ -1669,7 +1683,7 @@ def test_rangestabilityfilter_checks(mocker, default_conf, markets, tickers):
 
     with pytest.raises(
         OperationalException,
-        match="RangeStabilityFilter requires sort_direction to be either None.*",
+        match=r"RangeStabilityFilter requires sort_direction to be either None\.*",
     ):
         get_patched_freqtradebot(mocker, default_conf)
 
@@ -1824,6 +1838,17 @@ def test_spreadfilter_invalid_data(mocker, default_conf, markets, tickers, caplo
             "PriceFilter requires max_value to be >= 0",
         ),  # OperationalException expected
         (
+            {"method": "DelistFilter", "max_days_from_now": -1},
+            None,
+            "DelistFilter requires max_days_from_now to be >= 0",
+        ),  # ConfigurationError expected
+        (
+            {"method": "DelistFilter", "max_days_from_now": 1},
+            "[{'DelistFilter': 'DelistFilter - Filtering pairs that will be delisted in the "
+            "next 1 days.'}]",
+            None,
+        ),  # ConfigurationError expected
+        (
             {"method": "RangeStabilityFilter", "lookback_days": 10, "min_rate_of_change": 0.01},
             "[{'RangeStabilityFilter': 'RangeStabilityFilter - Filtering pairs with rate "
             "of change below 0.01 over the last days.'}]",
@@ -1883,7 +1908,12 @@ def test_pairlistmanager_no_pairlist(mocker, whitelist_conf):
 
     whitelist_conf["pairlists"] = []
 
-    with pytest.raises(OperationalException, match=r"No Pairlist Handlers defined"):
+    with pytest.raises(OperationalException, match=r"\[\] should be non-empty"):
+        get_patched_freqtradebot(mocker, whitelist_conf)
+
+    del whitelist_conf["pairlists"]
+
+    with pytest.raises(OperationalException, match=r"'pairlists' is a required property"):
         get_patched_freqtradebot(mocker, whitelist_conf)
 
 
@@ -2308,6 +2338,36 @@ def test_FullTradesFilter(mocker, default_conf_usdt, fee, caplog) -> None:
             ["ETH/USDT:USDT", "ADA/USDT:USDT"],
             ["layer-1", "protocol"],
         ),
+        (
+            [
+                # Blacklist high MC pairs
+                {"method": "StaticPairList", "allow_inactive": True},
+                {"method": "MarketCapPairList", "mode": "blacklist"},
+            ],
+            "spot",
+            ["LTC/USDT", "NEO/USDT", "TKN/USDT", "ETC/USDT"],
+            1,
+        ),
+        (
+            [
+                # Blacklist high MC pairs
+                {"method": "StaticPairList", "allow_inactive": True},
+                {"method": "MarketCapPairList", "mode": "blacklist", "max_rank": 2},
+            ],
+            "spot",
+            ["LTC/USDT", "XRP/USDT", "NEO/USDT", "TKN/USDT", "ETC/USDT", "ADA/USDT"],
+            1,
+        ),
+        (
+            [
+                # Blacklist top 6 MarketCap pairs - removes XRP which is at spot 6.
+                {"method": "StaticPairList", "allow_inactive": True},
+                {"method": "MarketCapPairList", "mode": "blacklist", "max_rank": 6},
+            ],
+            "spot",
+            ["LTC/USDT", "NEO/USDT", "TKN/USDT", "ETC/USDT", "ADA/USDT"],
+            1,
+        ),
     ],
 )
 def test_MarketCapPairList_filter(
@@ -2404,7 +2464,7 @@ def test_MarketCapPairList_timing(mocker, default_conf_usdt, markets, time_machi
     pm = PairListManager(exchange, default_conf_usdt)
     markets_mock.reset_mock()
     pm.refresh_pairlist()
-    assert markets_mock.call_count == 3
+    assert markets_mock.call_count == 4
     markets_mock.reset_mock()
 
     time_machine.move_to(start_dt + timedelta(hours=20))
@@ -2416,7 +2476,52 @@ def test_MarketCapPairList_timing(mocker, default_conf_usdt, markets, time_machi
     time_machine.move_to(start_dt + timedelta(days=2))
     pm.refresh_pairlist()
     # No longer cached pairlist ...
-    assert markets_mock.call_count == 3
+    assert markets_mock.call_count == 4
+
+
+def test_MarketCapPairList_1000_K_fillup(mocker, default_conf_usdt, markets, time_machine):
+    test_value = [
+        {"symbol": "btc"},
+        {"symbol": "eth"},
+        {"symbol": "usdt"},
+        {"symbol": "bnb"},
+        {"symbol": "sol"},
+        {"symbol": "xrp"},
+        {"symbol": "usdc"},
+        {"symbol": "steth"},
+        {"symbol": "ada"},
+        {"symbol": "avax"},
+    ]
+
+    default_conf_usdt["trading_mode"] = "spot"
+    default_conf_usdt["exchange"]["pair_whitelist"] = []
+    default_conf_usdt["pairlists"] = [{"method": "MarketCapPairList", "number_assets": 3}]
+    markets["1000ETH/USDT"] = markets["ETH/USDT"]
+    markets["KXRP/USDT"] = markets["XRP/USDT"]
+    del markets["ETH/USDT"]
+    del markets["XRP/USDT"]
+
+    markets_mock = MagicMock(return_value=markets)
+    mocker.patch.multiple(
+        EXMS,
+        get_markets=markets_mock,
+        exchange_has=MagicMock(return_value=True),
+    )
+
+    mocker.patch(
+        "freqtrade.plugins.pairlist.MarketCapPairList.FtCoinGeckoApi.get_coins_markets",
+        return_value=test_value,
+    )
+
+    start_dt = dt_now()
+
+    exchange = get_patched_exchange(mocker, default_conf_usdt)
+    time_machine.move_to(start_dt)
+
+    pm = PairListManager(exchange, default_conf_usdt)
+    markets_mock.reset_mock()
+    pm.refresh_pairlist()
+    assert pm.whitelist == ["BTC/USDT", "1000ETH/USDT", "KXRP/USDT"]
 
 
 def test_MarketCapPairList_filter_special_no_pair_from_coingecko(
@@ -2476,9 +2581,210 @@ def test_MarketCapPairList_exceptions(mocker, default_conf_usdt, caplog):
         }
     ]
     with pytest.raises(
-        OperationalException, match="Category layer250 not in coingecko category list."
+        OperationalException, match=r"Category layer250 not in coingecko category list\."
     ):
         PairListManager(exchange, default_conf_usdt)
+
+
+@pytest.mark.parametrize(
+    "pairlists,trade_mode,result",
+    [
+        (
+            [
+                # Spot pairs that exist on both markets
+                {"method": "StaticPairList", "allow_inactive": True},
+                {"method": "CrossMarketPairList", "pairs_exist_on": "both_markets"},
+            ],
+            "spot",
+            ["ETH/USDT"],
+        ),
+        (
+            [
+                # Spot pairs that exist only on spot market
+                {"method": "StaticPairList", "allow_inactive": True},
+                {"method": "CrossMarketPairList", "pairs_exist_on": "current_market_only"},
+            ],
+            "spot",
+            ["LTC/USDT", "XRP/USDT", "NEO/USDT", "TKN/USDT", "BTC/USDT"],
+        ),
+        (
+            [
+                # Futures pairs that exist on both markets
+                {"method": "StaticPairList", "allow_inactive": True},
+                {"method": "CrossMarketPairList", "pairs_exist_on": "both_markets"},
+            ],
+            "futures",
+            ["ETH/USDT:USDT"],
+        ),
+        (
+            [
+                # Futures pairs that exist only on futures market
+                {"method": "StaticPairList", "allow_inactive": True},
+                {"method": "CrossMarketPairList", "pairs_exist_on": "current_market_only"},
+            ],
+            "futures",
+            ["ADA/USDT:USDT"],
+        ),
+        (
+            [
+                # CrossMarketPairList as generator, spot market, pairs that exist on both markets
+                {"method": "CrossMarketPairList", "pairs_exist_on": "both_markets"},
+            ],
+            "spot",
+            ["ETH/USDT"],
+        ),
+        (
+            [
+                # CrossMarketPairList as generator, spot pairs that exist only on spot market
+                {"method": "CrossMarketPairList", "pairs_exist_on": "current_market_only"},
+            ],
+            "spot",
+            ["BTC/USDT", "XRP/USDT", "NEO/USDT", "TKN/USDT"],
+        ),
+        (
+            [
+                # CrossMarketPairList as generator, futures pairs that exist on both markets
+                {"method": "CrossMarketPairList", "pairs_exist_on": "both_markets"},
+            ],
+            "futures",
+            ["ETH/USDT:USDT"],
+        ),
+        (
+            [
+                # CrossMarketPairList as generator, futures pairs that exist only on futures market
+                {"method": "CrossMarketPairList", "pairs_exist_on": "current_market_only"},
+            ],
+            "futures",
+            ["ADA/USDT:USDT"],
+        ),
+    ],
+)
+def test_CrossMarketPairlist_filter(
+    mocker, default_conf_usdt, trade_mode, markets, pairlists, result
+):
+    default_conf_usdt["trading_mode"] = trade_mode
+    if trade_mode == "spot":
+        default_conf_usdt["exchange"]["pair_whitelist"].extend(["BTC/USDT", "ETC/USDT", "ADA/USDT"])
+    else:
+        default_conf_usdt["exchange"]["pair_whitelist"] = [
+            "BTC/USDT:USDT",
+            "ETH/USDT:USDT",
+            "ETC/USDT:USDT",
+            "ADA/USDT:USDT",
+        ]
+    default_conf_usdt["pairlists"] = pairlists
+    mocker.patch.multiple(
+        EXMS,
+        markets=PropertyMock(return_value=markets),
+        exchange_has=MagicMock(return_value=True),
+    )
+
+    exchange = get_patched_exchange(mocker, default_conf_usdt)
+
+    pm = PairListManager(exchange, default_conf_usdt)
+    pm.refresh_pairlist()
+
+    assert pm.whitelist == result
+
+
+def test_CrossMarketPairlist_gen_pairlist_uses_cache(mocker, default_conf_usdt, markets):
+    default_conf_usdt["trading_mode"] = "spot"
+    default_conf_usdt["pairlists"] = [
+        {"method": "CrossMarketPairList", "pairs_exist_on": "both_markets"}
+    ]
+
+    mocker.patch.multiple(
+        EXMS,
+        markets=PropertyMock(return_value=markets),
+        exchange_has=MagicMock(return_value=True),
+    )
+
+    exchange = get_patched_exchange(mocker, default_conf_usdt)
+    pm = PairListManager(exchange, default_conf_usdt)
+    pl = pm._pairlist_handlers[0]
+
+    pl._pair_cache["pairlist"] = ["ETH/USDT", "ADA/USDT"]
+    pl._exchange.get_markets = MagicMock(
+        side_effect=AssertionError("get_markets should not be called")
+    )
+
+    result = pl.gen_pairlist({})
+
+    assert result == ["ETH/USDT", "ADA/USDT"]
+    # Make sure the returned list is a copy, not the cached one
+    assert result is not pl._pair_cache["pairlist"]
+    result.append("BTC/USDT")
+    # Make sure the cache is not modified
+    assert pl._pair_cache["pairlist"] == ["ETH/USDT", "ADA/USDT"]
+
+
+def test_CrossMarketPairList_breaks_prefix_loop_on_match(mocker, default_conf_usdt, markets):
+    default_conf_usdt["trading_mode"] = "spot"
+    default_conf_usdt["pairlists"] = [
+        {"method": "CrossMarketPairList", "pairs_exist_on": "both_markets"}
+    ]
+
+    mocker.patch.multiple(
+        EXMS,
+        markets=PropertyMock(return_value=markets),
+        exchange_has=MagicMock(return_value=True),
+    )
+
+    exchange = get_patched_exchange(mocker, default_conf_usdt)
+    pm = PairListManager(exchange, default_conf_usdt)
+    pl = pm._pairlist_handlers[0]
+
+    # Force base lookup path
+    mocker.patch.object(pl, "get_base_list", return_value=["1000PEPE"])
+    mocker.patch.object(pl._exchange, "get_pair_base_currency", return_value="PEPE")
+
+    def prefix_generator():
+        yield "1000"  # first prefix => match via "1000PEPE"
+        raise AssertionError("Prefix loop did not break after match")
+
+    mocker.patch(
+        "freqtrade.plugins.pairlist.CrossMarketPairList.PairPrefixes",
+        new=prefix_generator(),
+    )
+
+    result = pl.filter_pairlist(["PEPE/USDT"], {})
+    assert result == ["PEPE/USDT"]
+
+
+def test_CrossMarketPairList_breaks_prefix_loop_on_delayed_match(
+    mocker, default_conf_usdt, markets
+):
+    default_conf_usdt["trading_mode"] = "spot"
+    default_conf_usdt["pairlists"] = [
+        {"method": "CrossMarketPairList", "pairs_exist_on": "both_markets"}
+    ]
+
+    mocker.patch.multiple(
+        EXMS,
+        markets=PropertyMock(return_value=markets),
+        exchange_has=MagicMock(return_value=True),
+    )
+
+    exchange = get_patched_exchange(mocker, default_conf_usdt)
+    pm = PairListManager(exchange, default_conf_usdt)
+    pl = pm._pairlist_handlers[0]
+
+    # Force second matching path: base startswith prefix and removeprefix() matches bases.
+    mocker.patch.object(pl, "get_base_list", return_value=["PEPE"])
+    mocker.patch.object(pl._exchange, "get_pair_base_currency", return_value="1000PEPE")
+
+    def prefix_generator():
+        yield "X"  # no match, loop should continue
+        yield "1000"  # second path should match via removeprefix -> PEPE and break
+        raise AssertionError("Prefix loop did not break after delayed match")
+
+    mocker.patch(
+        "freqtrade.plugins.pairlist.CrossMarketPairList.PairPrefixes",
+        new=prefix_generator(),
+    )
+
+    result = pl.filter_pairlist(["1000PEPE/USDT"], {})
+    assert result == ["1000PEPE/USDT"]
 
 
 @pytest.mark.parametrize(
@@ -2541,3 +2847,63 @@ def test_backtesting_modes(
 
     if expected_warning:
         assert log_has_re(f"Pairlist Handlers {expected_warning}", caplog)
+
+
+def test_DelistFilter_error(whitelist_conf) -> None:
+    whitelist_conf["pairlists"] = [{"method": "StaticPairList"}, {"method": "DelistFilter"}]
+    exchange_mock = MagicMock()
+    exchange_mock.get_option = MagicMock(return_value=False)
+    with pytest.raises(
+        OperationalException,
+        match=r"DelistFilter doesn't support .* in .* mode\.",
+    ):
+        PairListManager(exchange_mock, whitelist_conf, MagicMock())
+
+
+@pytest.mark.usefixtures("init_persistence")
+def test_DelistFilter(mocker, default_conf_usdt, time_machine, caplog) -> None:
+    default_conf_usdt["exchange"]["pair_whitelist"] = [
+        "ETH/USDT",
+        "XRP/USDT",
+        "BTC/USDT",
+        "NEO/USDT",
+    ]
+    default_conf_usdt["pairlists"] = [
+        {"method": "StaticPairList"},
+        {"method": "DelistFilter", "max_days_from_now": 3},
+    ]
+    default_conf_usdt["max_open_trades"] = -1
+    exchange = get_patched_exchange(mocker, default_conf_usdt)
+
+    def delist_mock(pair: str):
+        mock_delist = {
+            "XRP/USDT": dt_utc(2025, 9, 1) + timedelta(days=1),  # Delisting in 1 day
+            "NEO/USDT": dt_utc(2025, 9, 1) + timedelta(days=5, hours=2),  # Delisting in 5 days
+        }
+        return mock_delist.get(pair, None)
+
+    time_machine.move_to("2025-09-01 01:00:00 +00:00", tick=False)
+
+    mocker.patch.object(exchange, "check_delisting_time", delist_mock)
+    pm = PairListManager(exchange, default_conf_usdt)
+    pm.refresh_pairlist()
+    assert pm.whitelist == ["ETH/USDT", "BTC/USDT", "NEO/USDT"]
+    assert log_has(
+        "Removed XRP/USDT from whitelist, because it will be delisted on 2025-09-02 00:00:00.",
+        caplog,
+    )
+    # NEO is kept initially as delisting is in 5 days, but config is 3 days
+
+    time_machine.move_to("2025-09-03 01:00:00 +00:00", tick=False)
+    pm.refresh_pairlist()
+    assert pm.whitelist == ["ETH/USDT", "BTC/USDT", "NEO/USDT"]
+    # NEO not removed yet, expiry falls into the window 1 hour later
+
+    time_machine.move_to("2025-09-03 02:00:00 +00:00", tick=False)
+    pm.refresh_pairlist()
+    assert pm.whitelist == ["ETH/USDT", "BTC/USDT"]
+
+    assert log_has(
+        "Removed NEO/USDT from whitelist, because it will be delisted on 2025-09-06 02:00:00.",
+        caplog,
+    )

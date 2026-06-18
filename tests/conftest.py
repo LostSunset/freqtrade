@@ -21,6 +21,7 @@ from freqtrade.exchange import Exchange, timeframe_to_minutes, timeframe_to_seco
 from freqtrade.freqtradebot import FreqtradeBot
 from freqtrade.persistence import LocalTrade, Order, Trade, init_db
 from freqtrade.resolvers import ExchangeResolver
+from freqtrade.system import set_mp_start_method
 from freqtrade.util import dt_now, dt_ts
 from freqtrade.worker import Worker
 from tests.conftest_trades import (
@@ -168,25 +169,27 @@ def generate_trades_history(n_rows, start_date: datetime | None = None, days=5):
     return df
 
 
-def generate_test_data(timeframe: str, size: int, start: str = "2020-07-05", random_seed=42):
+def generate_test_data(
+    timeframe: str, size: int, start: str = "2020-07-05", random_seed=42, base=20
+):
     np.random.seed(random_seed)
 
-    base = np.random.normal(20, 2, size=size)
+    base = np.random.normal(base, 2, size=size)
     if timeframe == "1y":
-        date = pd.date_range(start, periods=size, freq="1YS", tz="UTC")
+        date = pd.date_range(start, periods=size, freq="1YS", tz="UTC", unit="ms")
     elif timeframe == "1M":
-        date = pd.date_range(start, periods=size, freq="1MS", tz="UTC")
+        date = pd.date_range(start, periods=size, freq="1MS", tz="UTC", unit="ms")
     elif timeframe == "3M":
-        date = pd.date_range(start, periods=size, freq="3MS", tz="UTC")
+        date = pd.date_range(start, periods=size, freq="3MS", tz="UTC", unit="ms")
     elif timeframe == "1w" or timeframe == "7d":
-        date = pd.date_range(start, periods=size, freq="1W-MON", tz="UTC")
+        date = pd.date_range(start, periods=size, freq="1W-MON", tz="UTC", unit="ms")
     else:
         tf_mins = timeframe_to_minutes(timeframe)
         if tf_mins >= 1:
-            date = pd.date_range(start, periods=size, freq=f"{tf_mins}min", tz="UTC")
+            date = pd.date_range(start, periods=size, freq=f"{tf_mins}min", tz="UTC", unit="ms")
         else:
             tf_secs = timeframe_to_seconds(timeframe)
-            date = pd.date_range(start, periods=size, freq=f"{tf_secs}s", tz="UTC")
+            date = pd.date_range(start, periods=size, freq=f"{tf_secs}s", tz="UTC", unit="ms")
     df = pd.DataFrame(
         {
             "date": date,
@@ -204,7 +207,7 @@ def generate_test_data(timeframe: str, size: int, start: str = "2020-07-05", ran
 def generate_test_data_raw(timeframe: str, size: int, start: str = "2020-07-05", random_seed=42):
     """Generates data in the ohlcv format used by ccxt"""
     df = generate_test_data(timeframe, size, start, random_seed)
-    df["date"] = df.loc[:, "date"].astype(np.int64) // 1000 // 1000
+    df["date"] = df.loc[:, "date"].dt.as_unit("ms").astype("int64")
     return list(list(x) for x in zip(*(df[x].values.tolist() for x in df.columns), strict=False))
 
 
@@ -258,6 +261,7 @@ def patch_exchange(
             "._supported_trading_mode_margin_pairs",
             PropertyMock(
                 return_value=[
+                    (TradingMode.SPOT, MarginMode.NONE),
                     (TradingMode.MARGIN, MarginMode.CROSS),
                     (TradingMode.MARGIN, MarginMode.ISOLATED),
                     (TradingMode.FUTURES, MarginMode.CROSS),
@@ -499,9 +503,20 @@ def patch_gc(mocker) -> None:
     mocker.patch("freqtrade.main.gc_set_threshold")
 
 
-def is_arm() -> bool:
+@pytest.fixture(scope="session", autouse=True)
+def fixture_set_mp_start_method():
+    """
+    Patch multiprocessing start mode globally
+    Auto-used, runs once per session.
+    """
+    set_mp_start_method()
+
+
+def is_arm(include_aarch64: bool = False) -> bool:
     machine = platform.machine()
-    return "arm" in machine or "aarch64" in machine
+    if include_aarch64:
+        return "aarch64" in machine or "arm" in machine
+    return "arm" in machine
 
 
 def is_mac() -> bool:
@@ -520,7 +535,11 @@ def patch_torch_initlogs(mocker) -> None:
         mocked_module = types.ModuleType(module_name)
         sys.modules[module_name] = mocked_module
     else:
-        mocker.patch("torch._logging._init_logs")
+        try:
+            mocker.patch("torch._logging._init_logs")
+        except ModuleNotFoundError:
+            # Allow running limited tests to run without freqAI dependencies
+            pass
 
 
 @pytest.fixture(autouse=True)
@@ -587,6 +606,7 @@ def get_default_conf(testdatadir):
         "cancel_open_orders_on_exit": False,
         "minimal_roi": {"40": 0.0, "30": 0.01, "20": 0.02, "0": 0.04},
         "dry_run_wallet": 1000,
+        "tradable_balance_ratio": 0.99,
         "stoploss": -0.10,
         "unfilledtimeout": {"entry": 10, "exit": 30},
         "entry_pricing": {
@@ -3167,7 +3187,7 @@ def leverage_tiers():
             },
             {
                 "minNotional": 5000000,
-                "maxNotional": 30000000,
+                "maxNotional": None,
                 "maintenanceMarginRate": 0.5,
                 "maxLeverage": 1,
                 "maintAmt": 1527500.0,

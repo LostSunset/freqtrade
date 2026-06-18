@@ -227,6 +227,10 @@ class IFreqaiModel(ABC):
         """
         while not self._stop_event.is_set():
             time.sleep(1)
+
+            if not self.train_queue:
+                continue
+
             pair = self.train_queue[0]
 
             # ensure pair is available in dp
@@ -514,12 +518,7 @@ class IFreqaiModel(ABC):
                    current coin/bot loop
         """
 
-        if "training_features_list_raw" in dk.data:
-            feature_list = dk.data["training_features_list_raw"]
-        else:
-            feature_list = dk.data["training_features_list"]
-
-        if dk.training_features_list != feature_list:
+        if dk.training_features_list != dk.data["training_features_list"]:
             raise OperationalException(
                 "Trying to access pretrained model with `identifier` "
                 "but found different features furnished by current strategy. "
@@ -677,7 +676,7 @@ class IFreqaiModel(ABC):
         self.set_start_dry_live_date(strat_df)
 
         for label in hist_preds_df.columns:
-            if hist_preds_df[label].dtype == object:
+            if pd.api.types.is_string_dtype(hist_preds_df[label].dtype):
                 continue
             hist_preds_df[f"{label}_mean"] = 0
             hist_preds_df[f"{label}_std"] = 0
@@ -707,7 +706,7 @@ class IFreqaiModel(ABC):
         num_candles = self.freqai_info.get("fit_live_predictions_candles", 100)
         dk.data["labels_mean"], dk.data["labels_std"] = {}, {}
         for label in full_labels:
-            if self.dd.historic_predictions[dk.pair][label].dtype == object:
+            if pd.api.types.is_string_dtype(self.dd.historic_predictions[dk.pair][label].dtype):
                 continue
             f = spy.stats.norm.fit(self.dd.historic_predictions[dk.pair][label].tail(num_candles))
             dk.data["labels_mean"][label], dk.data["labels_std"][label] = f[0], f[1]
@@ -897,7 +896,7 @@ class IFreqaiModel(ABC):
                     ]
                     self.fit_live_predictions(self.dk, self.dk.pair)
                     for label in label_columns:
-                        if dk.full_df[label].dtype == object:
+                        if pd.api.types.is_string_dtype(dk.full_df[label].dtype):
                             continue
                         if "labels_mean" in self.dk.data:
                             dk.full_df.at[index, f"{label}_mean"] = self.dk.data["labels_mean"][
@@ -953,7 +952,7 @@ class IFreqaiModel(ABC):
         return dk
 
     # Following methods which are overridden by user made prediction models.
-    # See freqai/prediction_models/CatboostPredictionModel.py for an example.
+    # See freqai/prediction_models/XGBoostRegressor.py for an example.
 
     @abstractmethod
     def train(self, unfiltered_df: DataFrame, pair: str, dk: FreqaiDataKitchen, **kwargs) -> Any:
@@ -969,7 +968,7 @@ class IFreqaiModel(ABC):
     def fit(self, data_dictionary: dict[str, Any], dk: FreqaiDataKitchen, **kwargs) -> Any:
         """
         Most regressors use the same function names and arguments e.g. user
-        can drop in LGBMRegressor in place of CatBoostRegressor and all data
+        can drop in LGBMRegressor in place of XGBoostRegressor and all data
         management will be properly handled by Freqai.
         :param data_dictionary: Dict = the dictionary constructed by DataHandler to hold
                                 all the training and test data/labels.

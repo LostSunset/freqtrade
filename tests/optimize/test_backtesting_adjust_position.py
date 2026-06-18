@@ -72,8 +72,8 @@ def test_backtest_position_adjustment(default_conf, fee, mocker, testdatadir) ->
             "initial_stop_loss_ratio": [-0.1, -0.1],
             "stop_loss_abs": [0.0940005, 0.092722365],
             "stop_loss_ratio": [-0.1, -0.1],
-            "min_rate": [0.10370188, 0.10300000000000001],
-            "max_rate": [0.10481985, 0.10388887000000001],
+            "min_rate": [0.10370188, 0.103000000],
+            "max_rate": [0.10481985, 0.103888870],
             "is_open": [False, False],
             "enter_tag": ["", ""],
             "leverage": [1.0, 1.0],
@@ -83,6 +83,9 @@ def test_backtest_position_adjustment(default_conf, fee, mocker, testdatadir) ->
             "funding_fees": [0.0, 0.0],
         }
     )
+    # TODO: pandas3 - create correctly above ?!?
+    expected["open_date"] = expected["open_date"].astype("datetime64[ms, UTC]")
+    expected["close_date"] = expected["close_date"].astype("datetime64[ms, UTC]")
     results_no = results.drop(columns=["orders"])
     pd.testing.assert_frame_equal(results_no, expected, check_exact=True)
 

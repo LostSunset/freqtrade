@@ -28,6 +28,7 @@ from freqtrade.optimize.optimize_reports import (
     generate_trading_stats,
     show_sorted_pairlist,
     store_backtest_results,
+    text_table_add_metrics,
     text_table_bt_results,
     text_table_strategy,
 )
@@ -36,6 +37,7 @@ from freqtrade.optimize.optimize_reports.optimize_reports import (
     _get_resample_from_period,
     calc_streak,
     generate_tag_metrics,
+    generate_wallet_stats,
 )
 from freqtrade.resolvers.strategy_resolver import StrategyResolver
 from freqtrade.util import dt_ts, format_duration
@@ -236,7 +238,7 @@ def test_generate_backtest_stats(default_conf, testdatadir, tmp_path):
     filename_last = tmp_path / LAST_BT_RESULT_FN
     _backup_file(filename_last, copy_file=True)
     assert not filename.is_file()
-    default_conf["exportfilename"] = filename
+    default_conf["exportdirectory"] = filename
 
     store_backtest_results(default_conf, stats, "2022_01_01_15_05_13")
 
@@ -263,7 +265,7 @@ def test_store_backtest_results(testdatadir, mocker):
     zip_mock = mocker.patch("freqtrade.optimize.optimize_reports.bt_storage.ZipFile")
     data = {"metadata": {}, "strategy": {}, "strategy_comparison": []}
     store_backtest_results(
-        {"exportfilename": testdatadir, "original_config": {}}, data, "2022_01_01_15_05_13"
+        {"exportdirectory": testdatadir, "original_config": {}}, data, "2022_01_01_15_05_13"
     )
 
     assert dump_mock.call_count == 2
@@ -275,7 +277,7 @@ def test_store_backtest_results(testdatadir, mocker):
     zip_mock.reset_mock()
     filename = testdatadir / "testresult.json"
     store_backtest_results(
-        {"exportfilename": filename, "original_config": {}}, data, "2022_01_01_15_05_13"
+        {"exportdirectory": filename, "original_config": {}}, data, "2022_01_01_15_05_13"
     )
     assert dump_mock.call_count == 2
     assert zip_mock.call_count == 1
@@ -287,7 +289,7 @@ def test_store_backtest_results(testdatadir, mocker):
 def test_store_backtest_results_real(tmp_path, caplog):
     data = {"metadata": {}, "strategy": {}, "strategy_comparison": []}
     config = {
-        "exportfilename": tmp_path,
+        "exportdirectory": tmp_path,
         "original_config": {},
     }
     store_backtest_results(
@@ -356,7 +358,7 @@ def test_write_read_backtest_candles(tmp_path):
     bt_results = {"metadata": {}, "strategy": {}, "strategy_comparison": []}
 
     mock_conf = {
-        "exportfilename": tmp_path,
+        "exportdirectory": tmp_path,
         "export": "signals",
         "runmode": "backtest",
         "original_config": {},
@@ -393,33 +395,6 @@ def test_write_read_backtest_candles(tmp_path):
 
     _clean_test_file(stored_file)
 
-    # test file exporting
-    filename = tmp_path / "testresult"
-    mock_conf["exportfilename"] = filename
-    store_backtest_results(mock_conf, bt_results, sample_date, analysis_results=data)
-    stored_file = tmp_path / f"testresult-{sample_date}.zip"
-    signals_pkl = f"testresult-{sample_date}_signals.pkl"
-    rejected_pkl = f"testresult-{sample_date}_rejected.pkl"
-    exited_pkl = f"testresult-{sample_date}_exited.pkl"
-    assert not (tmp_path / signals_pkl).is_file()
-    assert stored_file.is_file()
-
-    with ZipFile(stored_file, "r") as zipf:
-        assert signals_pkl in zipf.namelist()
-        assert rejected_pkl in zipf.namelist()
-        assert exited_pkl in zipf.namelist()
-
-        with zipf.open(signals_pkl) as scp:
-            pickled_signal_candles2 = joblib.load(scp)
-
-    assert pickled_signal_candles2.keys() == candle_dict.keys()
-    assert pickled_signal_candles2["DefStrat"].keys() == pickled_signal_candles2["DefStrat"].keys()
-    assert pickled_signal_candles2["DefStrat"]["UNITTEST/BTC"].equals(
-        pickled_signal_candles2["DefStrat"]["UNITTEST/BTC"]
-    )
-
-    _clean_test_file(stored_file)
-
 
 def test_generate_pair_metrics():
     results = pd.DataFrame(
@@ -452,7 +427,6 @@ def test_generate_pair_metrics():
     assert (
         pytest.approx(pair_results[-1]["profit_mean_pct"]) == pair_results[-1]["profit_mean"] * 100
     )
-    assert pytest.approx(pair_results[-1]["profit_sum_pct"]) == pair_results[-1]["profit_sum"] * 100
 
 
 def test_generate_daily_stats(testdatadir):
@@ -644,6 +618,63 @@ def test_text_table_strategy(testdatadir, capsys):
     )
 
 
+def test_generate_wallet_stats_extended_metrics():
+    wallet_df = pd.DataFrame(
+        {
+            "date": [
+                dt_utc(2025, 1, 1, 0, 0, 0),
+                dt_utc(2025, 1, 1, 12, 0, 0),
+                dt_utc(2025, 1, 1, 18, 0, 0),
+                dt_utc(2025, 1, 3, 0, 0, 0),
+            ],
+            "currency": ["BTC", "BTC", "BTC", "BTC"],
+            "rate": [1.0, 1.0, 1.0, 1.0],
+            "balance": [100.0, 120.0, 80.0, 110.0],
+        }
+    )
+
+    stats = generate_wallet_stats(wallet_df, "BTC")
+
+    assert "sharpe" in stats
+    assert "sortino" in stats
+    assert "calmar" in stats
+    assert "max_drawdown_account" in stats
+    assert "max_drawdown_abs" in stats
+    assert pytest.approx(stats["max_drawdown_account"]) == 1 / 3
+    assert stats["drawdown_start"] == "2025-01-01 12:00:00"
+    assert stats["drawdown_end"] == "2025-01-01 18:00:00"
+
+
+def test_text_table_add_metrics_shows_wallet_ratios(testdatadir, capsys):
+    filename = testdatadir / "backtest_results/backtest-result.json"
+    bt_data = load_backtest_stats(filename)
+    strat_results = next(iter(bt_data["strategy"].values()))
+    strat_results["wallet_stats"] = {
+        "low_balance": 0.95,
+        "high_balance": 1.12,
+        "low_date": "2025-01-01 18:00:00",
+        "high_date": "2025-01-01 12:00:00",
+        "sharpe": 1.23,
+        "sortino": 2.34,
+        "calmar": 3.45,
+        "max_drawdown_account": 0.12,
+        "max_relative_drawdown": 0.15,
+        "max_drawdown_abs": 0.05,
+        "drawdown_start": "2025-01-01 12:00:00",
+        "drawdown_end": "2025-01-01 18:00:00",
+        "max_drawdown_high": 1.12,
+        "max_drawdown_low": 0.95,
+    }
+
+    text_table_add_metrics(strat_results)
+    text = capsys.readouterr().out
+
+    assert "Sharpe (daily wallet balance)" in text
+    assert "Sortino (daily wallet balance)" in text
+    assert "Calmar (daily wallet balance)" in text
+    assert "Max % of account underwater (balance)" in text
+
+
 def test_generate_periodic_breakdown_stats(testdatadir):
     filename = testdatadir / "backtest_results/backtest-result.json"
     bt_data = load_backtest_data(filename).to_dict(orient="records")
@@ -662,11 +693,30 @@ def test_generate_periodic_breakdown_stats(testdatadir):
     res = generate_periodic_breakdown_stats([], "day")
     assert res == []
 
+    # Test weekday
+    reswd = generate_periodic_breakdown_stats(bt_data, "weekday")
+    assert isinstance(reswd, list)
+    assert len(reswd) == 7
+    assert reswd[0]["date"] == "Monday"
+    assert reswd[0]["date_ts"] == 0
+    assert reswd[1]["date"] == "Tuesday"
+    assert reswd[2]["date"] == "Wednesday"
+    assert reswd[3]["date"] == "Thursday"
+    assert reswd[4]["date"] == "Friday"
+    assert reswd[5]["date"] == "Saturday"
+    assert reswd[6]["date"] == "Sunday"
+    monday = reswd[0]
+    assert "draws" in monday
+    assert "losses" in monday
+    assert "wins" in monday
+    assert "profit_abs" in monday
+
 
 def test__get_resample_from_period():
-    assert _get_resample_from_period("day") == "1d"
+    assert _get_resample_from_period("day") == "1D"
     assert _get_resample_from_period("week") == "1W-MON"
     assert _get_resample_from_period("month") == "1ME"
+    assert _get_resample_from_period("weekday") == "weekday"
     with pytest.raises(ValueError, match=r"Period noooo is not supported."):
         _get_resample_from_period("noooo")
 

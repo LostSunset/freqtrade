@@ -1,30 +1,24 @@
-"""Bybit exchange subclass"""
-
 import logging
 from datetime import datetime, timedelta
-from typing import Any
 
 import ccxt
 
 from freqtrade.constants import BuySell
-from freqtrade.enums import MarginMode, PriceType, TradingMode
+from freqtrade.enums import OPTIMIZE_MODES, MarginMode, PriceType, TradingMode
 from freqtrade.exceptions import DDosProtection, ExchangeError, OperationalException, TemporaryError
 from freqtrade.exchange import Exchange
 from freqtrade.exchange.common import retrier
 from freqtrade.exchange.exchange_types import CcxtOrder, FtHas
+from freqtrade.misc import deep_merge_dicts
+from freqtrade.util import dt_from_ts, dt_ts
 
 
 logger = logging.getLogger(__name__)
 
 
 class Bybit(Exchange):
-    """
-    Bybit exchange class. Contains adjustments needed for Freqtrade to work
-    with this exchange.
-
-    Please note that this exchange is not included in the list of exchanges
-    officially supported by the Freqtrade development team. So some features
-    may still not work as expected.
+    """Bybit exchange class.
+    Contains adjustments needed for Freqtrade to work with this exchange.
     """
 
     unified_account = False
@@ -41,11 +35,12 @@ class Bybit(Exchange):
             # TODO: Can be removed once bybit fully forces all accounts to unified mode.
             "fetchOrder": False,
         },
+        # Demo trading
+        # https://learn.bybit.com/en/bybit-guide/how-to-use-bybit-demo-trading
+        "supports_demo_trading": True,
     }
     _ft_has_futures: FtHas = {
         "ohlcv_has_history": True,
-        "mark_ohlcv_timeframe": "4h",
-        "funding_fee_timeframe": "8h",
         "funding_fee_candle_limit": 200,
         "stoploss_on_exchange": True,
         "stoploss_order_types": {"limit": "limit", "market": "market"},
@@ -61,12 +56,13 @@ class Bybit(Exchange):
         "exchange_has_overrides": {
             "fetchOrder": True,
         },
+        "has_delisting": True,
     }
 
     _supported_trading_mode_margin_pairs: list[tuple[TradingMode, MarginMode]] = [
-        # TradingMode.SPOT always supported and not required in this list
+        (TradingMode.SPOT, MarginMode.NONE),
+        (TradingMode.FUTURES, MarginMode.ISOLATED),
         # (TradingMode.FUTURES, MarginMode.CROSS),
-        (TradingMode.FUTURES, MarginMode.ISOLATED)
     ]
 
     @property
@@ -76,13 +72,10 @@ class Bybit(Exchange):
         config = {}
         if self.trading_mode == TradingMode.SPOT:
             config.update({"options": {"defaultType": "spot"}})
-        config.update(super()._ccxt_config)
+        elif self.trading_mode == TradingMode.FUTURES:
+            config.update({"options": {"defaultSettle": self._config["stake_currency"]}})
+        config = deep_merge_dicts(config, super()._ccxt_config)
         return config
-
-    def market_is_future(self, market: dict[str, Any]) -> bool:
-        main = super().market_is_future(market)
-        # For ByBit, we'll only support USDT markets for now.
-        return main and market["settle"] == "USDT"
 
     @retrier
     def additional_exchange_init(self) -> None:
@@ -182,18 +175,36 @@ class Bybit(Exchange):
         PERPETUAL:
          bybit:
           https://www.bybithelp.com/HelpCenterKnowledge/bybitHC_Article?language=en_US&id=000001067
-          https://www.bybit.com/en/help-center/article/Liquidation-Price-Calculation-under-Isolated-Mode-Unified-Trading-Account#b
+          USDT:
+            https://www.bybit.com/en/help-center/article/Liquidation-Price-Calculation-under-Isolated-Mode-Unified-Trading-Account#b
+          USDC:
+            https://www.bybit.com/en/help-center/article/Liquidation-Price-Calculation-under-Isolated-Mode-Unified-Trading-Account#c
 
-        Long:
+        Long USDT:
+            Liquidation Price = (
+                Entry Price - [(Initial Margin - Maintenance Margin)/Contract Quantity]
+                - (Extra Margin Added/Contract Quantity))
+        Short USDT:
+            Liquidation Price = (
+                Entry Price + [(Initial Margin - Maintenance Margin)/Contract Quantity]
+                + (Extra Margin Added/Contract Quantity))
+
+        Long USDC:
         Liquidation Price = (
-            Entry Price - [(Initial Margin - Maintenance Margin)/Contract Quantity]
-            - (Extra Margin Added/Contract Quantity))
-        Short:
+            Position Entry Price - [
+                (Initial Margin + Extra Margin Added - Maintenance Margin) / Position Size
+            ]
+        )
+
+        Short USDC:
         Liquidation Price = (
-            Entry Price + [(Initial Margin - Maintenance Margin)/Contract Quantity]
-            + (Extra Margin Added/Contract Quantity))
+            Position Entry Price + [
+                (Initial Margin + Extra Margin Added - Maintenance Margin) / Position Size
+            ]
+        )
 
         Implementation Note: Extra margin is currently not used.
+        Due to this - the liquidation formula between USDT and USDC is the same.
 
         :param pair: Pair to calculate liquidation price for
         :param open_rate: Entry price of position
@@ -286,3 +297,35 @@ class Bybit(Exchange):
 
         self.cache_leverage_tiers(tiers, self._config["stake_currency"])
         return tiers
+
+    def check_delisting_time(self, pair: str) -> datetime | None:
+        """
+        Check if the pair gonna be delisted.
+        By default, it returns None.
+        :param pair: Market symbol
+        :return: Datetime if the pair gonna be delisted, None otherwise
+        """
+        if self._config["runmode"] in OPTIMIZE_MODES:
+            return None
+
+        if self.trading_mode == TradingMode.FUTURES:
+            return self._check_delisting_futures(pair)
+        return None
+
+    def _check_delisting_futures(self, pair: str) -> datetime | None:
+        delivery_time = self.markets.get(pair, {}).get("info", {}).get("deliveryTime", 0)
+        if delivery_time:
+            if isinstance(delivery_time, str) and (delivery_time != ""):
+                delivery_time = int(delivery_time)
+
+            if not isinstance(delivery_time, int) or delivery_time <= 0:
+                return None
+
+            max_delivery = dt_ts() + (
+                14 * 24 * 60 * 60 * 1000
+            )  # Assume exchange don't announce delisting more than 14 days in advance
+
+            if delivery_time < max_delivery:
+                return dt_from_ts(delivery_time)
+
+        return None

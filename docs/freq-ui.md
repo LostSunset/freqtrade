@@ -4,7 +4,7 @@ Freqtrade provides a builtin webserver, which can serve [FreqUI](https://github.
 
 By default, the UI is automatically installed as part of the installation (script, docker).
 freqUI can also be manually installed by using the `freqtrade install-ui` command.
-This same command can also be used to update freqUI to new new releases.
+This same command can also be used to update freqUI to new releases.
 
 Once the bot is started in trade / dry-run mode (with `freqtrade trade`) - the UI will be available under the configured API port (by default `http://127.0.0.1:8080`).
 
@@ -46,6 +46,23 @@ On this page, you can also interact with the bot by starting and stopping it and
 ![FreqUI - trade view](assets/freqUI-trade-pane-dark.png#only-dark)
 ![FreqUI - trade view](assets/freqUI-trade-pane-light.png#only-light)
 
+### Dashboard
+
+The dashboard view provides an overview of the bot's performance and status.
+If multiple bots are connected, the dashboard will show an overview of all connected bots, allowing you to easily switch between them or show just a subset of available bots.
+
+#### Wallet Balance
+
+New in freqtrade 2026.4: This shows the balance of the bot over time.
+
+Compared to the "cumulative Profit" chart, this chart will show the actual balance of the bot over time, including unrealized profit and losses, as well as deposits and withdrawals.
+
+Historic data has re-populated based on available exchange data - however is assumed to be best-effort and may not be 100% accurate.
+More specifically, it won't cover deposits and withdrawals, and will assume a starting balance of current balance - profit/losses.
+
+For clarity - a "Capture start" marker line is shown on the chart, which indicates the point at which the migration to the new wallet balance tracking system happened.
+Only beyond this point, the wallet balance is expected to be accurate.
+
 ### Plot Configurator
 
 FreqUI Plots can be configured either via a `plot_config` configuration object in the strategy (which can be loaded via "from strategy" button) or via the UI.
@@ -70,7 +87,16 @@ Things you can change (among others):
 ![FreqUI - Settings view](assets/frequi-settings-dark.png#only-dark)
 ![FreqUI - Settings view](assets/frequi-settings-light.png#only-light)
 
-## Backtesting
+## Webserver mode
+
+when freqtrade is started in [webserver mode](utils.md#webserver-mode) (freqtrade started with `freqtrade webserver`), the webserver will start in a special mode allowing for additional features, for example:
+
+* Downloading data
+* Testing pairlists
+* [Backtesting strategies](#backtesting)
+* ... to be expanded
+
+### Backtesting
 
 When freqtrade is started in [webserver mode](utils.md#webserver-mode) (freqtrade started with `freqtrade webserver`), the backtesting view becomes available.
 This view allows you to backtest strategies and visualize the results.

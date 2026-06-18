@@ -19,6 +19,7 @@ from freqtrade.misc import (
     plural,
     safe_value_fallback,
     safe_value_fallback2,
+    safe_value_nested,
 )
 
 
@@ -91,6 +92,26 @@ def test_is_file_in_dir(tmp_path):
 def test_pair_to_filename(pair, expected_result):
     pair_s = pair_to_filename(pair)
     assert pair_s == expected_result
+
+
+def test_safe_value_nested():
+    dict1 = {
+        "first": {"rows": {"pass": "dog", "number": "1"}},
+        "second": "notadict",
+        "third": None,
+        "fourth": 15,
+    }
+    assert safe_value_nested(dict1, "first.rows.pass") == "dog"
+    assert safe_value_nested(dict1, "first.rows.fail", default_value="cat") == "cat"
+    assert safe_value_nested(dict1, "first") == dict1["first"]
+    assert safe_value_nested(dict1, "second.rows.pass") is None
+    assert safe_value_nested(dict1, "second.rows.pass", default_value="fallback") == "fallback"
+    assert safe_value_nested(dict1, "third.rows.pass", default_value="fallback") == "fallback"
+    assert safe_value_nested(dict1, "third.rows.pass") is None
+    assert safe_value_nested(dict1, "fourth.rows.pass") is None
+    assert safe_value_nested(dict1, "fourth") == 15
+    assert safe_value_nested(dict1, "fourth", default_value="fallback") == 15
+    assert safe_value_nested(dict1, "fourth.rows.pass", default_value="fallback") == "fallback"
 
 
 def test_safe_value_fallback():
@@ -168,12 +189,12 @@ def test_plural() -> None:
     "conn_url,expected",
     [
         (
-            "postgresql+psycopg2://scott123:scott123@host:1245/dbname",
-            "postgresql+psycopg2://scott123:*****@host:1245/dbname",
+            "postgresql+psycopg://scott123:scott123@host:1245/dbname",
+            "postgresql+psycopg://scott123:*****@host:1245/dbname",
         ),
         (
-            "postgresql+psycopg2://scott123:scott123@host.name.com/dbname",
-            "postgresql+psycopg2://scott123:*****@host.name.com/dbname",
+            "postgresql+psycopg://scott123:scott123@host.name.com/dbname",
+            "postgresql+psycopg://scott123:*****@host.name.com/dbname",
         ),
         (
             "mariadb+mariadbconnector://app_user:Password123!@127.0.0.1:3306/company",
@@ -182,6 +203,26 @@ def test_plural() -> None:
         (
             "mysql+pymysql://user:pass@some_mariadb/dbname?charset=utf8mb4",
             "mysql+pymysql://user:*****@some_mariadb/dbname?charset=utf8mb4",
+        ),
+        (
+            "postgresql+psycopg://scott:p%40ss@host/dbname",
+            "postgresql+psycopg://scott:*****@host/dbname",
+        ),
+        (
+            "postgresql+psycopg://scott:pa:ss@host/dbname",
+            "postgresql+psycopg://scott:*****@host/dbname",
+        ),
+        (
+            "postgresql+psycopg://scott:scott@[::1]:5432/dbname",
+            "postgresql+psycopg://scott:*****@[::1]:5432/dbname",
+        ),
+        (
+            "postgresql+psycopg://scott@host/dbname",
+            "postgresql+psycopg://scott@host/dbname",
+        ),
+        (
+            "postgresql+psycopg://host/dbname",
+            "postgresql+psycopg://host/dbname",
         ),
         (
             "sqlite:////freqtrade/user_data/tradesv3.sqlite",
@@ -209,7 +250,7 @@ def test_deep_merge_dicts():
 def test_dataframe_json(ohlcv_history):
     from pandas.testing import assert_frame_equal
 
-    json = dataframe_to_json(ohlcv_history)
+    json = dataframe_to_json(ohlcv_history.copy())
     dataframe = json_to_dataframe(json)
 
     assert list(ohlcv_history.columns) == list(dataframe.columns)
@@ -217,6 +258,6 @@ def test_dataframe_json(ohlcv_history):
 
     assert_frame_equal(ohlcv_history, dataframe)
     ohlcv_history.at[1, "date"] = pd.NaT
-    json = dataframe_to_json(ohlcv_history)
+    json = dataframe_to_json(ohlcv_history.copy())
 
     dataframe = json_to_dataframe(json)

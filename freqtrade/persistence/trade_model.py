@@ -48,7 +48,7 @@ from freqtrade.leverage import interest
 from freqtrade.misc import safe_value_fallback
 from freqtrade.persistence.base import ModelBase, SessionType
 from freqtrade.persistence.custom_data import CustomDataWrapper, _CustomData
-from freqtrade.util import FtPrecise, dt_from_ts, dt_now, dt_ts, dt_ts_none
+from freqtrade.util import FtPrecise, dt_from_ts, dt_now, dt_ts, dt_ts_none, round_value
 
 
 logger = logging.getLogger(__name__)
@@ -189,8 +189,8 @@ class Order(ModelBase):
     def __repr__(self):
         return (
             f"Order(id={self.id}, trade={self.ft_trade_id}, order_id={self.order_id}, "
-            f"side={self.side}, filled={self.safe_filled}, price={self.safe_price}, "
-            f"amount={self.amount}, "
+            f"side={self.side or self.ft_order_side}, filled={self.safe_filled}, "
+            f"price={self.safe_price}, amount={self.amount}, "
             f"status={self.status}, date={self.order_date_utc:{DATETIME_PRINT_FORMAT}})"
         )
 
@@ -654,9 +654,10 @@ class LocalTrade:
         )
 
         return (
-            f"Trade(id={self.id}, pair={self.pair}, amount={self.amount:.8f}, "
-            f"is_short={self.is_short or False}, leverage={self.leverage or 1.0}, "
-            f"open_rate={self.open_rate:.8f}, open_since={open_since})"
+            f"Trade(id={self.id}, pair={self.pair}, amount={round_value(self.amount, 8)}, "
+            f"is_short={self.is_short or False}, "
+            f"leverage={round_value(self.leverage or 1.0, 1)}, "
+            f"open_rate={round_value(self.open_rate, 8)}, open_since={open_since})"
         )
 
     def to_json(self, minified: bool = False) -> dict[str, Any]:
@@ -755,6 +756,8 @@ class LocalTrade:
             "precision_mode": self.precision_mode,
             "precision_mode_price": self.precision_mode_price,
             "contract_size": self.contract_size,
+            "nr_of_successful_entries": self.nr_of_successful_entries,
+            "nr_of_successful_exits": self.nr_of_successful_exits,
             "has_open_orders": self.has_open_orders,
             "orders": orders_json,
         }
@@ -855,9 +858,9 @@ class LocalTrade:
             higher_stop = stop_loss_norm > self.stop_loss
             lower_stop = stop_loss_norm < self.stop_loss
 
-            # stop losses only walk up, never down!,
-            #   ? But adding more to a leveraged trade would create a lower liquidation price,
-            #   ? decreasing the minimum stoploss
+            # stop losses only walk up, never down!
+            # but adding more to a leveraged trade would create a lower liquidation price,
+            # decreasing the minimum stoploss
             if (
                 allow_refresh
                 or (higher_stop and not self.is_short)
@@ -1187,10 +1190,13 @@ class LocalTrade:
         """
         close_trade_value = self.calc_close_trade_value(rate, amount)
 
-        if amount is None or open_rate is None:
+        if (amount is None) and (open_rate is None):
             open_trade_value = self.open_trade_value
         else:
-            open_trade_value = self._calc_open_trade_value(amount, open_rate)
+            # Fall back to trade.amount and self.open_rate if necessary
+            open_trade_value = self._calc_open_trade_value(
+                amount or self.amount, open_rate or self.open_rate
+            )
 
         if open_trade_value == 0.0:
             return 0.0
@@ -1201,6 +1207,35 @@ class LocalTrade:
                 profit_ratio = ((close_trade_value / open_trade_value) - 1) * self.leverage
 
         return float(f"{profit_ratio:.8f}")
+
+    def calc_close_rate_for_roi(self, target_roi: float) -> float:
+        """
+        Calculate the required close price to reach a target ROI.
+        Must match the logic used in `calc_profit_ratio()`.
+
+        :param target_roi: The desired return on investment (as a decimal, e.g., 0.05 for 5%)
+        :return: Close price (rate) required to achieve the target ROI
+        """
+        leverage = float(self.leverage or 1.0)
+        deleveraged_roi = float(target_roi) / leverage
+
+        open_value = self._calc_open_trade_value(self.amount, self.open_rate)
+
+        # The ROI formula uses close_value(rate), which depends on trading mode:
+        # - SPOT: linear in rate, adjusted by close fee
+        # - MARGIN: same, but long subtracts interest, short increases amount
+        # - FUTURES: adds/subtracts funding to/from close value
+        # All cases are affine in rate:
+        #     close_value(rate) = a * rate + b
+        # We extract a and b by probing close_value at rate = 0 and 1.
+        value_at_0 = self.calc_close_trade_value(0.0)
+        value_at_1 = self.calc_close_trade_value(1.0)
+        alpha = value_at_1 - value_at_0
+        beta = value_at_0
+
+        s = -1.0 if self.is_short else 1.0
+        adj = 1.0 + (deleveraged_roi / s)
+        return (adj * open_value - beta) / alpha
 
     def recalc_trade_from_orders(self, *, is_closing: bool = False):
         ZERO = FtPrecise(0.0)
@@ -1213,12 +1248,16 @@ class LocalTrade:
         close_profit_abs = 0.0
         # Reset funding fees
         self.funding_fees = 0.0
-        funding_fees = 0.0
-        ordercount = len(self.orders) - 1
+        # Total funding fees - cumulated over all orders
+        total_funding_fees = 0.0
+        # current funding fees - resetting on every exit to be aligned with profit calculation,
+        # as funding fees are part of the profit
+        current_funding_fee = 0.0
         for i, o in enumerate(self.orders):
             if o.ft_is_open or not o.filled:
                 continue
-            funding_fees += o.funding_fee or 0.0
+            current_funding_fee += o.funding_fee or 0.0
+            total_funding_fees += o.funding_fee or 0.0
             tmp_amount = FtPrecise(o.safe_amount_after_fee)
             tmp_price = FtPrecise(o.safe_price)
 
@@ -1233,11 +1272,8 @@ class LocalTrade:
                     avg_price = current_stake / current_amount
 
             if is_exit:
-                # Process exits
-                if i == ordercount and is_closing:
-                    # Apply funding fees only to the last closing order
-                    self.funding_fees = funding_fees
-
+                # Intermediate funding fees for profit calculation
+                self.funding_fees = current_funding_fee
                 exit_rate = o.safe_price
                 exit_amount = o.safe_amount_after_fee
                 prof = self.calculate_profit(exit_rate, exit_amount, float(avg_price))
@@ -1246,10 +1282,12 @@ class LocalTrade:
                     # This needs to be calculated based on the last occurring exit to be aligned
                     # with realized_profit.
                     close_profit = (close_profit_abs / total_stake) * self.leverage
+                current_funding_fee = 0.0
             else:
                 total_stake += self._calc_open_trade_value(tmp_amount, price)
                 max_stake_amount += tmp_amount * price
-        self.funding_fees = funding_fees
+        # Assign cumulated funding fees after all orders have been processed
+        self.funding_fees = total_funding_fees
         self.max_stake_amount = float(max_stake_amount) / (self.leverage or 1.0)
 
         if close_profit:
@@ -2090,32 +2128,34 @@ class Trade(ModelBase, LocalTrade):
         return resp
 
     @staticmethod
-    def get_best_pair(start_date: datetime | None = None):
+    def get_best_pair(trade_filter: list | None = None):
         """
         Get best pair with closed trade.
         NOTE: Not supported in Backtesting.
         :returns: Tuple containing (pair, profit_sum)
         """
-        filters: list = [Trade.is_open.is_(False)]
-        if start_date:
-            filters.append(Trade.close_date >= start_date)
+        if not trade_filter:
+            trade_filter = []
+        trade_filter.append(Trade.is_open.is_(False))
 
-        pair_rates_query = Trade._generic_performance_query([Trade.pair], filters)
+        pair_rates_query = Trade._generic_performance_query([Trade.pair], trade_filter)
         best_pair = Trade.session.execute(pair_rates_query).first()
         # returns pair, profit_ratio, abs_profit, count
         return best_pair
 
     @staticmethod
-    def get_trading_volume(start_date: datetime | None = None) -> float:
+    def get_trading_volume(trade_filter: list | None = None) -> float:
         """
         Get Trade volume based on Orders
         NOTE: Not supported in Backtesting.
         :returns: Tuple containing (pair, profit_sum)
         """
-        filters = [Order.status == "closed"]
-        if start_date:
-            filters.append(Order.order_filled_date >= start_date)
+        if not trade_filter:
+            trade_filter = []
+        trade_filter.append(Order.status == "closed")
         trading_volume = Trade.session.execute(
-            select(func.sum(Order.cost).label("volume")).filter(*filters)
+            select(func.sum(Order.cost).label("volume"))
+            .join(Order._trade_live)
+            .filter(*trade_filter)
         ).scalar_one()
         return trading_volume or 0.0

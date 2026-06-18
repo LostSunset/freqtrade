@@ -1,6 +1,8 @@
 import logging
 from typing import Any, Literal
 
+from rich.text import Text
+
 from freqtrade.constants import UNLIMITED_STAKE_AMOUNT, Config
 from freqtrade.ft_types import BacktestResultType
 from freqtrade.optimize.optimize_reports.optimize_reports import generate_periodic_breakdown_stats
@@ -8,6 +10,8 @@ from freqtrade.util import decimals_per_coin, fmt_coin, print_rich_table
 
 
 logger = logging.getLogger(__name__)
+
+__EMPTY_LINE = ("", "")
 
 
 def _get_line_floatfmt(stake_currency: str) -> list[str]:
@@ -194,64 +198,68 @@ def text_table_strategy(strategy_results, stake_currency: str, title: str):
 
 
 def text_table_add_metrics(strat_results: dict) -> None:
+    stake = strat_results["stake_currency"]
     if len(strat_results["trades"]) > 0:
         best_trade = max(strat_results["trades"], key=lambda x: x["profit_ratio"])
         worst_trade = min(strat_results["trades"], key=lambda x: x["profit_ratio"])
 
         short_metrics = (
             [
-                ("", ""),  # Empty line to improve readability
+                __EMPTY_LINE,  # Empty line to improve readability
                 (
-                    "Long / Short",
+                    "Long / Short trades",
                     f"{strat_results.get('trade_count_long', 'total_trades')} / "
                     f"{strat_results.get('trade_count_short', 0)}",
                 ),
-                ("Total profit Long %", f"{strat_results['profit_total_long']:.2%}"),
-                ("Total profit Short %", f"{strat_results['profit_total_short']:.2%}"),
                 (
-                    "Absolute profit Long",
-                    fmt_coin(
-                        strat_results["profit_total_long_abs"], strat_results["stake_currency"]
-                    ),
+                    "Long / Short profit %",
+                    f"{strat_results['profit_total_long']:.2%} / "
+                    f"{strat_results['profit_total_short']:.2%}",
                 ),
                 (
-                    "Absolute profit Short",
-                    fmt_coin(
-                        strat_results["profit_total_short_abs"], strat_results["stake_currency"]
-                    ),
+                    f"Long / Short profit {stake}",
+                    f"{strat_results['profit_total_long_abs']:.{decimals_per_coin(stake)}f} / "
+                    f"{strat_results['profit_total_short_abs']:.{decimals_per_coin(stake)}f}",
                 ),
             ]
             if strat_results.get("trade_count_short", 0) > 0
             else []
         )
 
-        drawdown_metrics = []
+        drawdown_metrics: list[tuple[str | Text, str | Text]] = []
         if "max_relative_drawdown" in strat_results:
             # Compatibility to show old hyperopt results
             drawdown_metrics.append(
                 ("Max % of account underwater", f"{strat_results['max_relative_drawdown']:.2%}")
             )
+        drawdown_account = (
+            strat_results["max_drawdown_account"]
+            if "max_drawdown_account" in strat_results
+            else strat_results["max_drawdown"]
+        )
         drawdown_metrics.extend(
             [
                 (
-                    ("Absolute Drawdown (Account)", f"{strat_results['max_drawdown_account']:.2%}")
-                    if "max_drawdown_account" in strat_results
-                    else ("Drawdown", f"{strat_results['max_drawdown']:.2%}")
+                    "Absolute drawdown",
+                    f"{fmt_coin(strat_results['max_drawdown_abs'], stake)} "
+                    f"({drawdown_account:.2%})",
                 ),
                 (
-                    "Absolute Drawdown",
-                    fmt_coin(strat_results["max_drawdown_abs"], strat_results["stake_currency"]),
+                    "Drawdown duration",
+                    strat_results["drawdown_duration"]
+                    if "drawdown_duration" in strat_results
+                    else "N/A",
                 ),
                 (
-                    "Drawdown high",
-                    fmt_coin(strat_results["max_drawdown_high"], strat_results["stake_currency"]),
+                    "Profit at drawdown start",
+                    fmt_coin(strat_results["max_drawdown_high"], stake),
                 ),
                 (
-                    "Drawdown low",
-                    fmt_coin(strat_results["max_drawdown_low"], strat_results["stake_currency"]),
+                    "Profit at drawdown end",
+                    fmt_coin(strat_results["max_drawdown_low"], stake),
                 ),
-                ("Drawdown Start", strat_results["drawdown_start"]),
-                ("Drawdown End", strat_results["drawdown_end"]),
+                ("Drawdown start", strat_results["drawdown_start"]),
+                ("Drawdown end", strat_results["drawdown_end"]),
             ]
         )
 
@@ -283,6 +291,79 @@ def text_table_add_metrics(strat_results: dict) -> None:
             if "trading_mode" in strat_results
             else []
         )
+        wallet_metrics: list[tuple[str, str]] = [
+            (
+                "Min/Max balance (closed trades)",
+                f"{fmt_coin(strat_results['csum_min'], stake)} / "
+                f"{fmt_coin(strat_results['csum_max'], stake)}",
+            ),
+        ]
+        wallet_stats = strat_results.get("wallet_stats", {})
+        if wallet_stats:
+            drawdown_metrics.extend(
+                [
+                    __EMPTY_LINE,  # Empty line to improve readability
+                    (Text("Wallet based Metrics", style="bold"), ""),
+                    (
+                        "Min/Max balance (wallet balance)",
+                        f"{fmt_coin(wallet_stats['low_balance'], stake)} / "
+                        f"{fmt_coin(wallet_stats['high_balance'], stake)}",
+                    ),
+                    (
+                        "Min/Max balance dates (wallet balance)",
+                        f"{wallet_stats['low_date']} / {wallet_stats['high_date']}",
+                    ),
+                ]
+            )
+            if "max_drawdown_abs" in wallet_stats:
+                # Assume that if sharpe is there, all others are there as well.
+                drawdown_metrics.extend(
+                    [
+                        (
+                            "Max % of account underwater (balance)",
+                            f"{wallet_stats['max_relative_drawdown']:.2%}",
+                        ),
+                        (
+                            "Absolute drawdown (wallet balance)",
+                            f"{fmt_coin(wallet_stats['max_drawdown_abs'], stake)} "
+                            f"({wallet_stats['max_drawdown_account']:.2%})",
+                        ),
+                        (
+                            "Drawdown duration",
+                            wallet_stats["drawdown_duration"]
+                            if "drawdown_duration" in wallet_stats
+                            else "N/A",
+                        ),
+                        (
+                            "Profit at drawdown start",
+                            fmt_coin(wallet_stats["max_drawdown_high"], stake),
+                        ),
+                        (
+                            "Profit at drawdown end",
+                            fmt_coin(wallet_stats["max_drawdown_low"], stake),
+                        ),
+                        ("Drawdown start", wallet_stats["drawdown_start"]),
+                        ("Drawdown end", wallet_stats["drawdown_end"]),
+                        (
+                            "Sharpe (daily wallet balance)",
+                            f"{wallet_stats['sharpe']:.2f}"
+                            if wallet_stats and "sharpe" in wallet_stats
+                            else "N/A",
+                        ),
+                        (
+                            "Sortino (daily wallet balance)",
+                            f"{wallet_stats['sortino']:.2f}"
+                            if wallet_stats and "sortino" in wallet_stats
+                            else "N/A",
+                        ),
+                        (
+                            "Calmar (daily wallet balance)",
+                            f"{wallet_stats['calmar']:.2f}"
+                            if wallet_stats and "calmar" in wallet_stats
+                            else "N/A",
+                        ),
+                    ]
+                )
 
         # Newly added fields should be ignored if they are missing in strat_results. hyperopt-show
         # command stores these results and newer version of freqtrade must be able to handle old
@@ -292,28 +373,37 @@ def text_table_add_metrics(strat_results: dict) -> None:
             ("Backtesting to", strat_results["backtest_end"]),
             *trading_mode,
             ("Max open trades", strat_results["max_open_trades"]),
-            ("", ""),  # Empty line to improve readability
+            __EMPTY_LINE,  # Empty line to improve readability
             (
                 "Total/Daily Avg Trades",
                 f"{strat_results['total_trades']} / {strat_results['trades_per_day']}",
             ),
             (
                 "Starting balance",
-                fmt_coin(strat_results["starting_balance"], strat_results["stake_currency"]),
+                fmt_coin(strat_results["starting_balance"], stake),
             ),
             (
                 "Final balance",
-                fmt_coin(strat_results["final_balance"], strat_results["stake_currency"]),
+                fmt_coin(strat_results["final_balance"], stake),
             ),
             (
                 "Absolute profit ",
-                fmt_coin(strat_results["profit_total_abs"], strat_results["stake_currency"]),
+                fmt_coin(strat_results["profit_total_abs"], stake),
             ),
             ("Total profit %", f"{strat_results['profit_total']:.2%}"),
             ("CAGR %", f"{strat_results['cagr']:.2%}" if "cagr" in strat_results else "N/A"),
-            ("Sortino", f"{strat_results['sortino']:.2f}" if "sortino" in strat_results else "N/A"),
-            ("Sharpe", f"{strat_results['sharpe']:.2f}" if "sharpe" in strat_results else "N/A"),
-            ("Calmar", f"{strat_results['calmar']:.2f}" if "calmar" in strat_results else "N/A"),
+            (
+                "Sharpe (closed trades)",
+                f"{strat_results['sharpe']:.2f}" if "sharpe" in strat_results else "N/A",
+            ),
+            (
+                "Sortino (closed trades)",
+                f"{strat_results['sortino']:.2f}" if "sortino" in strat_results else "N/A",
+            ),
+            (
+                "Calmar (closed trades)",
+                f"{strat_results['calmar']:.2f}" if "calmar" in strat_results else "N/A",
+            ),
             ("SQN", f"{strat_results['sqn']:.2f}" if "sqn" in strat_results else "N/A"),
             (
                 "Profit factor",
@@ -332,19 +422,23 @@ def text_table_add_metrics(strat_results: dict) -> None:
                 ),
             ),
             (
-                "Avg. daily profit %",
-                f"{(strat_results['profit_total'] / strat_results['backtest_days']):.2%}",
+                "Avg. daily profit",
+                fmt_coin(
+                    (strat_results["profit_total_abs"] / strat_results["backtest_days"]),
+                    stake,
+                ),
             ),
             (
                 "Avg. stake amount",
-                fmt_coin(strat_results["avg_stake_amount"], strat_results["stake_currency"]),
+                fmt_coin(strat_results["avg_stake_amount"], stake),
             ),
+            ("Market change", f"{strat_results['market_change']:.2%}"),
             (
                 "Total trade volume",
-                fmt_coin(strat_results["total_volume"], strat_results["stake_currency"]),
+                fmt_coin(strat_results["total_volume"], stake),
             ),
             *short_metrics,
-            ("", ""),  # Empty line to improve readability
+            __EMPTY_LINE,  # Empty line to improve readability
             (
                 "Best Pair",
                 f"{strat_results['best_pair']['key']} "
@@ -359,11 +453,11 @@ def text_table_add_metrics(strat_results: dict) -> None:
             ("Worst trade", f"{worst_trade['pair']} {worst_trade['profit_ratio']:.2%}"),
             (
                 "Best day",
-                fmt_coin(strat_results["backtest_best_day_abs"], strat_results["stake_currency"]),
+                fmt_coin(strat_results["backtest_best_day_abs"], stake),
             ),
             (
                 "Worst day",
-                fmt_coin(strat_results["backtest_worst_day_abs"], strat_results["stake_currency"]),
+                fmt_coin(strat_results["backtest_worst_day_abs"], stake),
             ),
             (
                 "Days win/draw/lose",
@@ -400,18 +494,16 @@ def text_table_add_metrics(strat_results: dict) -> None:
                 f"{strat_results.get('timedout_exit_orders', 'N/A')}",
             ),
             *entry_adjustment_metrics,
-            ("", ""),  # Empty line to improve readability
-            ("Min balance", fmt_coin(strat_results["csum_min"], strat_results["stake_currency"])),
-            ("Max balance", fmt_coin(strat_results["csum_max"], strat_results["stake_currency"])),
+            __EMPTY_LINE,  # Empty line to improve readability
+            *wallet_metrics,
             *drawdown_metrics,
-            ("Market change", f"{strat_results['market_change']:.2%}"),
         ]
         print_rich_table(metrics, ["Metric", "Value"], summary="SUMMARY METRICS", justify="left")
 
     else:
-        start_balance = fmt_coin(strat_results["starting_balance"], strat_results["stake_currency"])
+        start_balance = fmt_coin(strat_results["starting_balance"], stake)
         stake_amount = (
-            fmt_coin(strat_results["stake_amount"], strat_results["stake_currency"])
+            fmt_coin(strat_results["stake_amount"], stake)
             if strat_results["stake_amount"] != UNLIMITED_STAKE_AMOUNT
             else "unlimited"
         )

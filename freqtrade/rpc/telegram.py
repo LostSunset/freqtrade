@@ -48,6 +48,7 @@ from freqtrade.util import (
     fmt_coin,
     fmt_coin2,
     format_date,
+    format_pct,
     round_value,
 )
 
@@ -191,8 +192,8 @@ class Telegram(RPCHandler):
             r"/mix_tags",
             r"/daily$",
             r"/daily \d+$",
-            r"/profit$",
-            r"/profit \d+",
+            r"/profit([_ ]long|[_ ]short)?$",
+            r"/profit([_ ]long|[_ ]short)? \d+$",
             r"/stats$",
             r"/count$",
             r"/locks$",
@@ -305,13 +306,17 @@ class Telegram(RPCHandler):
             CommandHandler("order", self._order),
             CommandHandler("list_custom_data", self._list_custom_data),
             CommandHandler("tg_info", self._tg_info),
+            CommandHandler("profit_long", self._profit_long),
+            CommandHandler("profit_short", self._profit_short),
         ]
         callbacks = [
             CallbackQueryHandler(self._status_table, pattern="update_status_table"),
             CallbackQueryHandler(self._daily, pattern="update_daily"),
             CallbackQueryHandler(self._weekly, pattern="update_weekly"),
             CallbackQueryHandler(self._monthly, pattern="update_monthly"),
-            CallbackQueryHandler(self._profit, pattern="update_profit"),
+            CallbackQueryHandler(self._profit_long, pattern="update_profit_long"),
+            CallbackQueryHandler(self._profit_short, pattern="update_profit_short"),
+            CallbackQueryHandler(self._profit, pattern=r"update_profit$"),
             CallbackQueryHandler(self._balance, pattern="update_balance"),
             CallbackQueryHandler(self._performance, pattern="update_performance"),
             CallbackQueryHandler(
@@ -338,15 +343,27 @@ class Telegram(RPCHandler):
         self._loop.run_until_complete(self._startup_telegram())
 
     async def _startup_telegram(self) -> None:
-        await self._app.initialize()
-        await self._app.start()
+        retries = 3
+        attempt = 0
+        while attempt < retries:
+            try:
+                await self._app.initialize()
+                await self._app.start()
+                break
+            except Exception as ex:
+                logger.error(
+                    "Error starting Telegram bot (attempt %d/%d): %s", attempt + 1, retries, ex
+                )
+                attempt += 1
+                if attempt == retries:
+                    logger.warning("Telegram init failed.")
+                    return
+                await asyncio.sleep(2)
         if self._app.updater:
             await self._app.updater.start_polling(
-                bootstrap_retries=-1,
+                bootstrap_retries=10,
                 timeout=20,
-                # read_latency=60,  # Assumed transmission latency
                 drop_pending_updates=True,
-                # stop_signals=[],  # Necessary as we don't run on the main thread
             )
             while True:
                 await asyncio.sleep(10)
@@ -465,8 +482,8 @@ class Telegram(RPCHandler):
             if is_final_exit:
                 profit_prefix = "Sub "
                 cp_extra = (
-                    f"*Final Profit:* `{msg['final_profit_ratio']:.2%} "
-                    f"({msg['cumulative_profit']:.8f} {msg['quote_currency']}{cp_fiat})`\n"
+                    f"*Final Profit:* `{format_pct(msg['final_profit_ratio'])} "
+                    f"({fmt_coin(msg['cumulative_profit'], msg['stake_currency'])}{cp_fiat})`\n"
                 )
             else:
                 exit_wording = f"Partially {exit_wording.lower()}"
@@ -481,7 +498,7 @@ class Telegram(RPCHandler):
             f"{exit_wording} {msg['pair']} (#{msg['trade_id']})\n"
             f"{self._add_analyzed_candle(msg['pair'])}"
             f"*{f'{profit_prefix}Profit' if is_fill else f'Unrealized {profit_prefix}Profit'}:* "
-            f"`{msg['profit_ratio']:.2%}{profit_extra}`\n"
+            f"`{format_pct(msg['profit_ratio'])}{profit_extra}`\n"
             f"{cp_extra}"
             f"{enter_tag}"
             f"*Exit Reason:* `{msg['exit_reason']}`\n"
@@ -654,14 +671,14 @@ class Telegram(RPCHandler):
                 # TODO: This calculation ignores fees.
                 price_to_1st_entry = (cur_entry_average - first_avg) / first_avg
                 if is_open:
-                    lines.append("({})".format(dt_humanize_delta(order["order_filled_date"])))
+                    lines.append(f"({dt_humanize_delta(order['order_filled_date'])})")
                 lines.append(
                     f"*Amount:* {round_value(cur_entry_amount, 8)} "
                     f"({fmt_coin(order['cost'], quote_currency)})"
                 )
                 lines.append(
                     f"*Average {wording} Price:* {round_value(cur_entry_average, 8)} "
-                    f"({price_to_1st_entry:.2%} from 1st entry rate)"
+                    f"({format_pct(price_to_1st_entry)} from 1st entry rate)"
                 )
                 lines.append(f"*Order Filled:* {order['order_filled_date']}")
 
@@ -685,7 +702,7 @@ class Telegram(RPCHandler):
 
         results = self._rpc._rpc_trade_status(trade_ids=trade_ids)
         for r in results:
-            lines = ["*Order List for Trade #*`{trade_id}`"]
+            lines = [f"*Order List for Trade #*`{r['trade_id']}`"]
 
             lines_detail = self._prepare_order_details(
                 r["orders"], r["quote_currency"], r["is_open"]
@@ -704,10 +721,10 @@ class Telegram(RPCHandler):
                 if (len(msg) + len(line) + 1) < MAX_MESSAGE_LENGTH:
                     msg += line + "\n"
                 else:
-                    await self._send_msg(msg.format(**r))
-                    msg = "*Order List for Trade #*`{trade_id}` - continued\n" + line + "\n"
+                    await self._send_msg(msg)
+                    msg = f"*Order List for Trade #*`{r['trade_id']}` - continued\n" + line + "\n"
 
-        await self._send_msg(msg.format(**r))
+        await self._send_msg(msg)
 
     @authorized_only
     async def _status(self, update: Update, context: CallbackContext) -> None:
@@ -741,15 +758,7 @@ class Telegram(RPCHandler):
         max_entries = self._config.get("max_entry_position_adjustment", -1)
         for r in results:
             r["open_date_hum"] = dt_humanize_delta(r["open_date"])
-            r["num_entries"] = len([o for o in r["orders"] if o["ft_is_entry"]])
-            r["num_exits"] = len(
-                [
-                    o
-                    for o in r["orders"]
-                    if not o["ft_is_entry"] and not o["ft_order_side"] == "stoploss"
-                ]
-            )
-            r["exit_reason"] = r.get("exit_reason", "")
+
             r["stake_amount_r"] = fmt_coin(r["stake_amount"], r["quote_currency"])
             r["max_stake_amount_r"] = fmt_coin(
                 r["max_stake_amount"] or r["stake_amount"], r["quote_currency"]
@@ -758,26 +767,25 @@ class Telegram(RPCHandler):
             r["realized_profit_r"] = fmt_coin(r["realized_profit"], r["quote_currency"])
             r["total_profit_abs_r"] = fmt_coin(r["total_profit_abs"], r["quote_currency"])
             lines = [
-                "*Trade ID:* `{trade_id}`" + (" `(since {open_date_hum})`" if r["is_open"] else ""),
-                "*Current Pair:* {pair}",
+                f"*Trade ID:* `{r['trade_id']}`"
+                + (f" `(since {r['open_date_hum']})`" if r["is_open"] else ""),
+                f"*Current Pair:* {r['pair']}",
                 (
                     f"*Direction:* {'`Short`' if r.get('is_short') else '`Long`'}"
-                    + " ` ({leverage}x)`"
-                    if r.get("leverage")
-                    else ""
+                    + (f" ` ({r['leverage']}x)`" if r.get("leverage") else "")
                 ),
-                "*Amount:* `{amount} ({stake_amount_r})`",
-                "*Total invested:* `{max_stake_amount_r}`" if position_adjust else "",
-                "*Enter Tag:* `{enter_tag}`" if r["enter_tag"] else "",
-                "*Exit Reason:* `{exit_reason}`" if r["exit_reason"] else "",
+                f"*Amount:* `{r['amount']} ({r['stake_amount_r']})`",
+                f"*Total invested:* `{r['max_stake_amount_r']}`" if position_adjust else "",
+                f"*Enter Tag:* `{r['enter_tag']}`" if r["enter_tag"] else "",
+                f"*Exit Reason:* `{r['exit_reason']}`" if r.get("exit_reason") else "",
             ]
 
             if position_adjust:
                 max_buy_str = f"/{max_entries + 1}" if (max_entries > 0) else ""
                 lines.extend(
                     [
-                        "*Number of Entries:* `{num_entries}" + max_buy_str + "`",
-                        "*Number of Exits:* `{num_exits}`",
+                        f"*Number of Entries:* `{r['nr_of_successful_entries']}{max_buy_str}`",
+                        f"*Number of Exits:* `{r['nr_of_successful_exits']}`",
                     ]
                 )
 
@@ -785,53 +793,62 @@ class Telegram(RPCHandler):
                 [
                     f"*Open Rate:* `{round_value(r['open_rate'], 8)}`",
                     f"*Close Rate:* `{round_value(r['close_rate'], 8)}`" if r["close_rate"] else "",
-                    "*Open Date:* `{open_date}`",
-                    "*Close Date:* `{close_date}`" if r["close_date"] else "",
+                    f"*Open Date:* `{r['open_date']}`",
+                    f"*Close Date:* `{r['close_date']}`" if r["close_date"] else "",
                     (
                         f" \n*Current Rate:* `{round_value(r['current_rate'], 8)}`"
                         if r["is_open"]
                         else ""
                     ),
                     ("*Unrealized Profit:* " if r["is_open"] else "*Close Profit: *")
-                    + "`{profit_ratio:.2%}` `({profit_abs_r})`",
+                    + f"`{format_pct(r['profit_ratio'])}` `({r['profit_abs_r']})`",
                 ]
             )
 
             if r["is_open"]:
-                if r.get("realized_profit"):
-                    lines.extend(
-                        [
-                            "*Realized Profit:* `{realized_profit_ratio:.2%} "
-                            "({realized_profit_r})`",
-                            "*Total Profit:* `{total_profit_ratio:.2%} ({total_profit_abs_r})`",
-                        ]
+                if (
+                    r.get("realized_profit") is not None
+                    and r.get("realized_profit_ratio") is not None
+                ):
+                    lines.append(
+                        f"*Realized Profit:* `{format_pct(r['realized_profit_ratio'])} "
+                        f"({r['realized_profit_r']})`"
+                    )
+                if r.get("total_profit_ratio") is not None:
+                    lines.append(
+                        f"*Total Profit:* `{format_pct(r['total_profit_ratio'])} "
+                        f"({r['total_profit_abs_r']})`"
                     )
 
                 # Append empty line to improve readability
                 lines.append(" ")
+                # Adding liquidation only if it is not None
+                if liquidation := r.get("liquidation_price"):
+                    lines.append(f"*Liquidation:* `{round_value(liquidation, 8)}`")
+
                 if (
                     r["stop_loss_abs"] != r["initial_stop_loss_abs"]
                     and r["initial_stop_loss_ratio"] is not None
                 ):
                     # Adding initial stoploss only if it is different from stoploss
                     lines.append(
-                        "*Initial Stoploss:* `{initial_stop_loss_abs:.8f}` "
-                        "`({initial_stop_loss_ratio:.2%})`"
+                        f"*Initial Stoploss:* `{round_value(r['initial_stop_loss_abs'], 8)}` "
+                        f"`({format_pct(r['initial_stop_loss_ratio'])})`"
                     )
 
                 # Adding stoploss and stoploss percentage only if it is not None
                 lines.append(
                     f"*Stoploss:* `{round_value(r['stop_loss_abs'], 8)}` "
-                    + ("`({stop_loss_ratio:.2%})`" if r["stop_loss_ratio"] else "")
+                    + (f"`({format_pct(r['stop_loss_ratio'])})`" if r["stop_loss_ratio"] else "")
                 )
                 lines.append(
                     f"*Stoploss distance:* `{round_value(r['stoploss_current_dist'], 8)}` "
-                    "`({stoploss_current_dist_ratio:.2%})`"
+                    f"`({format_pct(r['stoploss_current_dist_ratio'])})`"
                 )
-                if r.get("open_orders"):
+                if open_orders := r.get("open_orders"):
                     lines.append(
-                        "*Open Order:* `{open_orders}`"
-                        + ("- `{exit_order_status}`" if r["exit_order_status"] else "")
+                        f"*Open Order:* `{open_orders}`"
+                        + (f"- `{r['exit_order_status']}`" if r["exit_order_status"] else "")
                     )
 
             await self.__send_status_msg(lines, r)
@@ -847,10 +864,10 @@ class Telegram(RPCHandler):
                 if (len(msg) + len(line) + 1) < MAX_MESSAGE_LENGTH:
                     msg += line + "\n"
                 else:
-                    await self._send_msg(msg.format(**r))
-                    msg = "*Trade ID:* `{trade_id}` - continued\n" + line + "\n"
+                    await self._send_msg(msg)
+                    msg = f"*Trade ID:* `{r['trade_id']}` - continued\n" + line + "\n"
 
-        await self._send_msg(msg.format(**r))
+        await self._send_msg(msg)
 
     @authorized_only
     async def _status_table(self, update: Update, context: CallbackContext) -> None:
@@ -937,7 +954,7 @@ class Telegram(RPCHandler):
                     f"{period['date']:{val.dateformat}} ({period['trade_count']})",
                     f"{fmt_coin(period['abs_profit'], stats['stake_currency'])}",
                     f"{period['fiat_value']:.2f} {stats['fiat_display_currency']}",
-                    f"{period['rel_profit']:.2%}",
+                    f"{format_pct(period['rel_profit'])}",
                 ]
                 for period in stats["data"]
             ],
@@ -995,29 +1012,25 @@ class Telegram(RPCHandler):
         """
         await self._timeunit_stats(update, context, "months")
 
-    @authorized_only
-    async def _profit(self, update: Update, context: CallbackContext) -> None:
+    def _format_profit_message(
+        self,
+        stats: dict,
+        stake_cur: str,
+        fiat_disp_cur: str,
+        timescale: int | None = None,
+        direction: str | None = None,
+    ) -> str:
         """
-        Handler for /profit.
-        Returns a cumulative profit statistics.
-        :param bot: telegram bot
-        :param update: message update
-        :return: None
+        Format profit statistics message for telegram.
+
+        :param stats: Trade statistics dictionary
+        :param stake_cur: Stake currency
+        :param fiat_disp_cur: Fiat display currency
+        :param timescale: Optional timescale filter
+        :param direction: Optional direction filter ('long', 'short', or None for all)
+        :return: Formatted markdown message
         """
-        stake_cur = self._config["stake_currency"]
-        fiat_disp_cur = self._config.get("fiat_display_currency", "")
-
-        start_date = datetime.fromtimestamp(0)
-        timescale = None
-        try:
-            if context.args:
-                timescale = int(context.args[0]) - 1
-                today_start = datetime.combine(date.today(), datetime.min.time())
-                start_date = today_start - timedelta(days=timescale)
-        except (TypeError, ValueError, IndexError):
-            pass
-
-        stats = self._rpc._rpc_trade_statistics(stake_cur, fiat_disp_cur, start_date)
+        # Extract common variables
         profit_closed_coin = stats["profit_closed_coin"]
         profit_closed_ratio_mean = stats["profit_closed_ratio_mean"]
         profit_closed_percent = stats["profit_closed_percent"]
@@ -1037,65 +1050,152 @@ class Telegram(RPCHandler):
         expectancy = stats["expectancy"]
         expectancy_ratio = stats["expectancy_ratio"]
 
+        # Direction-specific labels
+        direction_label = f" {direction}" if direction else ""
+        no_trades_msg = (
+            f"No{direction_label} trades yet.\n*Bot started:* `{stats['bot_start_date']}`"
+        )
+        no_closed_msg = f"`No closed{direction_label} trade` \n"
+        closed_roi_label = f"*ROI:* Closed{direction_label} trades"
+        all_roi_label = f"*ROI:* All{direction_label} trades"
+
         if stats["trade_count"] == 0:
-            markdown_msg = f"No trades yet.\n*Bot started:* `{stats['bot_start_date']}`"
+            return no_trades_msg
+
+        # Build message
+        if stats["closed_trade_count"] > 0:
+            fiat_closed_trades = (
+                f"∙ `{fmt_coin(profit_closed_fiat, fiat_disp_cur)}`\n" if fiat_disp_cur else ""
+            )
+            markdown_msg = (
+                f"{closed_roi_label}\n"
+                f"∙ `{fmt_coin(profit_closed_coin, stake_cur)} "
+                f"({format_pct(profit_closed_ratio_mean)}) "
+                f"({profit_closed_percent} \N{GREEK CAPITAL LETTER SIGMA}%)`\n"
+                f"{fiat_closed_trades}"
+            )
         else:
-            # Message to display
-            if stats["closed_trade_count"] > 0:
-                fiat_closed_trades = (
-                    f"∙ `{fmt_coin(profit_closed_fiat, fiat_disp_cur)}`\n" if fiat_disp_cur else ""
-                )
-                markdown_msg = (
-                    "*ROI:* Closed trades\n"
-                    f"∙ `{fmt_coin(profit_closed_coin, stake_cur)} "
-                    f"({profit_closed_ratio_mean:.2%}) "
-                    f"({profit_closed_percent} \N{GREEK CAPITAL LETTER SIGMA}%)`\n"
-                    f"{fiat_closed_trades}"
-                )
-            else:
-                markdown_msg = "`No closed trade` \n"
-            fiat_all_trades = (
-                f"∙ `{fmt_coin(profit_all_fiat, fiat_disp_cur)}`\n" if fiat_disp_cur else ""
-            )
+            markdown_msg = no_closed_msg
+
+        fiat_all_trades = (
+            f"∙ `{fmt_coin(profit_all_fiat, fiat_disp_cur)}`\n" if fiat_disp_cur else ""
+        )
+        markdown_msg += (
+            f"{all_roi_label}\n"
+            f"∙ `{fmt_coin(profit_all_coin, stake_cur)} "
+            f"({format_pct(profit_all_ratio_mean)}) "
+            f"({profit_all_percent} \N{GREEK CAPITAL LETTER SIGMA}%)`\n"
+            f"{fiat_all_trades}"
+            f"*Total Trade Count:* `{trade_count}`\n"
+            f"*Bot started:* `{stats['bot_start_date']}`\n"
+            f"*{'First Trade opened' if not timescale else 'Showing Profit since'}:* "
+            f"`{first_trade_date}`\n"
+            f"*Latest Trade opened:* `{latest_trade_date}`\n"
+            f"*Win / Loss:* `{stats['winning_trades']} / {stats['losing_trades']}`\n"
+            f"*Winrate:* `{format_pct(winrate)}`\n"
+            f"*Expectancy (Ratio):* `{expectancy:.2f} ({expectancy_ratio:.2f})`"
+        )
+
+        if stats["closed_trade_count"] > 0:
             markdown_msg += (
-                f"*ROI:* All trades\n"
-                f"∙ `{fmt_coin(profit_all_coin, stake_cur)} "
-                f"({profit_all_ratio_mean:.2%}) "
-                f"({profit_all_percent} \N{GREEK CAPITAL LETTER SIGMA}%)`\n"
-                f"{fiat_all_trades}"
-                f"*Total Trade Count:* `{trade_count}`\n"
-                f"*Bot started:* `{stats['bot_start_date']}`\n"
-                f"*{'First Trade opened' if not timescale else 'Showing Profit since'}:* "
-                f"`{first_trade_date}`\n"
-                f"*Latest Trade opened:* `{latest_trade_date}`\n"
-                f"*Win / Loss:* `{stats['winning_trades']} / {stats['losing_trades']}`\n"
-                f"*Winrate:* `{winrate:.2%}`\n"
-                f"*Expectancy (Ratio):* `{expectancy:.2f} ({expectancy_ratio:.2f})`"
+                f"\n*Avg. Duration:* `{avg_duration}`\n"
+                f"*Best Performing:* `{best_pair}: {best_pair_profit_abs} "
+                f"({format_pct(best_pair_profit_ratio)})`\n"
+                f"*Trading volume:* `{fmt_coin(stats['trading_volume'], stake_cur)}`\n"
+                f"*Profit factor:* `{stats['profit_factor']:.2f}`\n"
+                f"*Max Drawdown:* `{format_pct(stats['max_drawdown'])} "
+                f"({fmt_coin(stats['max_drawdown_abs'], stake_cur)})`\n"
+                f"    from `{stats['max_drawdown_start']} "
+                f"({fmt_coin(stats['drawdown_high'], stake_cur)})`\n"
+                f"    to `{stats['max_drawdown_end']} "
+                f"({fmt_coin(stats['drawdown_low'], stake_cur)})`\n"
+                f"*Current Drawdown:* `{format_pct(stats['current_drawdown'])} "
+                f"({fmt_coin(stats['current_drawdown_abs'], stake_cur)})`\n"
+                f"    from `{stats['current_drawdown_start']} "
+                f"({fmt_coin(stats['current_drawdown_high'], stake_cur)})`\n"
             )
-            if stats["closed_trade_count"] > 0:
-                markdown_msg += (
-                    f"\n*Avg. Duration:* `{avg_duration}`\n"
-                    f"*Best Performing:* `{best_pair}: {best_pair_profit_abs} "
-                    f"({best_pair_profit_ratio:.2%})`\n"
-                    f"*Trading volume:* `{fmt_coin(stats['trading_volume'], stake_cur)}`\n"
-                    f"*Profit factor:* `{stats['profit_factor']:.2f}`\n"
-                    f"*Max Drawdown:* `{stats['max_drawdown']:.2%} "
-                    f"({fmt_coin(stats['max_drawdown_abs'], stake_cur)})`\n"
-                    f"    from `{stats['max_drawdown_start']} "
-                    f"({fmt_coin(stats['drawdown_high'], stake_cur)})`\n"
-                    f"    to `{stats['max_drawdown_end']} "
-                    f"({fmt_coin(stats['drawdown_low'], stake_cur)})`\n"
-                    f"*Current Drawdown:* `{stats['current_drawdown']:.2%} "
-                    f"({fmt_coin(stats['current_drawdown_abs'], stake_cur)})`\n"
-                    f"    from `{stats['current_drawdown_start']} "
-                    f"({fmt_coin(stats['current_drawdown_high'], stake_cur)})`\n"
-                )
+
+        return markdown_msg
+
+    async def _profit_handler(
+        self,
+        update: Update,
+        context: CallbackContext,
+        direction: str | None = None,
+    ) -> None:
+        """
+        Common handler for profit commands.
+
+        :param update: Telegram update
+        :param context: Callback context
+        :param direction: Trade direction filter ('long', 'short', or None)
+        :param callback_path: Callback path for message updates
+        """
+        stake_cur = self._config["stake_currency"]
+        fiat_disp_cur = self._config.get("fiat_display_currency", "")
+
+        start_date = datetime.fromtimestamp(0)
+        timescale = None
+        try:
+            if context.args:
+                if not direction:
+                    arg = context.args[0].lower()
+                    if arg in ("short", "long"):
+                        direction = arg
+                        context.args.pop(0)  # Remove direction from args
+                timescale = int(context.args[0]) - 1
+                today_start = datetime.combine(date.today(), datetime.min.time())
+                start_date = today_start - timedelta(days=timescale)
+        except (TypeError, ValueError, IndexError):
+            pass
+
+        # Get stats with optional direction filter
+        stats_kwargs = {
+            "stake_currency": stake_cur,
+            "fiat_display_currency": fiat_disp_cur,
+            "start_date": start_date,
+        }
+        if direction:
+            stats_kwargs["direction"] = direction
+
+        stats = self._rpc._rpc_trade_statistics(**stats_kwargs)
+        markdown_msg = self._format_profit_message(
+            stats, stake_cur, fiat_disp_cur, timescale, direction
+        )
+
         await self._send_msg(
             markdown_msg,
             reload_able=True,
-            callback_path="update_profit",
+            callback_path="update_profit" if not direction else f"update_profit_{direction}",
             query=update.callback_query,
         )
+
+    @authorized_only
+    async def _profit(self, update: Update, context: CallbackContext) -> None:
+        """
+        Handler for /profit.
+        Returns a cumulative profit statistics.
+        :param bot: telegram bot
+        :param update: message update
+        :return: None
+        """
+        await self._profit_handler(update, context)
+
+    @authorized_only
+    async def _profit_long(self, update: Update, context: CallbackContext) -> None:
+        """
+        Handler for /profit_long.
+        Returns cumulative profit statistics for long trades.
+        """
+        await self._profit_handler(update, context, direction="long")
+
+    @authorized_only
+    async def _profit_short(self, update: Update, context: CallbackContext) -> None:
+        """
+        Handler for /profit_short.
+        Returns cumulative profit statistics for short trades.
+        """
+        await self._profit_handler(update, context, direction="short")
 
     @authorized_only
     async def _stats(self, update: Update, context: CallbackContext) -> None:
@@ -1185,7 +1285,7 @@ class Telegram(RPCHandler):
                 if curr["is_position"]:
                     curr_output = (
                         f"*{curr['currency']}:*\n"
-                        f"\t`{curr['side']}: {curr['position']:.8f}`\n"
+                        f"\t`{curr['side']}: {round_value(curr['position'], 8)}`\n"
                         f"\t`Est. {curr['stake']}: "
                         f"{fmt_coin(curr['est_stake'], curr['stake'], False)}`\n"
                     )
@@ -1196,10 +1296,10 @@ class Telegram(RPCHandler):
 
                     curr_output = (
                         f"*{curr['currency']}:*\n"
-                        f"\t`Available: {curr['free']:.8f}`\n"
-                        f"\t`Balance: {curr['balance']:.8f}`\n"
-                        f"\t`Pending: {curr['used']:.8f}`\n"
-                        f"\t`Bot Owned: {curr['bot_owned']:.8f}`\n"
+                        f"\t`Available: {fmt_coin(curr['free'], curr['currency'], False)}`\n"
+                        f"\t`Balance: {fmt_coin(curr['balance'], curr['currency'], False)}`\n"
+                        f"\t`Pending: {fmt_coin(curr['used'], curr['currency'], False)}`\n"
+                        f"\t`Bot Owned: {fmt_coin(curr['bot_owned'], curr['currency'], False)}`\n"
                         f"\t`Est. {curr['stake']}: {est_stake}`\n"
                     )
 
@@ -1356,7 +1456,11 @@ class Telegram(RPCHandler):
                     await query.answer()
                     await query.edit_message_text(text="Force exit canceled.")
                     return
-                trade: Trade | None = Trade.get_trades(trade_filter=Trade.id == trade_id).first()
+                trade: Trade | None = (
+                    Trade.get_trades(trade_filter=Trade.id == int(trade_id)).first()
+                    if trade_id.isdigit()
+                    else None
+                )
                 await query.answer()
                 if trade:
                     await query.edit_message_text(
@@ -1458,7 +1562,7 @@ class Telegram(RPCHandler):
                     dt_humanize_delta(dt_from_ts(trade["close_timestamp"])),
                     f"{trade['pair']} (#{trade['trade_id']}"
                     f"{(' ' + ('S' if trade['is_short'] else 'L')) if nonspot else ''})",
-                    f"{(trade['close_profit']):.2%} ({trade['close_profit_abs']})",
+                    f"{format_pct(trade['close_profit'])} ({trade['close_profit_abs']})",
                 ]
                 for trade in trades["trades"]
             ],
@@ -1522,7 +1626,7 @@ class Telegram(RPCHandler):
             stat_line = (
                 f"{i + 1}.\t <code>{trade['pair']}\t"
                 f"{fmt_coin(trade['profit_abs'], self._config['stake_currency'])} "
-                f"({trade['profit_ratio']:.2%}) "
+                f"({format_pct(trade['profit_ratio'])}) "
                 f"({trade['count']})</code>\n"
             )
 
@@ -1559,7 +1663,7 @@ class Telegram(RPCHandler):
             stat_line = (
                 f"{i + 1}.\t `{trade['enter_tag']}\t"
                 f"{fmt_coin(trade['profit_abs'], self._config['stake_currency'])} "
-                f"({trade['profit_ratio']:.2%}) "
+                f"({format_pct(trade['profit_ratio'])}) "
                 f"({trade['count']})`\n"
             )
 
@@ -1596,7 +1700,7 @@ class Telegram(RPCHandler):
             stat_line = (
                 f"{i + 1}.\t `{trade['exit_reason']}\t"
                 f"{fmt_coin(trade['profit_abs'], self._config['stake_currency'])} "
-                f"({trade['profit_ratio']:.2%}) "
+                f"({format_pct(trade['profit_ratio'])}) "
                 f"({trade['count']})`\n"
             )
 
@@ -1633,7 +1737,7 @@ class Telegram(RPCHandler):
             stat_line = (
                 f"{i + 1}.\t `{trade['mix_tag']}\t"
                 f"{fmt_coin(trade['profit_abs'], self._config['stake_currency'])} "
-                f"({trade['profit_ratio']:.2%}) "
+                f"({format_pct(trade['profit_ratio'])}) "
                 f"({trade['count']})`\n"
             )
 
@@ -1869,6 +1973,10 @@ class Telegram(RPCHandler):
             "*/trades [limit]:* `Lists last closed trades (limited to 10 by default)`\n"
             "*/profit [<n>]:* `Lists cumulative profit from all finished trades, "
             "over the last n days`\n"
+            "*/profit_long [<n>]:* `Lists cumulative profit from all finished long trades, "
+            "over the last n days`\n"
+            "*/profit_short [<n>]:* `Lists cumulative profit from all finished short trades, "
+            "over the last n days`\n"
             "*/performance:* `Show performance of each finished trade grouped by pair`\n"
             "*/daily <n>:* `Shows profit or loss per day, over the last n days`\n"
             "*/weekly <n>:* `Shows statistics per week, over the last n weeks`\n"
@@ -1941,7 +2049,7 @@ class Telegram(RPCHandler):
 
         await self._send_msg(
             f"*Mode:* `{'Dry-run' if val['dry_run'] else 'Live'}`\n"
-            f"*Exchange:* `{val['exchange']}`\n"
+            f"*Exchange:* `{val['exchange']}{' (Demo)' if val['demo_trading'] else ''}`\n"
             f"*Market: * `{val['trading_mode']}`\n"
             f"*Stake per trade:* `{val['stake_amount']} {val['stake_currency']}`\n"
             f"*Max open Trades:* `{val['max_open_trades']}`\n"
@@ -2135,7 +2243,7 @@ class Telegram(RPCHandler):
         else:
             raise RPCException(
                 "Invalid usage of command /marketdir. \n"
-                "Usage: */marketdir [short |  long | even | none]*"
+                "Usage: */marketdir [short | long | even | none]*"
             )
 
     async def _tg_info(self, update: Update, context: CallbackContext) -> None:

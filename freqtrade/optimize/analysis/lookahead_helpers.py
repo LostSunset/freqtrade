@@ -126,14 +126,14 @@ class LookaheadAnalysisSubFunctions:
                 csv_df = add_or_update_row(csv_df, new_row_data)
 
         # Fill NaN values with a default value (e.g., 0)
-        csv_df["total_signals"] = csv_df["total_signals"].astype(int).fillna(0)
-        csv_df["biased_entry_signals"] = csv_df["biased_entry_signals"].astype(int).fillna(0)
-        csv_df["biased_exit_signals"] = csv_df["biased_exit_signals"].astype(int).fillna(0)
+        csv_df["total_signals"] = csv_df["total_signals"].astype("int64").fillna(0)
+        csv_df["biased_entry_signals"] = csv_df["biased_entry_signals"].astype("int64").fillna(0)
+        csv_df["biased_exit_signals"] = csv_df["biased_exit_signals"].astype("int64").fillna(0)
 
         # Convert columns to integers
-        csv_df["total_signals"] = csv_df["total_signals"].astype(int)
-        csv_df["biased_entry_signals"] = csv_df["biased_entry_signals"].astype(int)
-        csv_df["biased_exit_signals"] = csv_df["biased_exit_signals"].astype(int)
+        csv_df["total_signals"] = csv_df["total_signals"].astype("int64")
+        csv_df["biased_entry_signals"] = csv_df["biased_entry_signals"].astype("int64")
+        csv_df["biased_exit_signals"] = csv_df["biased_exit_signals"].astype("int64")
 
         logger.info(f"saving {config['lookahead_analysis_exportfilename']}")
         csv_df.to_csv(config["lookahead_analysis_exportfilename"], index=False)
@@ -145,9 +145,19 @@ class LookaheadAnalysisSubFunctions:
             config["enable_protections"] = False
             logger.info(
                 "Protections were enabled. "
-                "Disabling protections now "
-                "since they could otherwise produce false positives."
+                "Disabling protections now since they can produce false positives."
             )
+        if not config.get("lookahead_allow_limit_orders", False):
+            logger.info("Forced order_types to market orders.")
+            config["order_types"] = {
+                "entry": "market",
+                "exit": "market",
+                "stoploss": "market",
+                "stoploss_on_exchange": False,
+            }
+        else:
+            logger.info("Using configured order_types, skipping order_types override.")
+
         if config["targeted_trade_amount"] < config["minimum_trade_amount"]:
             # this combo doesn't make any sense.
             raise OperationalException(

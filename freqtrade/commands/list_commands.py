@@ -4,7 +4,7 @@ import sys
 from typing import Any
 
 from freqtrade.enums import RunMode
-from freqtrade.exceptions import ConfigurationError, OperationalException
+from freqtrade.exceptions import ConfigurationError, DependencyException, OperationalException
 
 
 logger = logging.getLogger(__name__)
@@ -38,15 +38,28 @@ def start_list_exchanges(args: dict[str, Any]) -> None:
         else:
             available_exchanges = [e for e in available_exchanges if e["valid"] is not False]
             title = f"Exchanges available for Freqtrade ({len(available_exchanges)} exchanges):"
-
+        show_fut_reasons = args.get("list_exchanges_futures_options", False)
         table = Table(title=title)
 
         table.add_column("Exchange Name")
         table.add_column("Class Name")
         table.add_column("Markets")
         table.add_column("Reason")
+        if show_fut_reasons:
+            table.add_column("Futures Reason")
+
+        trading_mode = args.get("trading_mode", None)
+        dex_only = args.get("dex_exchanges", False)
 
         for exchange in available_exchanges:
+            if trading_mode and not any(
+                a["trading_mode"] == trading_mode for a in exchange["trade_modes"]
+            ):
+                # If trading_mode is specified, only show exchanges that support it
+                continue
+            if dex_only and not exchange.get("dex", False):
+                # If dex_only is specified, only show DEX exchanges
+                continue
             name = Text(exchange["name"])
             if exchange["supported"]:
                 name.append(" (Supported)", style="italic")
@@ -55,7 +68,7 @@ def start_list_exchanges(args: dict[str, Any]) -> None:
             if exchange["is_alias"]:
                 name.stylize("strike")
                 classname.stylize("strike")
-                classname.append(f" (use {exchange['alias_for']})", style="italic")
+                classname.append(f"\n -> use {exchange['alias_for']}", style="italic")
 
             trade_modes = Text(
                 ", ".join(
@@ -67,12 +80,14 @@ def start_list_exchanges(args: dict[str, Any]) -> None:
             if exchange["dex"]:
                 trade_modes = Text("DEX: ") + trade_modes
                 trade_modes.stylize("bold", 0, 3)
+            futcol = [] if not show_fut_reasons else [exchange["comment_futures"]]
 
             table.add_row(
                 name,
                 classname,
                 trade_modes,
                 exchange["comment"],
+                *futcol,
                 style=None if exchange["valid"] else "red",
             )
             # table.add_row(*[exchange[header] for header in headers])
@@ -90,7 +105,7 @@ def _print_objs_tabular(objs: list, print_colorized: bool) -> None:
     names = [s["name"] for s in objs]
     objs_to_print: list[dict[str, Text | str]] = [
         {
-            "name": Text(s["name"] if s["name"] else "--"),
+            "Strategy name": Text(s["name"] if s["name"] else "--"),
             "location": s["location_rel"],
             "status": (
                 Text("LOAD FAILED", style="bold red")
@@ -104,11 +119,19 @@ def _print_objs_tabular(objs: list, print_colorized: bool) -> None:
     ]
     for idx, s in enumerate(objs):
         if "hyperoptable" in s:
+            custom_params = [
+                f"{space}: {len(params)}"
+                for space, params in s["hyperoptable"].items()
+                if space not in ["buy", "sell", "protection"]
+            ]
+            hyp = s["hyperoptable"]
             objs_to_print[idx].update(
                 {
-                    "hyperoptable": "Yes" if s["hyperoptable"]["count"] > 0 else "No",
-                    "buy-Params": str(len(s["hyperoptable"].get("buy", []))),
-                    "sell-Params": str(len(s["hyperoptable"].get("sell", []))),
+                    "hyperoptable": "Yes" if len(hyp) > 0 else "No",
+                    "buy-Params": str(len(hyp.get("buy", []))),
+                    "sell-Params": str(len(hyp.get("sell", []))),
+                    "protection-Params": str(len(hyp.get("protection", []))),
+                    "custom-Params": ", ".join(custom_params) if custom_params else "",
                 }
             )
     table = Table()
@@ -129,19 +152,30 @@ def start_list_strategies(args: dict[str, Any]) -> None:
     """
     from freqtrade.configuration import setup_utils_configuration
     from freqtrade.resolvers import StrategyResolver
+    from freqtrade.strategy.hyper import detect_all_parameters
 
     config = setup_utils_configuration(args, RunMode.UTIL_NO_EXCHANGE)
 
     strategy_objs = StrategyResolver.search_all_objects(
         config, not args["print_one_column"], config.get("recursive_strategy_search", False)
     )
+    if not strategy_objs:
+        logger.warning("No strategies found.")
+        return
     # Sort alphabetically
     strategy_objs = sorted(strategy_objs, key=lambda x: x["name"])
     for obj in strategy_objs:
         if obj["class"]:
-            obj["hyperoptable"] = obj["class"].detect_all_parameters()
+            try:
+                obj["hyperoptable"] = detect_all_parameters(obj["class"])
+            except DependencyException as e:
+                logger.warning(
+                    f"Cannot detect hyperoptable parameters for strategy {obj['name']}. Reason: {e}"
+                )
+                obj["hyperoptable"] = {}
+
         else:
-            obj["hyperoptable"] = {"count": 0}
+            obj["hyperoptable"] = {}
 
     if args["print_one_column"]:
         print("\n".join([s["name"] for s in strategy_objs]))
@@ -359,7 +393,7 @@ def start_show_trades(args: dict[str, Any]) -> None:
     tfilter = []
 
     if config.get("trade_ids"):
-        tfilter.append(Trade.id.in_(config["trade_ids"]))
+        tfilter.append(Trade.id.in_(int(tid) for tid in config["trade_ids"]))
 
     trades = Trade.get_trades(tfilter).all()
     logger.info(f"Printing {len(trades)} Trades: ")

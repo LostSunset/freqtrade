@@ -2,6 +2,10 @@
 
 This page combines common gotchas and Information which are exchange-specific and most likely don't apply to other exchanges.
 
+## Quick overview of supported exchange features
+
+--8<-- "includes/exchange-features.md"
+
 ## Exchange configuration
 
 Freqtrade is based on [CCXT library](https://github.com/ccxt/ccxt) that supports over 100 cryptocurrency
@@ -213,6 +217,32 @@ freqtrade download-data --exchange kraken --dl-trades -p BTC/EUR BCH/EUR
     Please pay attention that rateLimit configuration entry holds delay in milliseconds between requests, NOT requests/sec rate.
     So, in order to mitigate Kraken API "Rate limit exceeded" exception, this configuration should be increased, NOT decreased.
 
+## Kraken Futures
+
+Kraken Futures uses the exchange id `krakenfutures` and supports isolated futures mode.
+
+```jsonc
+"exchange": {
+    "name": "krakenfutures",
+    "key": "your_exchange_key",
+    "secret": "your_exchange_secret"
+},
+"trading_mode": "futures",
+"margin_mode": "isolated",
+"stake_currency": "USD"
+```
+
+!!! Tip "Stoploss on Exchange"
+    Kraken Futures supports `stoploss_on_exchange` with both `limit` and `market` stop orders.
+    Use `order_types.stoploss_price_type` to select the trigger price source (`mark`, `last`, or `index`).
+
+!!! Note "Collateral"
+    Kraken Futures is USD-settled. Use USD as your stake currency.
+
+!!! Note "Flex (Multi-collateral) Accounts"
+    Kraken Futures flex accounts allow collateral in multiple currencies, while trading remains USD-settled.
+    Freqtrade derives the `USD` balance from Kraken margin fields, so keep `stake_currency` set to `USD`.
+
 ## Kucoin
 
 Kucoin requires a passphrase for each api key, you will therefore need to add this key into the configuration so your exchange section looks as follows:
@@ -227,7 +257,7 @@ Kucoin requires a passphrase for each api key, you will therefore need to add th
 }
 ```
 
-Kucoin supports [time_in_force](configuration.md#understand-order_time_in_force).
+Kucoin supports [time_in_force](configuration.md#understand-order_time_in_force) with settings "GTC" (good till cancelled), "FOK" (full-or-cancel) and "IOC" (immediate-or-cancel) settings.
 
 !!! Tip "Stoploss on Exchange"
     Kucoin supports `stoploss_on_exchange` and can use both stop-loss-market and stop-loss-limit orders. It provides great advantages, so we recommend to benefit from it.
@@ -235,7 +265,7 @@ Kucoin supports [time_in_force](configuration.md#understand-order_time_in_force)
 
 ### Kucoin Blacklists
 
-For Kucoin, it is suggested to add `"KCS/<STAKE>"` to your blacklist to avoid issues, unless you are willing to maintain enough extra `KCS` on the account or unless you're willing to disable using `KCS` for fees. 
+For Kucoin, it is suggested to add `"KCS/<STAKE>"` to your blacklist to avoid issues, unless you are willing to maintain enough extra `KCS` on the account or unless you're willing to disable using `KCS` for fees.
 Kucoin accounts may use `KCS` for fees, and if a trade happens to be on `KCS`, further trades may consume this position and make the initial `KCS` trade unsellable as the expected amount is not there anymore.
 
 ## HTX
@@ -271,7 +301,9 @@ Using the wrong exchange will result in the error "OKX Error 50119: API key does
 ## Gate.io
 
 !!! Tip "Stoploss on Exchange"
-    Gate.io supports `stoploss_on_exchange` and uses `stop-loss-limit` orders. It provides great advantages, so we recommend to benefit from it by enabling stoploss on exchange..
+    Gate.io supports `stoploss_on_exchange` and uses `stop-loss-limit` orders. It provides great advantages, so we recommend to benefit from it by enabling stoploss on exchange.
+
+Gate.io supports [time_in_force](configuration.md#understand-order_time_in_force) with settings "GTC" (good till cancelled), and "IOC" (immediate-or-cancel) settings.
 
 Gate.io allows the use of `POINT` to pay for fees. As this is not a tradable currency (no regular market available), automatic fee calculations will fail (and default to a fee of 0).
 The configuration parameter `exchange.unknown_fee_rate` can be used to specify the exchange rate between Point and the stake currency. Obviously, changing the stake-currency will also require changes to this value.
@@ -286,9 +318,22 @@ Without these permissions, the bot will not start correctly and show errors like
 
 ## Bybit
 
-Futures trading on bybit is currently supported for USDT markets, and will use isolated futures mode.
+!!! Tip "Stoploss on Exchange"
+    Bybit (futures only) supports `stoploss_on_exchange` and uses `stop-loss-limit` orders. It provides great advantages, so we recommend to benefit from it by enabling stoploss on exchange.
+    On futures, Bybit supports both `stop-limit` as well as `stop-market` orders. You can use either `"limit"` or `"market"` in the `order_types.stoploss` configuration setting to decide which type to use.
 
-On startup, freqtrade will set the position mode to "One-way Mode" for the whole (sub)account. This avoids making this call over and over again (slowing down bot operations), but means that changes to this setting may result in exceptions and errors.
+Bybit supports [time_in_force](configuration.md#understand-order_time_in_force) with settings "GTC" (good till cancelled), "FOK" (full-or-cancel), "IOC" (immediate-or-cancel) and "PO" (Post only) settings.
+
+!!! Warning "Unified accounts"
+    Freqtrade assumes accounts to be dedicated to the bot.
+    We therefore recommend the usage of one subaccount per bot. This is especially important when using unified accounts.  
+    Other configurations (multiple bots on one account, manual non-bot trades on the bot account) are not supported and may lead to unexpected behavior.
+
+### Bybit Futures
+
+Futures trading on bybit is supported for isolated futures mode.
+
+On startup, freqtrade will set the position mode to "One-way Mode" for the whole (sub)account. This avoids making this call over and over again (slowing down bot operations), but means that manual changes to this setting may result in exceptions and errors.
 
 As bybit doesn't provide funding rate history, the dry-run calculation is used for live trades as well.
 
@@ -300,15 +345,14 @@ API Keys for live futures trading must have the following permissions:
 
 We do strongly recommend to limit all API keys to the IP you're going to use it from.
 
-!!! Warning "Unified accounts"
-    Freqtrade assumes accounts to be dedicated to the bot.
-    We therefore recommend the usage of one subaccount per bot. This is especially important when using unified accounts.  
-    Other configurations (multiple bots on one account, manual non-bot trades on the bot account) are not supported and may lead to unexpected behavior.
+### Bybit Demo Mode
 
+Bybit has a [demo mode](https://learn.bybit.com/en/bybit-guide/how-to-use-bybit-demo-trading) - which can be activated by setting `exchange.demo_trading` to `true` in the configuration.
+Bybit uses live markets to simulate your trades (without market impact) - making it work very similar to freqtrade's dry-run mode.  
 
-!!! Tip "Stoploss on Exchange"
-    Bybit (futures only) supports `stoploss_on_exchange` and uses `stop-loss-limit` orders. It provides great advantages, so we recommend to benefit from it by enabling stoploss on exchange.
-    On futures, Bybit supports both `stop-limit` as well as `stop-market` orders. You can use either `"limit"` or `"market"` in the `order_types.stoploss` configuration setting to decide which type to use.
+You'll need to use separate API keys for demo trading, which you can create on bybit's demo page.
+
+Demo mode is incompatible with dry-run.
 
 ## Bitmart
 
@@ -328,10 +372,41 @@ It's therefore required to pass the UID as well.
 !!! Warning "Necessary Verification"
     Bitmart requires Verification Lvl2 to successfully trade on the spot market through the API - even though trading via UI works just fine with just Lvl1 verification.
 
+## Bitget
+
+Bitget requires a passphrase for each api key, you will therefore need to add this key into the configuration so your exchange section looks as follows:
+
+```json
+"exchange": {
+    "name": "bitget",
+    "key": "your_exchange_key",
+    "secret": "your_exchange_secret",
+    "password": "your_exchange_api_key_password",
+    // ...
+}
+```
+
+Bitget supports [time_in_force](configuration.md#understand-order_time_in_force) with settings "GTC" (good till cancelled), "FOK" (full-or-cancel), "IOC" (immediate-or-cancel) and "PO" (Post only) settings.
+
+!!! Tip "Stoploss on Exchange"
+    Bitget supports `stoploss_on_exchange` and can use both stop-loss-market and stop-loss-limit orders. It provides great advantages, so we recommend to benefit from it.
+    You can use either `"limit"` or `"market"` in the `order_types.stoploss` configuration setting to decide which type of stoploss shall be used.
+
+### Bitget Futures
+
+Futures trading on bitget is supported for isolated futures mode.
+
+On startup, freqtrade will set the position mode to "One-way Mode" for the whole (sub)account. This avoids making this call over and over again (slowing down bot operations), but means that manual changes to this setting may result in exceptions and errors.
+
 ## Hyperliquid
 
 !!! Tip "Stoploss on Exchange"
     Hyperliquid supports `stoploss_on_exchange` and uses `stop-loss-limit` orders. It provides great advantages, so we recommend to benefit from it.
+
+!!! Warning "Unified accounts"
+    Hyperliquid unified accounts are supported - though this relies freqtrade's assumption of "owning" the account, and being the only one trading on it (in this case, extended to both spot and futures).
+    We hence recommend the usage of subaccounts where possible, and to avoid manual trading on the same account while the bot is running.
+    Freqtrade will attempt to detect the account type on startup - changing the account type mid-trading is not supported and may lead to exceptions and errors.
 
 Hyperliquid is a Decentralized Exchange (DEX). Decentralized exchanges work a bit different compared to normal exchanges. Instead of authenticating private API calls using an API key, private API calls need to be signed with the private key of your wallet (We recommend using an api Wallet for this, generated either on Hyperliquid or in your wallet of choice).
 This needs to be configured like this:
@@ -339,13 +414,13 @@ This needs to be configured like this:
 ```json
 "exchange": {
     "name": "hyperliquid",
-    "walletAddress": "your_eth_wallet_address",
+    "walletAddress": "your_eth_wallet_address",  // This should NOT be your API Wallet Address!
     "privateKey": "your_api_private_key",
     // ...
 }
 ```
 
-* walletAddress in hex format: `0x<40 hex characters>` - Can be easily copied from your wallet - and should be your wallet address, not your API Wallet Address.
+* walletAddress in hex format: `0x<40 hex characters>` - Can be easily copied from your wallet - and should be your main wallet address, not your API Wallet Address.
 * privateKey in hex format: `0x<64 hex characters>` - Use the key the API Wallet shows on creation.
 
 Hyperliquid handles deposits and withdrawals on the Arbitrum One chain, a Layer 2 scaling solution built on top of Ethereum. Hyperliquid uses USDC as quote / collateral. The process of depositing USDC on Hyperliquid requires a couple of steps, see [how to start trading](https://hyperliquid.gitbook.io/hyperliquid-docs/onboarding/how-to-start-trading) for details on what steps are needed.
@@ -363,9 +438,86 @@ Hyperliquid handles deposits and withdrawals on the Arbitrum One chain, a Layer 
     * Create a different software wallet, only transfer the funds you want to trade with to that wallet, and use that wallet to trade on Hyperliquid.
     * If you have funds you don't want to use for trading (after making a profit for example), transfer them back to your hardware wallet.
 
+
+!!! Warning "Vaults and Subaccounts"
+    You can only use either a vault or a subaccount - not both at the same time.
+
+### Hyperliquid Subaccount
+
+Hyperliquid allows you to create subaccounts with sufficient previous trading volume.  
+To use subaccounts with Freqtrade, you will need to use the following configuration pattern:
+
+``` json
+"exchange": {
+    "name": "hyperliquid",
+    "walletAddress": "your_master_wallet_address", // Your master wallet address (not the API wallet or vault address - but not subaccount address).
+    "privateKey": "your_api_private_key", // API wallet private key (see https://app.hyperliquid.xyz/API). You'll only need the private key.
+    "ccxt_config": {
+        "options": {
+            "subAccountAddress": "your_subaccount_address" // Required if you want to use a subaccount.
+        }
+    },
+    // ...
+}
+```
+
+Your balance and trades will now be used from your subaccount - and no longer from your main account.
+
+### Hyperliquid Vault
+
+Hyperliquid allows you to create vaults. To use vaults with Freqtrade, you will need to use the following configuration pattern:
+
+``` json
+"exchange": {
+    "name": "hyperliquid",
+    "walletAddress": "your_vault_address", // Your vault wallet address (Must also be added below in the ccxt_config.options.vaultAddress field)
+    "privateKey": "your_api_private_key", // API wallet private key (see https://app.hyperliquid.xyz/API). You'll only need the private key.
+    "ccxt_config": {
+        "options": {
+            "vaultAddress": "your_vault_address", // Optional, only if you want to use a vault ... (vault address must also be added to walletAdress)
+        }
+    },
+    // ...
+}
+```
+
+Your balance and trades will now be used from your vault - and no longer from your main account.
+
 ### Historic Hyperliquid data
 
 The Hyperliquid API does not provide historic data beyond the single call to fetch current data, so downloading data is not possible, as the downloaded data would not constitute proper historic data.
+
+### HIP-3 DEXes
+
+Hyperliquid supports HIP-3 decentralized exchanges (DEXes), which are independent exchanges built on top of the Hyperliquid infrastructure.
+These DEXes operate similarly to the main Hyperliquid exchange but are community-created and managed.
+
+To trade on HIP-3 DEXes with Freqtrade, you need to add them to your configuration using the `hip3_dexes` parameter:
+
+```json
+"exchange": {
+    "name": "hyperliquid",
+    "walletAddress": "your_master_wallet_address",
+    "privateKey": "your_api_private_key",
+    "hip3_dexes": ["dex_name_1", "dex_name_2"]
+}
+```
+
+Replace `"dex_name_1"` and `"dex_name_2"` with the actual names of the HIP-3 DEXes you want to trade on (e.g. `vntl` and `xyz`).
+
+!!! Warning "Performance and Rate Limit Impact"
+    Each HIP-3 DEX you add significantly impacts bot performance and rate limits.
+
+    * **Additional API Calls**: For each HIP-3 DEX configured, Freqtrade needs to make additional API calls.
+    * **Rate Limit Pressure**: Additional API calls contribute to Hyperliquid's strict rate limits. With multiple DEXes, you may hit rate limits faster, or rather, slow down bot operations due to enforced delays.
+
+    Please only add HIP-3 DEXes that you actively trade on. Monitor your logs for rate limit warnings or signs of slowed operations, and adjust your configuration accordingly.  
+    Different HIP-3 DEXes may also use different quote currencies - so make sure to only add DEXes that are compatible with your stake currency to avoid unnecessary delays.
+
+!!! Note
+    HIP-3 DEXes share the same wallet and free amount of collateral as your main Hyperliquid account. Trades on different DEXes will affect your overall account balance and margin.
+
+    The pair name for HIP-3 pairs will be slightly different than non HIP-3 pairs. Please use `list-pairs` subcommand to get the correct pair naming for all pairs for the specified dexes.
 
 ## Bitvavo
 
@@ -430,3 +582,5 @@ For example, to test the order type `FOK` with Kraken, and modify candle limit t
 
 !!! Warning
     Please make sure to fully understand the impacts of these settings before modifying them.
+    Using `_ft_has_params` overrides may lead to unexpected behavior, and may even break your bot.
+    We will not be able to provide support for issues caused by custom settings in `_ft_has_params`.

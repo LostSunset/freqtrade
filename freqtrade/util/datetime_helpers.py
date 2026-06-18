@@ -12,6 +12,13 @@ def dt_now() -> datetime:
     return datetime.now(UTC)
 
 
+def dt_now_no_micro() -> datetime:
+    """Return the current datetime in UTC without microseconds.
+    Should not be used outside of tests.
+    """
+    return dt_now().replace(microsecond=0)
+
+
 def dt_utc(
     year: int,
     month: int,
@@ -90,15 +97,16 @@ def dt_humanize_delta(dt: datetime):
     return humanize.naturaltime(dt)
 
 
-def format_date(date: datetime | None) -> str:
+def format_date(date: datetime | None, fallback: str = "") -> str:
     """
     Return a formatted date string.
     Returns an empty string if date is None.
     :param date: datetime to format
+    :param fallback: value to return if date is None
     """
     if date:
         return date.strftime(DATETIME_PRINT_FORMAT)
-    return ""
+    return fallback
 
 
 def format_ms_time(date: int | float) -> str:

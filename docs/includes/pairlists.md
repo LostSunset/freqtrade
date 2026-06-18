@@ -2,11 +2,11 @@
 
 Pairlist Handlers define the list of pairs (pairlist) that the bot should trade. They are configured in the `pairlists` section of the configuration settings.
 
-In your configuration, you can use Static Pairlist (defined by the [`StaticPairList`](#static-pair-list) Pairlist Handler) and Dynamic Pairlist (defined by the [`VolumePairList`](#volume-pair-list) and [`PercentChangePairList`](#percent-change-pair-list) Pairlist Handlers).
+In your configuration, you can use Static Pairlist (defined by the [`StaticPairList`](#static-pair-list) Pairlist Handler) and Dynamic Pairlist (defined by the [`VolumePairList`](#volume-pair-list), [`CrossMarketPairList`](#crossmarketpairlist), [`MarketCapPairlist`](#marketcappairlist) and [`PercentChangePairList`](#percent-change-pair-list) Pairlist Handlers).
 
-Additionally, [`AgeFilter`](#agefilter), [`PrecisionFilter`](#precisionfilter), [`PriceFilter`](#pricefilter), [`ShuffleFilter`](#shufflefilter), [`SpreadFilter`](#spreadfilter) and [`VolatilityFilter`](#volatilityfilter) act as Pairlist Filters, removing certain pairs and/or moving their positions in the pairlist.
+Additionally, [`AgeFilter`](#agefilter), [`DelistFilter`](#delistfilter), [`PrecisionFilter`](#precisionfilter), [`PriceFilter`](#pricefilter), [`ShuffleFilter`](#shufflefilter), [`SpreadFilter`](#spreadfilter) and [`VolatilityFilter`](#volatilityfilter) act as Pairlist Filters, removing certain pairs and/or moving their positions in the pairlist.
 
-If multiple Pairlist Handlers are used, they are chained and a combination of all Pairlist Handlers forms the resulting pairlist the bot uses for trading and backtesting. Pairlist Handlers are executed in the sequence they are configured. You can define either `StaticPairList`, `VolumePairList`, `ProducerPairList`, `RemotePairList`, `MarketCapPairList` or `PercentChangePairList` as the starting Pairlist Handler.
+If multiple Pairlist Handlers are used, they are chained and a combination of all Pairlist Handlers forms the resulting pairlist the bot uses for trading and backtesting. Pairlist Handlers are executed in the sequence they are configured. You can define either `StaticPairList`, `VolumePairList`, `ProducerPairList`, `RemotePairList`, `MarketCapPairList`, `PercentChangePairList` or `CrossMarketPairList` as the starting Pairlist Handler.
 
 Inactive markets are always removed from the resulting pairlist. Explicitly blacklisted pairs (those in the `pair_blacklist` configuration setting) are also always removed from the resulting pairlist.
 
@@ -26,9 +26,12 @@ You may also use something like `.*DOWN/BTC` or `.*UP/BTC` to exclude leveraged 
 * [`ProducerPairList`](#producerpairlist)
 * [`RemotePairList`](#remotepairlist)
 * [`MarketCapPairList`](#marketcappairlist)
+* [`CrossMarketPairList`](#crossmarketpairlist)
 * [`AgeFilter`](#agefilter)
+* [`DelistFilter`](#delistfilter)
 * [`FullTradesFilter`](#fulltradesfilter)
 * [`OffsetFilter`](#offsetfilter)
+* [`PairInformationFilter`](#pairinformationfilter)
 * [`PerformanceFilter`](#performancefilter)
 * [`PrecisionFilter`](#precisionfilter)
 * [`PriceFilter`](#pricefilter)
@@ -38,7 +41,7 @@ You may also use something like `.*DOWN/BTC` or `.*UP/BTC` to exclude leveraged 
 * [`VolatilityFilter`](#volatilityfilter)
 
 !!! Tip "Testing pairlists"
-    Pairlist configurations can be quite tricky to get right. Best use the [`test-pairlist`](utils.md#test-pairlist) utility sub-command to test your configuration quickly.
+    Pairlist configurations can be quite tricky to get right. Best use freqUI in [webserver mode](freq-ui.md#webserver-mode) or the [`test-pairlist`](utils.md#test-pairlist) utility sub-command to test your Pairlist configuration quickly.
 
 #### Static Pair List
 
@@ -180,7 +183,7 @@ More sophisticated approach can be used, by using `lookback_timeframe` for candl
 * `refresh_period`: Defines the interval (in seconds) at which the pairlist will be refreshed. The default is 1800 seconds (30 minutes).
 * `lookback_days`: Number of days to look back. When `lookback_days` is selected, the `lookback_timeframe` is defaulted to 1 day.
 * `lookback_timeframe`: Timeframe to use for the lookback period.
-* `lookback_period`: Number of periods to look back at. 
+* `lookback_period`: Number of periods to look back at.
 
 When PercentChangePairList is used after other Pairlist Handlers, it will operate on the outputs of those handlers. If it is the leading Pairlist Handler, it will select pairs from all available markets with the specified stake currency.
 
@@ -270,7 +273,6 @@ You can limit the length of the pairlist with the optional parameter `number_ass
 ],
 ```
 
-
 !!! Tip "Combining pairlists"
     This pairlist can be combined with all other pairlists and filters for further pairlist reduction, and can also act as an "additional" pairlist, on top of already defined pairs.
     `ProducerPairList` can also be used multiple times in sequence, combining the pairs from multiple producers.
@@ -303,6 +305,8 @@ The optional `mode` option specifies if the pairlist should be used as a `blackl
 
 The optional `processing_mode` option in the RemotePairList configuration determines how the retrieved pairlist is processed. It can have two values: "filter" or "append". The default value is "filter".
 
+The optional `number_assets` option in the RemotePairList configuration determines how many pairs will be returned if used in whitelist `mode`. By default, all pairs will be returned. In blacklist `mode`, this option will be ignored.
+
 In "filter" mode, the retrieved pairlist is used as a filter. Only the pairs present in both the original pairlist and the retrieved pairlist are included in the final pairlist. Other pairs are filtered out.
 
 In "append" mode, the retrieved pairlist is added to the original pairlist. All pairs from both lists are included in the final pairlist without any filtering.
@@ -312,7 +316,7 @@ The `pairlist_url` option specifies the URL of the remote server where the pairl
 The `save_to_file` option, when provided with a valid filename, saves the processed pairlist to that file in JSON format. This option is optional, and by default, the pairlist is not saved to a file.
 
 ??? Example "Multi bot with shared pairlist example"
-    
+
     `save_to_file` can be used to save the pairlist to a file with Bot1:
 
     ```json
@@ -367,7 +371,7 @@ The optional `bearer_token` will be included in the requests Authorization Heade
 
 #### MarketCapPairList
 
-`MarketCapPairList` employs sorting/filtering of pairs by their marketcap rank based of CoinGecko. The returned pairlist will be sorted based of their marketcap ranks.
+`MarketCapPairList` employs sorting/filtering of pairs by their marketcap rank based of CoinGecko. The returned pairlist will be sorted based of their marketcap ranks if used in whitelist `mode`.
 
 ```json
 "pairlists": [
@@ -376,24 +380,37 @@ The optional `bearer_token` will be included in the requests Authorization Heade
         "number_assets": 20,
         "max_rank": 50,
         "refresh_period": 86400,
+        "mode": "whitelist",
         "categories": ["layer-1"]
     }
 ]
 ```
 
-`number_assets` defines the maximum number of pairs returned by the pairlist. `max_rank` will determine the maximum rank used in creating/filtering the pairlist. It's expected that some coins within the top `max_rank` marketcap will not be included in the resulting pairlist since not all pairs will have active trading pairs in your preferred market/stake/exchange combination.  
+`number_assets` defines the maximum number of pairs returned by the pairlist if used in whitelist `mode`. In blacklist `mode`, this setting will be ignored.
+
+`max_rank` will determine the maximum rank used in creating/filtering the pairlist. It's expected that some coins within the top `max_rank` marketcap will not be included in the resulting pairlist since not all pairs will have active trading pairs in your preferred market/stake/exchange combination.  
 While using a `max_rank` bigger than 250 is supported, it's not recommended, as it'll cause multiple API calls to CoinGecko, which can lead to rate limit issues.
 
 The `refresh_period` setting defines the interval (in seconds) at which the marketcap rank data will be refreshed. The default is 86,400 seconds (1 day). The pairlist cache (`refresh_period`) applies to both generating pairlists (when in the first position in the list) and filtering instances (when not in the first position in the list).
 
+The `mode` setting defines whether the plugin will filters in (whitelist `mode`) or filters out (blacklist `mode`) top marketcap ranked coins. By default, the plugin will be in whitelist mode.
+
 The `categories` setting specifies the [coingecko categories](https://www.coingecko.com/en/categories) from which to select coins from. The default is an empty list `[]`, meaning no category filtering is applied.
 If an incorrect category string is chosen, the plugin will print the available categories from CoinGecko and fail. The category should be the ID of the category, for example, for `https://www.coingecko.com/en/categories/layer-1`, the category ID would be `layer-1`. You can pass multiple categories such as `["layer-1", "meme-token"]` to select from several categories.
+
+Coins like 1000PEPE/USDT or KPEPE/USDT:USDT are detected on a best effort basis, with the prefixes `1000` and `K` being used to identify them.
 
 !!! Warning "Many categories"
     Each added category corresponds to one API call to CoinGecko. The more categories you add, the longer the pairlist generation will take, potentially causing rate limit issues.
 
 !!! Danger "Duplicate symbols in coingecko"
     Coingecko often has duplicate symbols, where the same symbol is used for different coins. Freqtrade will use the symbol as is and try to search for it on the exchange. If the symbol exists - it will be used. Freqtrade will however not check if the _intended_ symbol is the one coingecko meant. This can sometimes lead to unexpected results, especially on low volume coins or with meme coin categories.
+
+#### CrossMarketPairList
+
+Generate or filter pairs based of their availability on the opposite market.
+
+The `pairs_exist_on` setting defines whether the pairs should exists on both spot and futures market (`both_markets`) or only exist on the specified trading mode (`current_market_only`). By default, the plugin will be in `both_markets` setting, which means whitelisted pairs have to exists on both spot and futures markets.
 
 #### AgeFilter
 
@@ -404,6 +421,16 @@ in the first few days while the pair goes through its price-discovery period. Bo
 be caught out buying before the pair has finished dropping in price.
 
 This filter allows freqtrade to ignore pairs until they have been listed for at least `min_days_listed` days and listed before `max_days_listed`.
+
+#### DelistFilter
+
+Removes pairs that will be delisted on the exchange maximum `max_days_from_now` days from now (defaults to `0` which remove all future delisted pairs no matter how far from now). Currently this filter only supports following exchanges:
+
+!!! Note "Available exchanges"
+    Delist filter is available on Bybit Futures, Bitget Futures and Binance, where Binance Futures will work for both dry and live modes, while Binance Spot is limited to live mode (for technical reasons).
+
+!!! Warning "Backtesting"
+    `DelistFilter` does not support backtesting mode.
 
 #### FullTradesFilter
 
@@ -436,12 +463,71 @@ Example to remove the first 10 pairs from the pairlist, and takes the next 20 (t
 ```
 
 !!! Warning
-    When `OffsetFilter` is used to split a larger pairlist among multiple bots in combination with `VolumeFilter` 
+    When `OffsetFilter` is used to split a larger pairlist among multiple bots in combination with `VolumeFilter`
     it can not be guaranteed that pairs won't overlap due to slightly different refresh intervals for the
     `VolumeFilter`.
 
 !!! Note
     An offset larger than the total length of the incoming pairlist will result in an empty pairlist.
+
+#### PairInformationFilter
+
+Filters pairs based on the presence of certain information in the ccxt markets argument.
+
+To get the correct field - you can use the following code snippet to print the market information for a given pair, and find the correct field and value to filter for:
+
+``` python
+import ccxt
+from pprint import pprint
+exchange = ccxt.binance({
+    'options': {'defaultType': 'swap'} 
+    })
+lm = exchange.load_markets()
+pprint(lm['XAU/USDT:USDT'])
+```
+
+``` json hl_lines="13 16"
+{
+    "id": "XAUUSDT",
+    "lowercaseId": "xauusdt",
+    "symbol": "XAU/USDT:USDT",
+    "base": "XAU",
+    "quote": "USDT",
+    "settle": "USDT",
+    "baseId": "XAU",
+    "quoteId": "USDT",
+    "settleId": "USDT",
+    "type": "swap",
+    // ...
+    "info": {
+        "symbol": "XAUUSDT",
+        "pair": "XAUUSDT",
+        "contractType": "TRADIFI_PERPETUAL",
+        "deliveryDate": 4133404800000,
+        "onboardDate": 1765440300000,
+        "status": "TRADING",
+        // ...
+    }
+}
+
+```
+
+As the highlighted lines show, the `contractType` field in the `info` section of the market data contains the value `TRADIFI_PERPETUAL`, which can be used to filter for TradeFi perpetual contracts.
+Nested dictionaries can be accessed by using dot notation in the `info_key` - so the `contractType` field can be accessed with `info.contractType`.
+
+In this example, the resulting `PairInformationFilter` configuration will include pairs that have `TRADIFI_PERPETUAL` as their `contractType` in the `info` section of the market data.
+
+``` json
+[
+    // ...
+    {
+        "method": "PairInformationFilter",
+        "selection_mode": "whitelist",  // can be whitelist or blacklist
+        "info_key" : "info.contractType", // can be any key in market data
+        "info_compare_value": "TRADIFI_PERPETUAL", // can be any matching value
+    }
+]
+```
 
 #### PerformanceFilter
 
@@ -599,7 +685,7 @@ Adding `"sort_direction": "asc"` or `"sort_direction": "desc"` enables sorting m
 
 ### Full example of Pairlist Handlers
 
-The below example blacklists `BNB/BTC`, uses `VolumePairList` with `20` assets, sorting pairs by `quoteVolume` and applies [`PrecisionFilter`](#precisionfilter) and [`PriceFilter`](#pricefilter), filtering all assets where 1 price unit is > 1%. Then the [`SpreadFilter`](#spreadfilter) and [`VolatilityFilter`](#volatilityfilter) is applied and pairs are finally shuffled with the random seed set to some predefined value.
+The below example blacklists `BNB/BTC`, uses `VolumePairList` with `20` assets, sorting pairs by `quoteVolume`, then filter future delisted pairs using [`DelistFilter`](#delistfilter) and [`AgeFilter`](#agefilter) to remove pairs that are listed less than 10 days ago. After that [`PrecisionFilter`](#precisionfilter) and [`PriceFilter`](#pricefilter) are applied, filtering all assets where 1 price unit is > 1%. Then the [`SpreadFilter`](#spreadfilter) and [`VolatilityFilter`](#volatilityfilter) are applied and pairs are finally shuffled with the random seed set to some predefined value.
 
 ```json
 "exchange": {
@@ -611,6 +697,10 @@ The below example blacklists `BNB/BTC`, uses `VolumePairList` with `20` assets, 
         "method": "VolumePairList",
         "number_assets": 20,
         "sort_key": "quoteVolume"
+    },
+    {
+        "method": "DelistFilter",
+        "max_days_from_now": 0,
     },
     {"method": "AgeFilter", "min_days_listed": 10},
     {"method": "PrecisionFilter"},

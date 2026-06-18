@@ -74,9 +74,10 @@ def combined_dataframes_with_rel_mean(
     df_comb = combine_dataframes_by_column(data, column)
     # Trim dataframes to the given timeframe
     df_comb = df_comb.iloc[(df_comb.index >= fromdt) & (df_comb.index < todt)]
+    rel_mean = df_comb.pct_change().mean(axis=1).fillna(0).cumsum()
     df_comb["count"] = df_comb.count(axis=1)
     df_comb["mean"] = df_comb.mean(axis=1)
-    df_comb["rel_mean"] = df_comb["mean"].pct_change().fillna(0).cumsum()
+    df_comb["rel_mean"] = rel_mean
     return df_comb[["mean", "rel_mean", "count"]]
 
 
@@ -139,10 +140,24 @@ def _calc_drawdown_series(
         max_drawdown_df["drawdown_relative"] = (max_balance - cumulative_balance) / max_balance
     else:
         # NOTE: This is not completely accurate,
-        # but might good enough if starting_balance is not available
+        # but will be good enough if starting_balance is not available
         max_drawdown_df["drawdown_relative"] = (
             max_drawdown_df["high_value"] - max_drawdown_df["cumulative"]
         ) / max_drawdown_df["high_value"]
+
+    # Add zero row at start to account for edge-cases with no winning / losing trades - so high/low
+    # will be 0.0 in such cases.
+    zero_row = pd.DataFrame(
+        {
+            "cumulative": [0.0],
+            "high_value": [0.0],
+            "drawdown": [0.0],
+            "drawdown_relative": [0.0],
+            "date": [profit_results.loc[0, date_col]],
+        }
+    )
+
+    max_drawdown_df = pd.concat([zero_row, max_drawdown_df], ignore_index=True)
     return max_drawdown_df
 
 
@@ -215,6 +230,7 @@ def calculate_max_drawdown(
     max_drawdown_df = _calc_drawdown_series(
         profit_results, date_col=date_col, value_col=value_col, starting_balance=starting_balance
     )
+    # max_drawdown_df has an extra zero row at the start
 
     # Calculate maximum drawdown
     idxmin = (
@@ -223,15 +239,15 @@ def calculate_max_drawdown(
         else max_drawdown_df["drawdown"].idxmin()
     )
     high_idx = max_drawdown_df.iloc[: idxmin + 1]["high_value"].idxmax()
-    high_date = profit_results.loc[high_idx, date_col]
-    low_date = profit_results.loc[idxmin, date_col]
-    high_val = max_drawdown_df.loc[high_idx, "cumulative"]
-    low_val = max_drawdown_df.loc[idxmin, "cumulative"]
-    max_drawdown_rel = max_drawdown_df.loc[idxmin, "drawdown_relative"]
+    high_date = profit_results.at[max(high_idx - 1, 0), date_col]
+    low_date = profit_results.at[max(idxmin - 1, 0), date_col]
+    high_val = max_drawdown_df.at[high_idx, "cumulative"]
+    low_val = max_drawdown_df.at[idxmin, "cumulative"]
+    max_drawdown_rel = max_drawdown_df.at[idxmin, "drawdown_relative"]
 
     # Calculate current drawdown
     current_high_idx = max_drawdown_df["high_value"].iloc[:-1].idxmax()
-    current_high_date = profit_results.loc[current_high_idx, date_col]
+    current_high_date = profit_results.at[max(current_high_idx - 1, 0), date_col]
     current_high_value = max_drawdown_df.iloc[-1]["high_value"]
     current_cumulative = max_drawdown_df.iloc[-1]["cumulative"]
     current_drawdown_abs = current_high_value - current_cumulative
@@ -280,7 +296,7 @@ def calculate_cagr(days_passed: int, starting_balance: float, final_balance: flo
     :param final_balance: Final balance to calculate CAGR against
     :return: CAGR
     """
-    if final_balance < 0:
+    if (final_balance < 0) or (starting_balance <= 0) or (days_passed <= 0):
         # With leveraged trades, final_balance can become negative.
         return 0
     return (final_balance / starting_balance) ** (1 / (days_passed / 365)) - 1
@@ -317,8 +333,77 @@ def calculate_expectancy(trades: pd.DataFrame) -> tuple[float, float]:
     return expectancy, expectancy_ratio
 
 
+def _calculate_annualized_ratio(
+    expected_returns_mean: float,
+    denominator: float,
+    annualization_factor: int = 365,
+) -> float:
+    """
+    Helper function to calculate annualized ratios like Sharpe and Sortino.
+    :param expected_returns_mean: Mean of the returns (expected returns)
+    :param denominator: Denominator of the ratio (e.g. standard deviation for Sharpe)
+    :param annualization_factor: Factor to annualize the ratio (default is 365 for daily returns)
+    :return: Annualized ratio, or -100.0 if denominator is zero or NaN to indicate this is
+             not optimal.
+    """
+    if denominator != 0 and not np.isnan(denominator):
+        return float(expected_returns_mean / denominator * np.sqrt(annualization_factor))
+
+    # Define high (negative) ratio to be clear that this is NOT optimal.
+    return -100.0
+
+
+def _calculate_daily_returns_from_balance(
+    balance_history: pd.DataFrame,
+    date_col: str,
+    balance_col: str,
+) -> pd.Series:
+    wallet = _prepare_balance_history(balance_history, date_col, balance_col)
+    if len(wallet) == 0:
+        return pd.DataFrame(columns=[date_col, balance_col])
+
+    # Sample balance to daily end-of-day values to normalize variable snapshot frequency.
+    daily_balance = (
+        wallet.set_index(date_col)[balance_col].resample("1D").last().dropna().rename(balance_col)
+    )
+    daily_balance = daily_balance.reset_index()
+
+    if len(daily_balance) < 2:
+        return pd.Series(dtype=float)
+
+    return daily_balance[balance_col].pct_change().dropna()
+
+
+def _prepare_balance_history(
+    balance_history: pd.DataFrame,
+    date_col: str,
+    balance_col: str,
+) -> pd.DataFrame:
+    """
+    Prepare balance history for calculations by filtering out rows with
+    missing date or balance values.
+    """
+    if (
+        len(balance_history) == 0
+        or date_col not in balance_history
+        or balance_col not in balance_history
+    ):
+        return pd.DataFrame(columns=[date_col, balance_col])
+
+    wallet = balance_history.loc[:, [date_col, balance_col]].copy()
+    wallet = wallet.dropna(subset=[date_col, balance_col]).sort_values(date_col)
+
+    if len(wallet) == 0:
+        return pd.DataFrame(columns=[date_col, balance_col])
+
+    return wallet
+
+
 def calculate_sortino(
-    trades: pd.DataFrame, min_date: datetime, max_date: datetime, starting_balance: float
+    trades: pd.DataFrame,
+    min_date: datetime | None,
+    max_date: datetime | None,
+    starting_balance: float,
 ) -> float:
     """
     Calculate sortino
@@ -335,18 +420,38 @@ def calculate_sortino(
 
     down_stdev = np.std(trades.loc[trades["profit_abs"] < 0, "profit_abs"] / starting_balance)
 
-    if down_stdev != 0 and not np.isnan(down_stdev):
-        sortino_ratio = expected_returns_mean / down_stdev * np.sqrt(365)
-    else:
-        # Define high (negative) sortino ratio to be clear that this is NOT optimal.
-        sortino_ratio = -100
+    return _calculate_annualized_ratio(expected_returns_mean, down_stdev)
 
-    # print(expected_returns_mean, down_stdev, sortino_ratio)
-    return sortino_ratio
+
+def calculate_sortino_from_balance(
+    balance_history: pd.DataFrame,
+    date_col: str = "date",
+    balance_col: str = "total_quote",
+) -> float:
+    """
+    Calculate sortino ratio from historical balance snapshots.
+
+    :param balance_history: DataFrame containing at least date and balance columns
+    :param date_col: Column containing timestamps
+    :param balance_col: Column containing historical balance values
+    :return: sortino
+    """
+    daily_returns = _calculate_daily_returns_from_balance(balance_history, date_col, balance_col)
+
+    if len(daily_returns) == 0:
+        return 0.0
+
+    expected_returns_mean = daily_returns.mean()
+    downside_returns = daily_returns[daily_returns < 0]
+    down_stdev = downside_returns.std(ddof=0)
+    return _calculate_annualized_ratio(expected_returns_mean, down_stdev)
 
 
 def calculate_sharpe(
-    trades: pd.DataFrame, min_date: datetime, max_date: datetime, starting_balance: float
+    trades: pd.DataFrame,
+    min_date: datetime | None,
+    max_date: datetime | None,
+    starting_balance: float,
 ) -> float:
     """
     Calculate sharpe
@@ -362,26 +467,82 @@ def calculate_sharpe(
     expected_returns_mean = total_profit.sum() / days_period
     up_stdev = np.std(total_profit)
 
-    if up_stdev != 0:
-        sharp_ratio = expected_returns_mean / up_stdev * np.sqrt(365)
-    else:
-        # Define high (negative) sharpe ratio to be clear that this is NOT optimal.
-        sharp_ratio = -100
+    return _calculate_annualized_ratio(expected_returns_mean, up_stdev)
 
-    # print(expected_returns_mean, up_stdev, sharp_ratio)
-    return sharp_ratio
+
+def calculate_sharpe_from_balance(
+    balance_history: pd.DataFrame,
+    date_col: str = "date",
+    balance_col: str = "total_quote",
+) -> float:
+    """
+    Calculate sharpe ratio from historical balance snapshots.
+
+    :param balance_history: DataFrame containing at least date and balance columns
+    :param date_col: Column containing timestamps
+    :param balance_col: Column containing historical balance values
+    :return: sharpe
+    """
+    daily_returns = _calculate_daily_returns_from_balance(balance_history, date_col, balance_col)
+
+    if len(daily_returns) == 0:
+        return 0.0
+
+    expected_returns_mean = daily_returns.mean()
+    up_stdev = daily_returns.std(ddof=0)
+    return _calculate_annualized_ratio(expected_returns_mean, up_stdev)
+
+
+def calculate_max_drawdown_from_balance(
+    balance_history: pd.DataFrame,
+    date_col: str = "date",
+    balance_col: str = "total_quote",
+    relative: bool = False,
+) -> DrawDownResult:
+    """
+    Calculate max drawdown from historical balance snapshots.
+
+    :param balance_history: DataFrame containing at least date and balance columns
+    :param date_col: Column containing timestamps
+    :param balance_col: Column containing historical balance values
+    :param relative: If True, use relative drawdown for max calculation instead of absolute
+    :return: DrawDownResult object
+    :raise: ValueError if balance-history dataframe was found empty.
+    """
+    wallet = _prepare_balance_history(
+        balance_history=balance_history,
+        date_col=date_col,
+        balance_col=balance_col,
+    )
+
+    if len(wallet) < 2:
+        raise ValueError("Balance-history dataframe empty.")
+
+    starting_balance = float(wallet[balance_col].iloc[0])
+    wallet.loc[:, "total_balance"] = wallet[balance_col].diff().fillna(0.0)
+
+    return calculate_max_drawdown(
+        wallet,
+        date_col=date_col,
+        value_col="total_balance",
+        starting_balance=starting_balance,
+        relative=relative,
+    )
 
 
 def calculate_calmar(
-    trades: pd.DataFrame, min_date: datetime, max_date: datetime, starting_balance: float
+    trades: pd.DataFrame,
+    min_date: datetime | None,
+    max_date: datetime | None,
+    starting_balance: float,
 ) -> float:
     """
-    Calculate calmar
+    Calculate calmar from trades data.
     :param trades: DataFrame containing trades (requires columns close_date and profit_abs)
     :return: calmar
     """
     if (len(trades) == 0) or (min_date is None) or (max_date is None) or (min_date == max_date):
-        return 0
+        return 0.0
 
     total_profit = trades["profit_abs"].sum() / starting_balance
     days_period = max(1, (max_date - min_date).days)
@@ -397,16 +558,51 @@ def calculate_calmar(
         )
         max_drawdown = drawdown.relative_account_drawdown
     except ValueError:
-        max_drawdown = 0
+        return 0.0
 
-    if max_drawdown != 0:
-        calmar_ratio = expected_returns_mean / max_drawdown * math.sqrt(365)
-    else:
-        # Define high (negative) calmar ratio to be clear that this is NOT optimal.
-        calmar_ratio = -100
+    return _calculate_annualized_ratio(expected_returns_mean, max_drawdown)
 
-    # print(expected_returns_mean, max_drawdown, calmar_ratio)
-    return calmar_ratio
+
+def calculate_calmar_from_balance(
+    balance_history: pd.DataFrame,
+    date_col: str = "date",
+    balance_col: str = "total_quote",
+) -> float:
+    """
+    Calculate calmar ratio from historical balance snapshots.
+
+    :param balance_history: DataFrame containing at least date and balance columns
+    :param date_col: Column containing timestamps
+    :param balance_col: Column containing historical balance values
+    :return: calmar
+    """
+    wallet = _prepare_balance_history(
+        balance_history=balance_history,
+        date_col=date_col,
+        balance_col=balance_col,
+    )
+
+    if len(wallet) < 2:
+        return 0.0
+
+    starting_balance = float(wallet[balance_col].iloc[0])
+    final_balance = float(wallet[balance_col].iloc[-1])
+    days_period = max(1, (wallet[date_col].iloc[-1] - wallet[date_col].iloc[0]).days)
+
+    total_profit = (final_balance - starting_balance) / starting_balance
+    expected_returns_mean = total_profit / days_period * 100
+
+    try:
+        drawdown = calculate_max_drawdown_from_balance(
+            wallet,
+            date_col=date_col,
+            balance_col=balance_col,
+        )
+        max_drawdown = drawdown.relative_account_drawdown
+    except ValueError:
+        return 0.0
+
+    return _calculate_annualized_ratio(expected_returns_mean, max_drawdown)
 
 
 def calculate_sqn(trades: pd.DataFrame, starting_balance: float) -> float:

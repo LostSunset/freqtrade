@@ -1,8 +1,9 @@
-```
+``` output
 usage: freqtrade backtesting-analysis [-h] [-v] [--no-color] [--logfile FILE]
                                       [-V] [-c PATH] [-d PATH]
                                       [--userdir PATH]
-                                      [--export-filename PATH]
+                                      [--backtest-filename PATH]
+                                      [--backtest-directory PATH]
                                       [--analysis-groups {0,1,2,3,4,5} [{0,1,2,3,4,5} ...]]
                                       [--enter-reason-list ENTER_REASON_LIST [ENTER_REASON_LIST ...]]
                                       [--exit-reason-list EXIT_REASON_LIST [EXIT_REASON_LIST ...]]
@@ -14,10 +15,15 @@ usage: freqtrade backtesting-analysis [-h] [-v] [--no-color] [--logfile FILE]
 
 options:
   -h, --help            show this help message and exit
-  --export-filename PATH, --backtest-filename PATH
-                        Use this filename for backtest results.Requires
-                        `--export` to be set as well. Example: `--export-filen
-                        ame=user_data/backtest_results/backtest_today.json`
+  --backtest-filename, --export-filename PATH
+                        Use this filename for backtest results.Example:
+                        `--backtest-
+                        filename=backtest_results_2020-09-27_16-20-48.json`.
+                        Assumes either `user_data/backtest_results/` or
+                        `--export-directory` as base directory.
+  --backtest-directory, --export-directory PATH
+                        Directory to use for backtest results. Example:
+                        `--export-directory=user_data/backtest_results/`.
   --analysis-groups {0,1,2,3,4,5} [{0,1,2,3,4,5} ...]
                         grouping output - 0: simple wins/losses by enter tag,
                         1: by enter_tag, 2: by enter_tag and exit_tag, 3: by
@@ -48,21 +54,20 @@ Common arguments:
   -v, --verbose         Verbose mode (-vv for more, -vvv to get all messages).
   --no-color            Disable colorization of hyperopt results. May be
                         useful if you are redirecting output to a file.
-  --logfile FILE, --log-file FILE
+  --logfile, --log-file FILE
                         Log to the file specified. Special values are:
                         'syslog', 'journald'. See the documentation for more
                         details.
   -V, --version         show program's version number and exit
-  -c PATH, --config PATH
-                        Specify configuration file (default:
+  -c, --config PATH     Specify configuration file (default:
                         `userdir/config.json` or `config.json` whichever
                         exists). Multiple --config options may be used. Can be
                         set to `-` to read config from stdin.
-  -d PATH, --datadir PATH, --data-dir PATH
+  -d, --datadir, --data-dir PATH
                         Path to the base directory of the exchange with
                         historical backtesting data. To see futures data, use
                         trading-mode additionally.
-  --userdir PATH, --user-data-dir PATH
+  --userdir, --user-data-dir PATH
                         Path to userdata directory.
 
 ```
