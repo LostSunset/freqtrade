@@ -1,0 +1,754 @@
+{
+  "generated_at_utc": "2026-09-02T11:33:46.419013+00:00",
+  "request_timeout_seconds": 45,
+  "endpoints": {
+    "twse_basic": {
+      "url": "https://openapi.twse.com.tw/v1/opendata/t187ap37_L",
+      "ok": true,
+      "bytes": 42398107,
+      "content_type": "application/json",
+      "type": "list",
+      "rows": 40503,
+      "keys": [
+        "備註",
+        "出表日期",
+        "原始上限價格(元)/上限指數",
+        "原始下限價格(元)/下限指數",
+        "原始履約價格(元)/履約指數",
+        "履約截止日",
+        "履約開始日",
+        "最後交易日",
+        "最新上限價格(元)/上限指數",
+        "最新下限價格(元)/下限指數",
+        "最新履約價格(元)/履約指數",
+        "最新標的履約配發數量(每仟單位權證)",
+        "標的證券/指數",
+        "權證代號",
+        "權證簡稱",
+        "權證類型",
+        "流動量提供者報價方式",
+        "發行單位數量(仟單位)",
+        "結算方式(詳附註編號說明)",
+        "類別"
+      ],
+      "sample": {
+        "出表日期": "1150901",
+        "權證代號": "030012",
+        "權證簡稱": "AES凱基57購02",
+        "權證類型": "認購",
+        "類別": "一般型",
+        "流動量提供者報價方式": "主動報價",
+        "履約開始日": "1140731",
+        "最後交易日": "1150728",
+        "履約截止日": "1150730",
+        "發行單位數量(仟單位)": "15000",
+        "結算方式(詳附註編號說明)": "5",
+        "標的證券/指數": "AES-KY",
+        "最新標的履約配發數量(每仟單位權證)": "7.00",
+        "原始履約價格(元)/履約指數": "1500.0000",
+        "原始上限價格(元)/上限指數": "0.0000",
+        "原始下限價格(元)/下限指數": "0.0000",
+        "最新履約價格(元)/履約指數": "1475.4100",
+        "最新上限價格(元)/上限指數": "0.0000",
+        "最新下限價格(元)/下限指數": "0.0000",
+        "備註": "◎2025/09/05申請自行註銷權證3,300仟單位，剩餘權證1,700仟單位。\r\n◎2025/09/08申請自行註銷權證300仟單位，剩餘權證1,400仟單位。\r\n◎2025/09/09申請自行註銷權證100仟單位，剩餘權證1,300仟單位。\r\n◎2025/09/10申請自行註銷權證100仟單位，剩餘權證1,200仟單位。\r\n◎ 2026/01/28增額上市5,000仟單位。\r\n◎2026/01/28申請自行註銷權證3,200仟單位，剩餘權證3,000仟單位。\r\n◎ 2026/02/23增額上市5,000仟單位。\r\n◎2026/03/20申請自行註銷權證4,400仟單位，剩餘權證3,600仟單位。\r\n◎2026/03/24申請自行註銷權證100仟單位，剩餘權證3,500仟單位。\r\n◎2026/03/27申請自行註銷權證200仟單位，剩餘權證3,300仟單位。\r\n◎2026/06/02申請自行註銷權證200仟單位，剩餘權證3,100仟單位。\r\n◎2026/07/09標的證券除息，調整後履約價格1,475.41元，調整後行使比例0.0070。\r\n◎2026/07/13申請自行註銷權證100仟單位，剩餘權證3,000仟單位。"
+      },
+      "elapsed_seconds": 77.824
+    },
+    "twse_daily": {
+      "url": "https://openapi.twse.com.tw/v1/opendata/t187ap42_L",
+      "ok": true,
+      "bytes": 5224964,
+      "content_type": "application/json",
+      "type": "list",
+      "rows": 32507,
+      "keys": [
+        "交易日期",
+        "出表日期",
+        "成交張數",
+        "成交金額",
+        "權證代號",
+        "權證名稱"
+      ],
+      "sample": {
+        "出表日期": "1150901",
+        "交易日期": "1150901",
+        "權證代號": "041212",
+        "權證名稱": "元金2X中信5A購03",
+        "成交金額": "0.00",
+        "成交張數": "0"
+      },
+      "elapsed_seconds": 3.635
+    },
+    "twse_underlying": {
+      "url": "https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL",
+      "ok": true,
+      "bytes": 318659,
+      "content_type": "application/json",
+      "type": "list",
+      "rows": 1377,
+      "keys": [
+        "Change",
+        "ClosingPrice",
+        "Code",
+        "Date",
+        "HighestPrice",
+        "LowestPrice",
+        "Name",
+        "OpeningPrice",
+        "TradeValue",
+        "TradeVolume",
+        "Transaction"
+      ],
+      "sample": {
+        "Date": "1150901",
+        "Code": "00400A",
+        "Name": "主動國泰動能高息",
+        "TradeVolume": "58845340",
+        "TradeValue": "902439487",
+        "OpeningPrice": "15.14",
+        "HighestPrice": "15.47",
+        "LowestPrice": "15.12",
+        "ClosingPrice": "15.37",
+        "Change": "0.3900",
+        "Transaction": "10113"
+      },
+      "elapsed_seconds": 1.645
+    },
+    "twse_holiday": {
+      "url": "https://openapi.twse.com.tw/v1/holidaySchedule/holidaySchedule",
+      "ok": true,
+      "bytes": 3774,
+      "content_type": "application/json",
+      "type": "list",
+      "rows": 27,
+      "keys": [
+        "Date",
+        "Description",
+        "Name",
+        "Weekday"
+      ],
+      "sample": {
+        "Name": "中華民國開國紀念日",
+        "Date": "1150101",
+        "Weekday": "四",
+        "Description": "依規定放假1日。"
+      },
+      "elapsed_seconds": 0.898
+    },
+    "twse_all_close_probe": {
+      "url": "https://www.twse.com.tw/rwd/zh/afterTrading/MI_INDEX?date=20260901&type=ALL&response=json",
+      "ok": true,
+      "bytes": 4765471,
+      "content_type": "application/json;charset=UTF-8",
+      "type": "dict",
+      "top_keys": [
+        "tables",
+        "type",
+        "params",
+        "stat",
+        "date"
+      ],
+      "list_fields": {
+        "tables": {
+          "rows": 10,
+          "item_type": "dict",
+          "keys": [
+            "title",
+            "fields",
+            "data",
+            "hints"
+          ],
+          "sample": {
+            "title": "115年09月01日 價格指數(臺灣證券交易所)",
+            "fields": [
+              "指數",
+              "收盤指數",
+              "漲跌(+/-)",
+              "漲跌點數",
+              "漲跌百分比(%)",
+              "特殊處理註記"
+            ],
+            "data": [
+              [
+                "寶島股價指數",
+                "52,101.13",
+                "<p style ='color:red'>+</p>",
+                "926.72",
+                "1.81",
+                ""
+              ],
+              [
+                "發行量加權股價指數",
+                "46,948.72",
+                "<p style ='color:red'>+</p>",
+                "820.25",
+                "1.78",
+                ""
+              ],
+              [
+                "臺灣公司治理100指數",
+                "29,206.66",
+                "<p style ='color:red'>+</p>",
+                "521.37",
+                "1.82",
+                ""
+              ],
+              [
+                "臺灣50指數",
+                "43,491.42",
+                "<p style ='color:red'>+</p>",
+                "868.99",
+                "2.04",
+                ""
+              ],
+              [
+                "臺灣50權重上限30%指數",
+                "36,796.38",
+                "<p style ='color:red'>+</p>",
+                "868.40",
+                "2.42",
+                ""
+              ],
+              [
+                "臺灣中型100指數",
+                "36,572.49",
+                "<p style ='color:red'>+</p>",
+                "475.30",
+                "1.32",
+                ""
+              ],
+              [
+                "臺灣資訊科技指數",
+                "90,805.26",
+                "<p style ='color:red'>+</p>",
+                "1,871.84",
+                "2.10",
+                ""
+              ],
+              [
+                "臺灣發達指數",
+                "19,063.83",
+                "<p style ='color:red'>+</p>",
+                "246.93",
+                "1.31",
+                ""
+              ],
+              [
+                "臺灣高股息指數",
+                "15,705.31",
+                "<p style ='color:red'>+</p>",
+                "103.96",
+                "0.67",
+                ""
+              ],
+              [
+                "臺灣就業99指數",
+                "30,004.74",
+                "<p style ='color:red'>+</p>",
+                "423.31",
+                "1.43",
+                ""
+              ],
+              [
+                "臺灣高薪100指數",
+                "23,089.93",
+                "<p style ='color:red'>+</p>",
+                "430.75",
+                "1.90",
+                ""
+              ],
+              [
+                "未含金融指數",
+                "42,015.22",
+                "<p style ='color:red'>+</p>",
+                "745.93",
+                "1.81",
+                ""
+              ],
+              [
+                "未含電子指數",
+                "25,427.59",
+                "<p style ='color:red'>+</p>",
+                "218.52",
+                "0.87",
+                ""
+              ],
+              [
+                "未含金融電子指數",
+                "16,770.27",
+                "<p style ='color:red'>+</p>",
+                "72.96",
+                "0.44",
+                ""
+              ],
+              [
+                "小型股300指數",
+                "14,013.78",
+                "<p style ='color:red'>+</p>",
+                "133.68",
+                "0.96",
+                ""
+              ],
+              [
+                "水泥窯製類指數",
+                "642.25",
+                "<p style ='color:red'>+</p>",
+                "12.32",
+                "1.96",
+                ""
+              ],
+              [
+                "塑膠化工類指數",
+                "1,183.71",
+                "<p style ='color:green'>-</p>",
+                "10.86",
+                "-0.91",
+                ""
+              ],
+              [
+                "機電類指數",
+                "16,412.60",
+                "<p style ='color:red'>+</p>",
+                "321.38",
+                "2.00",
+                ""
+              ],
+              [
+                "水泥類指數",
+                "124.79",
+                "<p style ='color:red'>+</p>",
+                "3.21",
+                "2.64",
+                ""
+              ],
+              [
+                "食品類指數",
+                "1,926.23",
+                "<p style ='color:green'>-</p>",
+                "0.86",
+                "-0.04",
+                ""
+              ],
+              [
+                "塑膠類指數",
+                "395.57",
+                "<p style ='color:green'>-</p>",
+                "2.37",
+                "-0.60",
+                ""
+              ],
+              [
+                "紡織纖維類指數",
+                "485.16",
+                "<p style ='color:red'>+</p>",
+                "9.61",
+                "2.02",
+                ""
+              ],
+              [
+                "電機機械類指數",
+                "559.73",
+                "<p style ='color:red'>+</p>",
+                "13.91",
+                "2.55",
+                ""
+              ],
+              [
+                "電器電纜類指數",
+                "110.24",
+                "<p style ='color:green'>-</p>",
+                "0.71",
+                "-0.64",
+                ""
+              ],
+              [
+                "化學生技醫療類指數",
+                "172.94",
+                "<p style ='color:green'>-</p>",
+                "2.77",
+                "-1.58",
+                ""
+              ],
+              [
+                "化學類指數",
+                "202.33",
+                "<p style ='color:red'>+</p>",
+                "4.96",
+                "2.51",
+                ""
+              ],
+              [
+                "生技醫療類指數",
+                "97.62",
+                "<p style ='color:green'>-</p>",
+                "3.29",
+                "-3.26",
+                ""
+              ],
+              [
+                "玻璃陶瓷類指數",
+                "144.69",
+                "<p style ='color:red'>+</p>",
+                "1.03",
+                "0.72",
+                ""
+              ],
+              [
+                "造紙類指數",
+                "283.64",
+                "<p style ='color:green'>-</p>",
+                "1.03",
+                "-0.36",
+                ""
+              ],
+              [
+                "鋼鐵類指數",
+                "121.23",
+                "<p style ='color:red'>+</p>",
+                "0.65",
+                "0.54",
+                ""
+              ],
+              [
+                "橡膠類指數",
+                "196.58",
+                "<p style ='color:red'>+</p>",
+                "1.41",
+                "0.72",
+                ""
+              ],
+              [
+                "汽車類指數",
+                "296.13",
+                "<p style ='color:red'>+</p>",
+                "3.01",
+                "1.03",
+                ""
+              ],
+              [
+                "電子工業類指數",
+                "2,982.33",
+                "<p style ='color:red'>+</p>",
+                "58.35",
+                "2.00",
+                ""
+              ],
+              [
+                "半導體類指數",
+                "1,567.08",
+                "<p style ='color:red'>+</p>",
+                "32.41",
+                "2.11",
+                ""
+              ],
+              [
+                "電腦及週邊設備類指數",
+                "487.05",
+                "<p style ='color:red'>+</p>",
+                "10.65",
+                "2.24",
+                ""
+              ],
+              [
+                "光電類指數",
+                "78.57",
+                "<p style ='color:green'>-</p>",
+                "0.24",
+                "-0.30",
+                ""
+              ],
+              [
+                "通信網路類指數",
+                "239.05",
+                "<p style ='color:red'>+</p>",
+                "6.89",
+                "2.97",
+                ""
+              ],
+              [
+                "電子零組件類指數",
+                "955.66",
+                "<p style ='color:red'>+</p>",
+                "11.40",
+                "1.21",
+                ""
+              ],
+              [
+                "電子通路類指數",
+                "350.80",
+                "<p style ='color:red'>+</p>",
+                "2.41",
+                "0.69",
+                ""
+              ],
+              [
+                "資訊服務類指數",
+                "229.14",
+                "<p style ='color:green'>-</p>",
+                "0.94",
+                "-0.41",
+                ""
+              ],
+              [
+                "其他電子類指數",
+                "279.94",
+                "<p style ='color:red'>+</p>",
+                "7.82",
+                "2.87",
+                ""
+              ],
+              [
+                "建材營造類指數",
+                "460.81",
+                "<p style ='color:red'>+</p>",
+                "1.45",
+                "0.32",
+                ""
+              ],
+              [
+                "航運類指數",
+                "210.77",
+                "<p style ='color:red'>+</p>",
+                "0.92",
+                "0.44",
+                ""
+              ],
+              [
+                "觀光餐旅類指數",
+                "102.97",
+                "<p style ='color:red'>+</p>",
+                "0.07",
+                "0.07",
+                ""
+              ],
+              [
+                "金融保險類指數",
+                "3,391.58",
+                "<p style ='color:red'>+</p>",
+                "48.46",
+                "1.45",
+                ""
+              ],
+              [
+                "貿易百貨類指數",
+                "235.04",
+                "<p style ='color:green'>-</p>",
+                "0.05",
+                "-0.02",
+                ""
+              ],
+              [
+                "油電燃氣類指數",
+                "103.57",
+                "<p style ='color:red'>+</p>",
+                "3.88",
+                "3.89",
+                ""
+              ],
+              [
+                "綠能環保類指數",
+                "129.71",
+                "<p style ='color:red'>+</p>",
+                "2.47",
+                "1.94",
+                ""
+              ],
+              [
+                "數位雲端類指數",
+                "40.10",
+                "<p style ='color:green'>-</p>",
+                "0.13",
+                "-0.32",
+                ""
+              ],
+              [
+                "運動休閒類指數",
+                "58.48",
+                "<p style ='color:green'>-</p>",
+                "0.01",
+                "-0.02",
+                ""
+              ],
+              [
+                "居家生活類指數",
+                "100.82",
+                "<p style ='color:green'>-</p>",
+                "0.11",
+                "-0.11",
+                ""
+              ],
+              [
+                "其他類指數",
+                "278.42",
+                "<p style ='color:green'>-</p>",
+                "2.27",
+                "-0.81",
+                ""
+              ],
+              [
+                "臺指日報酬兩倍指數",
+                "230,860.75",
+                "<p style ='color:red'>+</p>",
+                "7,928.31",
+                "3.56",
+                ""
+              ],
+              [
+                "臺指反向一倍指數",
+                "1,219.84",
+                "<p style ='color:green'>-</p>",
+                "22.08",
+                "-1.78",
+                ""
+              ],
+              [
+                "電子類兩倍槓桿指數",
+                "380,241.96",
+                "<p style ='color:red'>+</p>",
+                "14,593.53",
+                "3.99",
+                ""
+              ],
+              [
+                "電子類反向指數",
+                "748.64",
+                "<p style ='color:green'>-</p>",
+                "15.24",
+                "-2.00",
+                ""
+              ]
+            ],
+            "hints": "單位：元、股"
+          }
+        }
+      },
+      "elapsed_seconds": 3.696
+    },
+    "tpex_issue": {
+      "url": "https://www.tpex.org.tw/openapi/v1/tpex_warrant_issue",
+      "ok": false,
+      "error": "IncompleteRead: IncompleteRead(1392248 bytes read, 2765282 more expected)",
+      "elapsed_seconds": 4.038
+    },
+    "tpex_daily": {
+      "url": "https://www.tpex.org.tw/openapi/v1/tpex_warrant_daily_quts",
+      "ok": true,
+      "bytes": 3112663,
+      "content_type": "application/json",
+      "type": "list",
+      "rows": 9800,
+      "keys": [
+        "Change",
+        "Close",
+        "Code",
+        "Date",
+        "High",
+        "Low",
+        "Name",
+        "No.OfTransactions",
+        "Open",
+        "TradeValue",
+        "TradeVol.",
+        "UnderlyingStock",
+        "UnderlyingStock PriceChange",
+        "UnderlyingStockClosePrice",
+        "UnderlyingStockCode"
+      ],
+      "sample": {
+        "Date": "1150902",
+        "Code": "72328U",
+        "Name": "環球晶群益59售01",
+        "Open": "",
+        "High": "",
+        "Low": "",
+        "Close": "",
+        "Change": "",
+        "TradeVol.": "0",
+        "No.OfTransactions": "0",
+        "TradeValue": "0",
+        "UnderlyingStockCode": "6488",
+        "UnderlyingStock": "環球晶",
+        "UnderlyingStockClosePrice": "967",
+        "UnderlyingStock PriceChange": "27.00"
+      },
+      "elapsed_seconds": 22.882
+    },
+    "tpex_basic": {
+      "url": "https://www.tpex.org.tw/openapi/v1/mopsfin_t187ap37_O",
+      "ok": false,
+      "error": "IncompleteRead: IncompleteRead(7585399 bytes read, 7014388 more expected)",
+      "elapsed_seconds": 23.503
+    },
+    "tpex_trade": {
+      "url": "https://www.tpex.org.tw/openapi/v1/mopsfin_t187ap42_O",
+      "ok": true,
+      "bytes": 1483194,
+      "content_type": "application/json",
+      "type": "list",
+      "rows": 9756,
+      "keys": [
+        "Date",
+        "交易日期",
+        "成交數量",
+        "成交金額",
+        "權證代號",
+        "權證名稱"
+      ],
+      "sample": {
+        "Date": "1150901",
+        "交易日期": "1150901",
+        "權證代號": "72963U",
+        "權證名稱": "中美晶國票61售06",
+        "成交金額": "1780.00",
+        "成交數量": "1000"
+      },
+      "elapsed_seconds": 21.363
+    },
+    "tpex_underlying": {
+      "url": "https://www.tpex.org.tw/openapi/v1/tpex_mainboard_quotes",
+      "ok": true,
+      "bytes": 357148,
+      "content_type": "application/json",
+      "type": "list",
+      "rows": 1013,
+      "keys": [
+        "Capitals",
+        "Change",
+        "Close",
+        "CompanyName",
+        "Date",
+        "High",
+        "LatesAskPrice",
+        "LatestBidPrice",
+        "Low",
+        "NextLimitDown",
+        "NextLimitUp",
+        "Open",
+        "SecuritiesCompanyCode",
+        "TradingShares",
+        "TransactionAmount",
+        "TransactionNumber"
+      ],
+      "sample": {
+        "Date": "1150902",
+        "SecuritiesCompanyCode": "00411A",
+        "CompanyName": "主動統一前沿科技",
+        "Close": "9.50",
+        "Change": "-0.19",
+        "Open": "9.61",
+        "High": "9.61",
+        "Low": "9.50",
+        "TradingShares": "19835000",
+        "TransactionAmount": "188792730",
+        "TransactionNumber": "4037",
+        "LatestBidPrice": "9.49",
+        "LatesAskPrice": "9.50",
+        "Capitals": "660076000",
+        "NextLimitUp": "9999.95",
+        "NextLimitDown": "0.01"
+      },
+      "elapsed_seconds": 4.561
+    }
+  }
+}
