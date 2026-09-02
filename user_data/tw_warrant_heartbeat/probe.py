@@ -12,6 +12,7 @@ URLS = {
     "twse_daily": "https://openapi.twse.com.tw/v1/opendata/t187ap42_L",
     "twse_underlying": "https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL",
     "twse_holiday": "https://openapi.twse.com.tw/v1/holidaySchedule/holidaySchedule",
+    "twse_all_close_probe": "https://www.twse.com.tw/rwd/zh/afterTrading/MI_INDEX?date=20260901&type=ALL&response=json",
     "tpex_issue": "https://www.tpex.org.tw/openapi/v1/tpex_warrant_issue",
     "tpex_daily": "https://www.tpex.org.tw/openapi/v1/tpex_warrant_daily_quts",
     "tpex_basic": "https://www.tpex.org.tw/openapi/v1/mopsfin_t187ap37_O",
@@ -27,8 +28,9 @@ def fetch_json(url: str):
     req = urllib.request.Request(
         url,
         headers={
-            "User-Agent": "Mozilla/5.0 tw-warrant-heartbeat/1.1",
+            "User-Agent": "Mozilla/5.0 tw-warrant-heartbeat/1.2",
             "Accept": "application/json,text/plain,*/*",
+            "Accept-Encoding": "identity",
         },
     )
     ctx = ssl.create_default_context()
@@ -49,10 +51,12 @@ def describe(data):
         lists = {}
         for key, value in data.items():
             if isinstance(value, list):
+                sample = value[0] if value else None
                 lists[key] = {
                     "rows": len(value),
-                    "keys": list(value[0].keys()) if value and isinstance(value[0], dict) else [],
-                    "sample": value[0] if value else None,
+                    "item_type": type(sample).__name__ if sample is not None else None,
+                    "keys": list(sample.keys()) if isinstance(sample, dict) else [],
+                    "sample": sample,
                 }
         if lists:
             result["list_fields"] = lists
