@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "pipeline": {
-    "generated_at_asia_taipei": "2026-09-02T19:42:32.388787+08:00",
+    "generated_at_asia_taipei": "2026-09-02T19:37:05.358902+08:00",
     "intended_heartbeat_time": "08:00 Asia/Taipei",
     "execution_date": "2026-09-02",
     "market_state": "交易日盤前",
@@ -58,8 +58,7 @@
           "最後揭示賣量",
           "本益比"
         ]
-      },
-      "volume_normalization": "t187ap42_L 成交張數欄依實際單位數/1000轉為張；MI_INDEX成交股數同樣/1000"
+      }
     },
     "tpex": {
       "source_ok": true,
@@ -80,21 +79,17 @@
       "trade_data_dates": [
         "2026-09-01"
       ],
-      "hard_fields_complete_count": 0,
-      "hard_fields_complete": false,
-      "date_guard": {
-        "required_close_date": "2026-09-01",
-        "rows_invalidated_due_to_newer_or_stale_daily_date": 9702
-      }
+      "hard_fields_complete_count": 4706,
+      "hard_fields_complete": false
     },
     "hard_required_missing_counts": {
-      "權證收盤價": 25055,
-      "標的收盤價": 11487
+      "權證收盤價": 20349,
+      "標的收盤價": 1785
     },
     "hard_exclusion_counts": {
-      "剩餘天數不在365～3650": 16699,
-      "溢價率>10%": 15299,
-      "權證收盤價不在0.1～1.5": 6816
+      "剩餘天數不在365～3650": 21172,
+      "溢價率>10%": 19608,
+      "權證收盤價不在0.1～1.5": 8333
     },
     "endpoint_runtime": {
       "twse_holiday": {
@@ -102,7 +97,7 @@
         "url": "https://openapi.twse.com.tw/v1/holidaySchedule/holidaySchedule",
         "bytes": 3774,
         "attempt": 1,
-        "elapsed_seconds": 1.071,
+        "elapsed_seconds": 1.03,
         "rows": 27
       },
       "twse_basic": {
@@ -110,7 +105,7 @@
         "url": "https://openapi.twse.com.tw/v1/opendata/t187ap37_L",
         "bytes": 42398107,
         "attempt": 1,
-        "elapsed_seconds": 82.889,
+        "elapsed_seconds": 67.302,
         "rows": 40503
       },
       "twse_daily": {
@@ -118,7 +113,7 @@
         "url": "https://openapi.twse.com.tw/v1/opendata/t187ap42_L",
         "bytes": 5224964,
         "attempt": 1,
-        "elapsed_seconds": 3.296,
+        "elapsed_seconds": 4.251,
         "rows": 32507
       },
       "twse_underlying": {
@@ -126,7 +121,7 @@
         "url": "https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL",
         "bytes": 318659,
         "attempt": 1,
-        "elapsed_seconds": 1.575,
+        "elapsed_seconds": 1.583,
         "rows": 1377
       },
       "twse_mi_index": {
@@ -134,7 +129,7 @@
         "url": "https://www.twse.com.tw/rwd/zh/afterTrading/MI_INDEX?date=20260901&type=ALL&response=json",
         "bytes": 4765471,
         "attempt": 1,
-        "elapsed_seconds": 3.459,
+        "elapsed_seconds": 3.788,
         "top_keys": [
           "tables",
           "type",
@@ -148,23 +143,23 @@
         "url": "https://www.tpex.org.tw/openapi/v1/tpex_warrant_issue",
         "bytes": 4157530,
         "attempt": 1,
-        "elapsed_seconds": 7.617,
+        "elapsed_seconds": 10.172,
         "rows": 9904
       },
       "tpex_daily": {
         "ok": true,
         "url": "https://www.tpex.org.tw/openapi/v1/tpex_warrant_daily_quts",
         "bytes": 3112663,
-        "attempt": 2,
-        "elapsed_seconds": 15.974,
+        "attempt": 1,
+        "elapsed_seconds": 16.067,
         "rows": 9800
       },
       "tpex_trade": {
         "ok": true,
         "url": "https://www.tpex.org.tw/openapi/v1/mopsfin_t187ap42_O",
         "bytes": 1483194,
-        "attempt": 3,
-        "elapsed_seconds": 34.625,
+        "attempt": 1,
+        "elapsed_seconds": 64.567,
         "rows": 9756
       },
       "tpex_underlying": {
@@ -172,7 +167,7 @@
         "url": "https://www.tpex.org.tw/openapi/v1/tpex_mainboard_quotes",
         "bytes": 357148,
         "attempt": 1,
-        "elapsed_seconds": 4.29,
+        "elapsed_seconds": 3.488,
         "rows": 1013
       }
     }
@@ -189,13 +184,13 @@
       "premium_pct": 8.7934,
       "directional_moneyness_pct": 24.5177,
       "effective_leverage": "未知",
-      "volume_lots": 190,
+      "volume_lots": 190000,
       "trade_value_ntd": 265760,
       "spread_pct": "未知",
       "liquidity_score": "未知",
       "suspected_broker_involvement": "無法判斷",
-      "quality_score_internal": 66.4,
-      "quality_summary": "價內外未通過；量未通過；額未通過；價差未知；流動性分數未知；有效槓桿未知",
+      "quality_score_internal": 70.07,
+      "quality_summary": "價內外未通過；量通過；額未通過；價差未知；流動性分數未知；有效槓桿未知",
       "source": [
         "TWSE t187ap37_L (2026-09-01)",
         "TWSE MI_INDEX type=ALL (2026-09-01)",
@@ -217,7 +212,7 @@
         "premium_pct": 9.1753,
         "directional_moneyness_pct": 46.721,
         "effective_leverage": "未知",
-        "volume_lots": 172,
+        "volume_lots": 172000,
         "trade_value_ntd": 267490,
         "spread_pct": "未知",
         "liquidity_score": "未知",
@@ -244,7 +239,7 @@
         "premium_pct": 7.7331,
         "directional_moneyness_pct": 29.8635,
         "effective_leverage": "未知",
-        "volume_lots": 9,
+        "volume_lots": 9000,
         "trade_value_ntd": 10620,
         "spread_pct": "未知",
         "liquidity_score": "未知",
@@ -271,7 +266,7 @@
         "premium_pct": 8.1887,
         "directional_moneyness_pct": 25.2252,
         "effective_leverage": "未知",
-        "volume_lots": 63,
+        "volume_lots": 63000,
         "trade_value_ntd": 65070,
         "spread_pct": "未知",
         "liquidity_score": "未知",
@@ -300,7 +295,7 @@
         "premium_pct": 5.7553,
         "directional_moneyness_pct": 10.9349,
         "effective_leverage": "未知",
-        "volume_lots": 79,
+        "volume_lots": 79000,
         "trade_value_ntd": 70350,
         "spread_pct": "未知",
         "liquidity_score": "未知",
@@ -327,7 +322,7 @@
         "premium_pct": 9.5048,
         "directional_moneyness_pct": -1.0247,
         "effective_leverage": "未知",
-        "volume_lots": 64,
+        "volume_lots": 64000,
         "trade_value_ntd": 61170,
         "spread_pct": "未知",
         "liquidity_score": "未知",
@@ -354,7 +349,7 @@
         "premium_pct": 7.0694,
         "directional_moneyness_pct": 10.9072,
         "effective_leverage": "未知",
-        "volume_lots": 400,
+        "volume_lots": 400000,
         "trade_value_ntd": 582100,
         "spread_pct": "未知",
         "liquidity_score": "未知",
