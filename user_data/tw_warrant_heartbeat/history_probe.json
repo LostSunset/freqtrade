@@ -1,0 +1,173 @@
+{
+  "generated_at_utc": "2026-09-02T11:46:37.698743+00:00",
+  "endpoints": {
+    "tpex_warrant_monthly_quts": {
+      "ok": true,
+      "url": "https://www.tpex.org.tw/openapi/v1/tpex_warrant_monthly_quts",
+      "bytes": 3133085,
+      "type": "list",
+      "rows": 9854,
+      "keys": [
+        "Change",
+        "Close",
+        "Code",
+        "Date",
+        "High",
+        "Low",
+        "Name",
+        "No.OfTransactions",
+        "Open",
+        "TradeValue",
+        "TradeVol.",
+        "UnderlyingStock",
+        "UnderlyingStock PriceChange",
+        "UnderlyingStockClosePrice",
+        "UnderlyingStockCode"
+      ],
+      "samples": [
+        {
+          "Date": "11509",
+          "Code": "72328U",
+          "Name": "環球晶群益59售01",
+          "Open": "",
+          "High": "",
+          "Low": "",
+          "Close": "",
+          "Change": "",
+          "TradeVol.": "0",
+          "No.OfTransactions": "0",
+          "TradeValue": "0",
+          "UnderlyingStockCode": "6488",
+          "UnderlyingStock": "環球晶",
+          "UnderlyingStockClosePrice": "967",
+          "UnderlyingStock PriceChange": "55.00"
+        },
+        {
+          "Date": "11509",
+          "Code": "72348U",
+          "Name": "良維群益59售01",
+          "Open": "",
+          "High": "",
+          "Low": "",
+          "Close": "",
+          "Change": "",
+          "TradeVol.": "0",
+          "No.OfTransactions": "0",
+          "TradeValue": "0",
+          "UnderlyingStockCode": "6290",
+          "UnderlyingStock": "良維",
+          "UnderlyingStockClosePrice": "256.5",
+          "UnderlyingStock PriceChange": "3.00"
+        },
+        {
+          "Date": "11509",
+          "Code": "72400U",
+          "Name": "博智群益5A售02",
+          "Open": "",
+          "High": "",
+          "Low": "",
+          "Close": "",
+          "Change": "",
+          "TradeVol.": "0",
+          "No.OfTransactions": "0",
+          "TradeValue": "0",
+          "UnderlyingStockCode": "8155",
+          "UnderlyingStock": "博智",
+          "UnderlyingStockClosePrice": "369",
+          "UnderlyingStock PriceChange": "4.00"
+        }
+      ],
+      "date_count": 1,
+      "first_dates": [
+        "11509"
+      ],
+      "last_dates": [
+        "11509"
+      ]
+    },
+    "tpex_warrant_daily_quts": {
+      "ok": true,
+      "url": "https://www.tpex.org.tw/openapi/v1/tpex_warrant_daily_quts",
+      "bytes": 3112663,
+      "type": "list",
+      "rows": 9800,
+      "keys": [
+        "Change",
+        "Close",
+        "Code",
+        "Date",
+        "High",
+        "Low",
+        "Name",
+        "No.OfTransactions",
+        "Open",
+        "TradeValue",
+        "TradeVol.",
+        "UnderlyingStock",
+        "UnderlyingStock PriceChange",
+        "UnderlyingStockClosePrice",
+        "UnderlyingStockCode"
+      ],
+      "samples": [
+        {
+          "Date": "1150902",
+          "Code": "72328U",
+          "Name": "環球晶群益59售01",
+          "Open": "",
+          "High": "",
+          "Low": "",
+          "Close": "",
+          "Change": "",
+          "TradeVol.": "0",
+          "No.OfTransactions": "0",
+          "TradeValue": "0",
+          "UnderlyingStockCode": "6488",
+          "UnderlyingStock": "環球晶",
+          "UnderlyingStockClosePrice": "967",
+          "UnderlyingStock PriceChange": "27.00"
+        },
+        {
+          "Date": "1150902",
+          "Code": "72348U",
+          "Name": "良維群益59售01",
+          "Open": "",
+          "High": "",
+          "Low": "",
+          "Close": "",
+          "Change": "",
+          "TradeVol.": "0",
+          "No.OfTransactions": "0",
+          "TradeValue": "0",
+          "UnderlyingStockCode": "6290",
+          "UnderlyingStock": "良維",
+          "UnderlyingStockClosePrice": "256.5",
+          "UnderlyingStock PriceChange": "3.00"
+        },
+        {
+          "Date": "1150902",
+          "Code": "72400U",
+          "Name": "博智群益5A售02",
+          "Open": "",
+          "High": "",
+          "Low": "",
+          "Close": "",
+          "Change": "",
+          "TradeVol.": "0",
+          "No.OfTransactions": "0",
+          "TradeValue": "0",
+          "UnderlyingStockCode": "8155",
+          "UnderlyingStock": "博智",
+          "UnderlyingStockClosePrice": "369",
+          "UnderlyingStock PriceChange": "0.50"
+        }
+      ],
+      "date_count": 1,
+      "first_dates": [
+        "1150902"
+      ],
+      "last_dates": [
+        "1150902"
+      ]
+    }
+  }
+}
