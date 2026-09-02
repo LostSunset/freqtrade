@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import gzip
 import json
 import ssl
 import time
@@ -18,6 +19,63 @@ _original_output_row = base.output_row
 HISTORY_LOOKBACK_TRADING_DAYS = 10
 HISTORY_FETCH_WORKERS = 5
 HISTORY_REQUEST_TIMEOUT = 45
+
+
+def decode_http_body(raw: bytes, content_encoding: str | None) -> bytes:
+    encoding = (content_encoding or "").lower().strip()
+    if encoding == "gzip":
+        return gzip.decompress(raw)
+    return raw
+
+
+def fetch_json_gzip(url: str, params: dict[str, str] | None = None):
+    """Same semantics as base.fetch_json, but accepts gzip transport."""
+    if params:
+        url = f"{url}?{urllib.parse.urlencode(params)}"
+    headers = {
+        "User-Agent": "Mozilla/5.0 tw-warrant-heartbeat/4.2",
+        "Accept": "application/json,text/plain,*/*",
+        "Accept-Encoding": "gzip",
+    }
+    last_error: Exception | None = None
+    started = time.monotonic()
+    for attempt in range(1, base.RETRIES + 1):
+        try:
+            req = urllib.request.Request(url, headers=headers)
+            with urllib.request.urlopen(
+                req,
+                timeout=base.REQUEST_TIMEOUT,
+                context=ssl.create_default_context(),
+            ) as resp:
+                transferred = resp.read()
+                content_encoding = resp.headers.get("Content-Encoding")
+                body = decode_http_body(transferred, content_encoding)
+                data = json.loads(body.decode("utf-8-sig", errors="strict"))
+                return data, {
+                    "ok": True,
+                    "url": url,
+                    "bytes": len(body),
+                    "transfer_bytes": len(transferred),
+                    "content_encoding": content_encoding or "identity",
+                    "attempt": attempt,
+                    "elapsed_seconds": round(time.monotonic() - started, 3),
+                }
+        except Exception as exc:
+            last_error = exc
+            if attempt < base.RETRIES:
+                time.sleep(1.5 * attempt)
+    return None, {
+        "ok": False,
+        "url": url,
+        "attempt": base.RETRIES,
+        "elapsed_seconds": round(time.monotonic() - started, 3),
+        "error": f"{type(last_error).__name__}: {last_error}",
+    }
+
+
+# Production main and v3 parsers call base.fetch_json dynamically, so this replaces
+# only the transport layer without altering source URLs, parsing, formulas or filters.
+base.fetch_json = fetch_json_gzip
 
 
 def previous_weekdays(d: date, count: int) -> list[date]:
@@ -39,9 +97,9 @@ def fetch_twse_history(d: date):
         req = urllib.request.Request(
             url,
             headers={
-                "User-Agent": "Mozilla/5.0 tw-warrant-heartbeat-history/4.1",
+                "User-Agent": "Mozilla/5.0 tw-warrant-heartbeat-history/4.2",
                 "Accept": "application/json,text/plain,*/*",
-                "Accept-Encoding": "identity",
+                "Accept-Encoding": "gzip",
             },
         )
         with urllib.request.urlopen(
@@ -49,13 +107,17 @@ def fetch_twse_history(d: date):
             timeout=HISTORY_REQUEST_TIMEOUT,
             context=ssl.create_default_context(),
         ) as resp:
-            raw = resp.read()
+            transferred = resp.read()
+            content_encoding = resp.headers.get("Content-Encoding")
+            raw = decode_http_body(transferred, content_encoding)
             payload = json.loads(raw.decode("utf-8-sig", errors="strict"))
         mi = base.parse_twse_mi(payload)
         usable = bool(mi.get("security_by_code"))
         meta.update({
             "ok": usable,
             "bytes": len(raw),
+            "transfer_bytes": len(transferred),
+            "content_encoding": content_encoding or "identity",
             "elapsed_seconds": round(time.monotonic() - started, 3),
         })
         return d, mi, meta, usable
