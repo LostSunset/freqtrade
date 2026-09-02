@@ -1,0 +1,65 @@
+name: TW Warrant Heartbeat Probe
+
+on:
+  push:
+    branches: [develop]
+    paths:
+      - "user_data/tw_warrant_heartbeat/**"
+      - ".github/workflows/tw-warrant-heartbeat-probe.yml"
+  schedule:
+    # 07:45 Asia/Taipei = 23:45 UTC (previous calendar day)
+    - cron: "45 23 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tw-warrant-heartbeat-probe
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: develop
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Probe official TWSE and TPEx APIs
+        run: python user_data/tw_warrant_heartbeat/probe.py
+
+      - name: Validate probe output
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path('user_data/tw_warrant_heartbeat/latest_probe.json')
+          d = json.loads(p.read_text(encoding='utf-8'))
+          endpoints = d.get('endpoints', {})
+          if not endpoints:
+              raise SystemExit('No endpoint results generated')
+          ok = sum(1 for v in endpoints.values() if v.get('ok'))
+          print(f'Official endpoints reachable: {ok}/{len(endpoints)}')
+          if ok == 0:
+              raise SystemExit('All official endpoints failed')
+          PY
+
+      - name: Commit latest schema/status snapshot
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add user_data/tw_warrant_heartbeat/latest_probe.json
+          if git diff --cached --quiet; then
+            echo "No probe changes"
+          else
+            git commit -m "Update TW warrant official API probe"
+            git push origin HEAD:develop
+          fi
