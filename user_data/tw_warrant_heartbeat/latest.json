@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "pipeline": {
-    "generated_at_asia_taipei": "2026-09-02T19:55:36.592572+08:00",
+    "generated_at_asia_taipei": "2026-09-02T19:57:29.589129+08:00",
     "intended_heartbeat_time": "08:00 Asia/Taipei",
     "execution_date": "2026-09-02",
     "market_state": "交易日盤前",
@@ -139,40 +139,50 @@
         "ok": true,
         "url": "https://openapi.twse.com.tw/v1/holidaySchedule/holidaySchedule",
         "bytes": 3774,
+        "transfer_bytes": 790,
+        "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 0.911,
+        "elapsed_seconds": 0.835,
         "rows": 27
       },
       "twse_basic": {
         "ok": true,
         "url": "https://openapi.twse.com.tw/v1/opendata/t187ap37_L",
         "bytes": 42398107,
+        "transfer_bytes": 3658660,
+        "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 20.639,
+        "elapsed_seconds": 14.54,
         "rows": 40503
       },
       "twse_daily": {
         "ok": true,
         "url": "https://openapi.twse.com.tw/v1/opendata/t187ap42_L",
         "bytes": 5224964,
+        "transfer_bytes": 554879,
+        "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 5.406,
+        "elapsed_seconds": 3.156,
         "rows": 32507
       },
       "twse_underlying": {
         "ok": true,
         "url": "https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL",
         "bytes": 318659,
+        "transfer_bytes": 74053,
+        "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 1.873,
+        "elapsed_seconds": 1.545,
         "rows": 1377
       },
       "twse_mi_index": {
         "ok": true,
         "url": "https://www.twse.com.tw/rwd/zh/afterTrading/MI_INDEX?date=20260901&type=ALL&response=json",
         "bytes": 4765471,
+        "transfer_bytes": 945754,
+        "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 2.61,
+        "elapsed_seconds": 2.37,
         "top_keys": [
           "tables",
           "type",
@@ -185,32 +195,40 @@
         "ok": true,
         "url": "https://www.tpex.org.tw/openapi/v1/tpex_warrant_issue",
         "bytes": 4157530,
+        "transfer_bytes": 236801,
+        "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 6.173,
+        "elapsed_seconds": 7.076,
         "rows": 9904
       },
       "tpex_daily": {
         "ok": true,
         "url": "https://www.tpex.org.tw/openapi/v1/tpex_warrant_daily_quts",
         "bytes": 3112663,
+        "transfer_bytes": 252126,
+        "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 4.804,
+        "elapsed_seconds": 5.906,
         "rows": 9800
       },
       "tpex_trade": {
         "ok": true,
         "url": "https://www.tpex.org.tw/openapi/v1/mopsfin_t187ap42_O",
         "bytes": 1483194,
+        "transfer_bytes": 124571,
+        "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 5.183,
+        "elapsed_seconds": 2.49,
         "rows": 9756
       },
       "tpex_underlying": {
         "ok": true,
         "url": "https://www.tpex.org.tw/openapi/v1/tpex_mainboard_quotes",
         "bytes": 357148,
+        "transfer_bytes": 58317,
+        "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 6.496,
+        "elapsed_seconds": 0.737,
         "rows": 1013
       }
     }
