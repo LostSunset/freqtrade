@@ -1,0 +1,373 @@
+{
+  "schema_version": 2,
+  "pipeline": {
+    "generated_at_asia_taipei": "2026-09-02T19:37:05.358902+08:00",
+    "intended_heartbeat_time": "08:00 Asia/Taipei",
+    "execution_date": "2026-09-02",
+    "market_state": "交易日盤前",
+    "last_completed_trading_date": "2026-09-01",
+    "price_nature": "最近官方最後收盤價",
+    "transport_note": "本檔僅為官方資料的正規化/縮小傳輸層；市場數值來源仍為 TWSE/TPEx 官方端點。",
+    "warrant_platform": {
+      "url": "https://warrants.twse.com.tw/",
+      "integration_status": "尚未取得穩定機器可讀端點；價差、官方流動性/造市品質、Delta目前不以替代值冒充"
+    },
+    "quality_score_algorithm": "內部品質分≠流動性分數：硬條件通過50分；方向化價內外最多20分；成交量最多10分；成交金額最多10分；低溢價最多10分。價差/官方流動性分數/Delta未知時不加分。",
+    "volume_unit": "張；若官方端點提供成交單位數，依每張1000單位換算",
+    "certification_message": "本次無法完成全市場認證；目前 1 檔可驗證符合（認購 1、認售 0，各最多25檔）",
+    "all_market_certifiable": false
+  },
+  "data_status": {
+    "twse": {
+      "source_ok": true,
+      "source_urls": [
+        "https://openapi.twse.com.tw/v1/opendata/t187ap37_L",
+        "https://openapi.twse.com.tw/v1/opendata/t187ap42_L",
+        "https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL",
+        "https://www.twse.com.tw/rwd/zh/afterTrading/MI_INDEX?date=20260901&type=ALL&response=json"
+      ],
+      "mother_count": 33238,
+      "mother_complete": true,
+      "basic_data_dates": [
+        "2026-09-01"
+      ],
+      "daily_data_dates": [
+        "2026-09-01"
+      ],
+      "hard_fields_complete_count": 17428,
+      "hard_fields_complete": false,
+      "mi_security_rows": 33884,
+      "mi_selected_table": {
+        "title": "115年09月01日 每日收盤行情(全部)",
+        "rows": 33884,
+        "fields": [
+          "證券代號",
+          "證券名稱",
+          "成交股數",
+          "成交筆數",
+          "成交金額",
+          "開盤價",
+          "最高價",
+          "最低價",
+          "收盤價",
+          "漲跌(+/-)",
+          "漲跌價差",
+          "最後揭示買價",
+          "最後揭示買量",
+          "最後揭示賣價",
+          "最後揭示賣量",
+          "本益比"
+        ]
+      }
+    },
+    "tpex": {
+      "source_ok": true,
+      "source_urls": [
+        "https://www.tpex.org.tw/openapi/v1/tpex_warrant_issue",
+        "https://www.tpex.org.tw/openapi/v1/tpex_warrant_daily_quts",
+        "https://www.tpex.org.tw/openapi/v1/mopsfin_t187ap42_O",
+        "https://www.tpex.org.tw/openapi/v1/tpex_mainboard_quotes"
+      ],
+      "mother_count": 9806,
+      "mother_complete": true,
+      "issue_data_dates": [
+        "2026-09-02"
+      ],
+      "daily_data_dates": [
+        "2026-09-02"
+      ],
+      "trade_data_dates": [
+        "2026-09-01"
+      ],
+      "hard_fields_complete_count": 4706,
+      "hard_fields_complete": false
+    },
+    "hard_required_missing_counts": {
+      "權證收盤價": 20349,
+      "標的收盤價": 1785
+    },
+    "hard_exclusion_counts": {
+      "剩餘天數不在365～3650": 21172,
+      "溢價率>10%": 19608,
+      "權證收盤價不在0.1～1.5": 8333
+    },
+    "endpoint_runtime": {
+      "twse_holiday": {
+        "ok": true,
+        "url": "https://openapi.twse.com.tw/v1/holidaySchedule/holidaySchedule",
+        "bytes": 3774,
+        "attempt": 1,
+        "elapsed_seconds": 1.03,
+        "rows": 27
+      },
+      "twse_basic": {
+        "ok": true,
+        "url": "https://openapi.twse.com.tw/v1/opendata/t187ap37_L",
+        "bytes": 42398107,
+        "attempt": 1,
+        "elapsed_seconds": 67.302,
+        "rows": 40503
+      },
+      "twse_daily": {
+        "ok": true,
+        "url": "https://openapi.twse.com.tw/v1/opendata/t187ap42_L",
+        "bytes": 5224964,
+        "attempt": 1,
+        "elapsed_seconds": 4.251,
+        "rows": 32507
+      },
+      "twse_underlying": {
+        "ok": true,
+        "url": "https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL",
+        "bytes": 318659,
+        "attempt": 1,
+        "elapsed_seconds": 1.583,
+        "rows": 1377
+      },
+      "twse_mi_index": {
+        "ok": true,
+        "url": "https://www.twse.com.tw/rwd/zh/afterTrading/MI_INDEX?date=20260901&type=ALL&response=json",
+        "bytes": 4765471,
+        "attempt": 1,
+        "elapsed_seconds": 3.788,
+        "top_keys": [
+          "tables",
+          "type",
+          "params",
+          "stat",
+          "date"
+        ]
+      },
+      "tpex_issue": {
+        "ok": true,
+        "url": "https://www.tpex.org.tw/openapi/v1/tpex_warrant_issue",
+        "bytes": 4157530,
+        "attempt": 1,
+        "elapsed_seconds": 10.172,
+        "rows": 9904
+      },
+      "tpex_daily": {
+        "ok": true,
+        "url": "https://www.tpex.org.tw/openapi/v1/tpex_warrant_daily_quts",
+        "bytes": 3112663,
+        "attempt": 1,
+        "elapsed_seconds": 16.067,
+        "rows": 9800
+      },
+      "tpex_trade": {
+        "ok": true,
+        "url": "https://www.tpex.org.tw/openapi/v1/mopsfin_t187ap42_O",
+        "bytes": 1483194,
+        "attempt": 1,
+        "elapsed_seconds": 64.567,
+        "rows": 9756
+      },
+      "tpex_underlying": {
+        "ok": true,
+        "url": "https://www.tpex.org.tw/openapi/v1/tpex_mainboard_quotes",
+        "bytes": 357148,
+        "attempt": 1,
+        "elapsed_seconds": 3.488,
+        "rows": 1013
+      }
+    }
+  },
+  "bullish_calls": [
+    {
+      "warrant_code": "038318",
+      "name": "台積電統一69購01",
+      "underlying": "台積電",
+      "issuer": "未知",
+      "warrant_close": 1.39,
+      "price_nature": "最近官方最後收盤價",
+      "remaining_days": 393,
+      "premium_pct": 8.7934,
+      "directional_moneyness_pct": 24.5177,
+      "effective_leverage": "未知",
+      "volume_lots": 190000,
+      "trade_value_ntd": 265760,
+      "spread_pct": "未知",
+      "liquidity_score": "未知",
+      "suspected_broker_involvement": "無法判斷",
+      "quality_score_internal": 70.07,
+      "quality_summary": "價內外未通過；量通過；額未通過；價差未知；流動性分數未知；有效槓桿未知",
+      "source": [
+        "TWSE t187ap37_L (2026-09-01)",
+        "TWSE MI_INDEX type=ALL (2026-09-01)",
+        "TWSE t187ap42_L (2026-09-01)"
+      ]
+    }
+  ],
+  "bearish_puts": [],
+  "near_miss": {
+    "calls": [
+      {
+        "warrant_code": "038817",
+        "name": "台達電統一6A購01",
+        "underlying": "台達電",
+        "issuer": "未知",
+        "warrant_close": 1.53,
+        "price_nature": "最近官方最後收盤價",
+        "remaining_days": 397,
+        "premium_pct": 9.1753,
+        "directional_moneyness_pct": 46.721,
+        "effective_leverage": "未知",
+        "volume_lots": 172000,
+        "trade_value_ntd": 267490,
+        "spread_pct": "未知",
+        "liquidity_score": "未知",
+        "suspected_broker_involvement": "無法判斷",
+        "quality_score_internal": null,
+        "quality_summary": null,
+        "source": [
+          "TWSE t187ap37_L (2026-09-01)",
+          "TWSE MI_INDEX type=ALL (2026-09-01)",
+          "TWSE t187ap42_L (2026-09-01)"
+        ],
+        "hard_fail_reasons": [
+          "權證收盤價不在0.1～1.5"
+        ]
+      },
+      {
+        "warrant_code": "031274",
+        "name": "鴻海統一68購01",
+        "underlying": "鴻海",
+        "issuer": "未知",
+        "warrant_close": 1.18,
+        "price_nature": "最近官方最後收盤價",
+        "remaining_days": 341,
+        "premium_pct": 7.7331,
+        "directional_moneyness_pct": 29.8635,
+        "effective_leverage": "未知",
+        "volume_lots": 9000,
+        "trade_value_ntd": 10620,
+        "spread_pct": "未知",
+        "liquidity_score": "未知",
+        "suspected_broker_involvement": "無法判斷",
+        "quality_score_internal": null,
+        "quality_summary": null,
+        "source": [
+          "TWSE t187ap37_L (2026-09-01)",
+          "TWSE MI_INDEX type=ALL (2026-09-01)",
+          "TWSE t187ap42_L (2026-09-01)"
+        ],
+        "hard_fail_reasons": [
+          "剩餘天數不在365～3650"
+        ]
+      },
+      {
+        "warrant_code": "079067",
+        "name": "T50反1中信68購01",
+        "underlying": "元大台灣50反1",
+        "issuer": "未知",
+        "warrant_close": 1.02,
+        "price_nature": "最近官方最後收盤價",
+        "remaining_days": 338,
+        "premium_pct": 8.1887,
+        "directional_moneyness_pct": 25.2252,
+        "effective_leverage": "未知",
+        "volume_lots": 63000,
+        "trade_value_ntd": 65070,
+        "spread_pct": "未知",
+        "liquidity_score": "未知",
+        "suspected_broker_involvement": "無法判斷",
+        "quality_score_internal": null,
+        "quality_summary": null,
+        "source": [
+          "TWSE t187ap37_L (2026-09-01)",
+          "TWSE MI_INDEX type=ALL (2026-09-01)",
+          "TWSE t187ap42_L (2026-09-01)"
+        ],
+        "hard_fail_reasons": [
+          "剩餘天數不在365～3650"
+        ]
+      }
+    ],
+    "puts": [
+      {
+        "warrant_code": "03726B",
+        "name": "台積電富邦64熊01",
+        "underlying": "台積電",
+        "issuer": "未知",
+        "warrant_close": 0.88,
+        "price_nature": "最近官方最後收盤價",
+        "remaining_days": 239,
+        "premium_pct": 5.7553,
+        "directional_moneyness_pct": 10.9349,
+        "effective_leverage": "未知",
+        "volume_lots": 79000,
+        "trade_value_ntd": 70350,
+        "spread_pct": "未知",
+        "liquidity_score": "未知",
+        "suspected_broker_involvement": "無法判斷",
+        "quality_score_internal": null,
+        "quality_summary": null,
+        "source": [
+          "TWSE t187ap37_L (2026-09-01)",
+          "TWSE MI_INDEX type=ALL (2026-09-01)",
+          "TWSE t187ap42_L (2026-09-01)"
+        ],
+        "hard_fail_reasons": [
+          "剩餘天數不在365～3650"
+        ]
+      },
+      {
+        "warrant_code": "03647T",
+        "name": "台灣50元大5C售09",
+        "underlying": "元大台灣50",
+        "issuer": "未知",
+        "warrant_close": 0.93,
+        "price_nature": "最近官方最後收盤價",
+        "remaining_days": 113,
+        "premium_pct": 9.5048,
+        "directional_moneyness_pct": -1.0247,
+        "effective_leverage": "未知",
+        "volume_lots": 64000,
+        "trade_value_ntd": 61170,
+        "spread_pct": "未知",
+        "liquidity_score": "未知",
+        "suspected_broker_involvement": "無法判斷",
+        "quality_score_internal": null,
+        "quality_summary": null,
+        "source": [
+          "TWSE t187ap37_L (2026-09-01)",
+          "TWSE MI_INDEX type=ALL (2026-09-01)",
+          "TWSE t187ap42_L (2026-09-01)"
+        ],
+        "hard_fail_reasons": [
+          "剩餘天數不在365～3650"
+        ]
+      },
+      {
+        "warrant_code": "03021T",
+        "name": "華泰台新5A售01",
+        "underlying": "華泰",
+        "issuer": "未知",
+        "warrant_close": 1.46,
+        "price_nature": "最近官方最後收盤價",
+        "remaining_days": 47,
+        "premium_pct": 7.0694,
+        "directional_moneyness_pct": 10.9072,
+        "effective_leverage": "未知",
+        "volume_lots": 400000,
+        "trade_value_ntd": 582100,
+        "spread_pct": "未知",
+        "liquidity_score": "未知",
+        "suspected_broker_involvement": "無法判斷",
+        "quality_score_internal": null,
+        "quality_summary": null,
+        "source": [
+          "TWSE t187ap37_L (2026-09-01)",
+          "TWSE MI_INDEX type=ALL (2026-09-01)",
+          "TWSE t187ap42_L (2026-09-01)"
+        ],
+        "hard_fail_reasons": [
+          "剩餘天數不在365～3650"
+        ]
+      }
+    ]
+  },
+  "heartbeat_comparison": {
+    "status": "由ChatGPT Heartbeat讀取 latest.json 與 previous.json 後比較"
+  }
+}
