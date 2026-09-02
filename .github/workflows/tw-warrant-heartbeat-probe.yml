@@ -7,6 +7,7 @@ on:
       - "user_data/tw_warrant_heartbeat/probe.py"
       - "user_data/tw_warrant_heartbeat/build_heartbeat.py"
       - "user_data/tw_warrant_heartbeat/build_heartbeat_v3.py"
+      - "user_data/tw_warrant_heartbeat/build_heartbeat_v4.py"
       - ".github/workflows/tw-warrant-heartbeat-probe.yml"
   schedule:
     # 07:30 Asia/Taipei = 23:30 UTC (previous calendar day)
@@ -36,7 +37,7 @@ jobs:
           python-version: "3.12"
 
       - name: Build compact heartbeat data from official sources
-        run: python user_data/tw_warrant_heartbeat/build_heartbeat_v3.py
+        run: python user_data/tw_warrant_heartbeat/build_heartbeat_v4.py
 
       - name: Validate compact result
         run: |
@@ -51,8 +52,11 @@ jobs:
               raise SystemExit(f'Missing output keys: {missing}')
           if not d['data_status']['twse']['mother_count'] and not d['data_status']['tpex']['mother_count']:
               raise SystemExit('Both warrant universes are empty')
+          twse_cf = d['data_status']['twse'].get('historical_carry_forward', {})
           print(d['pipeline']['certification_message'])
           print('TWSE mother:', d['data_status']['twse']['mother_count'])
+          print('TWSE hard complete:', d['data_status']['twse']['hard_fields_complete_count'])
+          print('TWSE carry recovered:', twse_cf.get('recovered', 0))
           print('TPEx mother:', d['data_status']['tpex']['mother_count'])
           print('Calls:', len(d['bullish_calls']))
           print('Puts:', len(d['bearish_puts']))
