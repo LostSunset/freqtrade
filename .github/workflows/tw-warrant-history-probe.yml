@@ -1,0 +1,34 @@
+name: TW Warrant History Probe
+
+on:
+  push:
+    branches: [develop]
+    paths:
+      - "user_data/tw_warrant_heartbeat/probe_history.py"
+      - ".github/workflows/tw-warrant-history-probe.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  probe-history:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: develop
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Probe TPEx monthly warrant history schema
+        run: python user_data/tw_warrant_heartbeat/probe_history.py
+      - name: Commit compact probe result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f user_data/tw_warrant_heartbeat/history_probe.json
+          git diff --cached --quiet || git commit -m "Probe TPEx warrant history schema"
+          git pull --rebase origin develop
+          git push origin HEAD:develop
