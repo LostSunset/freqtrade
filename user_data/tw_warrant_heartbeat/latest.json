@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "pipeline": {
-    "generated_at_asia_taipei": "2026-09-02T19:42:32.388787+08:00",
+    "generated_at_asia_taipei": "2026-09-02T19:50:46.309710+08:00",
     "intended_heartbeat_time": "08:00 Asia/Taipei",
     "execution_date": "2026-09-02",
     "market_state": "交易日盤前",
@@ -34,7 +34,7 @@
       "daily_data_dates": [
         "2026-09-01"
       ],
-      "hard_fields_complete_count": 17428,
+      "hard_fields_complete_count": 25955,
       "hard_fields_complete": false,
       "mi_security_rows": 33884,
       "mi_selected_table": {
@@ -59,7 +59,38 @@
           "本益比"
         ]
       },
-      "volume_normalization": "t187ap42_L 成交張數欄依實際單位數/1000轉為張；MI_INDEX成交股數同樣/1000"
+      "volume_normalization": "t187ap42_L 成交張數欄依實際單位數/1000轉為張；MI_INDEX成交股數同樣/1000",
+      "historical_carry_forward": {
+        "rule": "僅在權證收盤價與標的收盤價可由同一TWSE MI_INDEX歷史交易日同步取得時回補",
+        "lookback_weekdays": 10,
+        "history_dates_used": [
+          "2026-08-31",
+          "2026-08-28",
+          "2026-08-27",
+          "2026-08-26",
+          "2026-08-25",
+          "2026-08-24",
+          "2026-08-21",
+          "2026-08-20",
+          "2026-08-19",
+          "2026-08-18"
+        ],
+        "initial_warrant_close_missing": 15249,
+        "recovered": 8527,
+        "recovered_by_date": {
+          "2026-08-25": 506,
+          "2026-08-31": 2303,
+          "2026-08-18": 330,
+          "2026-08-21": 474,
+          "2026-08-28": 1769,
+          "2026-08-27": 1306,
+          "2026-08-26": 684,
+          "2026-08-19": 270,
+          "2026-08-20": 458,
+          "2026-08-24": 427
+        },
+        "remaining_unresolved": 6722
+      }
     },
     "tpex": {
       "source_ok": true,
@@ -85,16 +116,21 @@
       "date_guard": {
         "required_close_date": "2026-09-01",
         "rows_invalidated_due_to_newer_or_stale_daily_date": 9702
+      },
+      "historical_carry_forward": {
+        "monthly_endpoint": "https://www.tpex.org.tw/openapi/v1/tpex_warrant_monthly_quts",
+        "used_for_hard_certification": false,
+        "reason": "月報Date只有年月，無法證明權證Close與標的Close為同一實際交易日；不做非同步溢價計算"
       }
     },
     "hard_required_missing_counts": {
-      "權證收盤價": 25055,
-      "標的收盤價": 11487
+      "權證收盤價": 16528,
+      "標的收盤價": 11483
     },
     "hard_exclusion_counts": {
-      "剩餘天數不在365～3650": 16699,
-      "溢價率>10%": 15299,
-      "權證收盤價不在0.1～1.5": 6816
+      "剩餘天數不在365～3650": 24988,
+      "溢價率>10%": 21673,
+      "權證收盤價不在0.1～1.5": 10354
     },
     "endpoint_runtime": {
       "twse_holiday": {
@@ -102,7 +138,7 @@
         "url": "https://openapi.twse.com.tw/v1/holidaySchedule/holidaySchedule",
         "bytes": 3774,
         "attempt": 1,
-        "elapsed_seconds": 1.071,
+        "elapsed_seconds": 0.853,
         "rows": 27
       },
       "twse_basic": {
@@ -110,7 +146,7 @@
         "url": "https://openapi.twse.com.tw/v1/opendata/t187ap37_L",
         "bytes": 42398107,
         "attempt": 1,
-        "elapsed_seconds": 82.889,
+        "elapsed_seconds": 206.501,
         "rows": 40503
       },
       "twse_daily": {
@@ -118,7 +154,7 @@
         "url": "https://openapi.twse.com.tw/v1/opendata/t187ap42_L",
         "bytes": 5224964,
         "attempt": 1,
-        "elapsed_seconds": 3.296,
+        "elapsed_seconds": 7.943,
         "rows": 32507
       },
       "twse_underlying": {
@@ -126,7 +162,7 @@
         "url": "https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL",
         "bytes": 318659,
         "attempt": 1,
-        "elapsed_seconds": 1.575,
+        "elapsed_seconds": 1.544,
         "rows": 1377
       },
       "twse_mi_index": {
@@ -134,7 +170,7 @@
         "url": "https://www.twse.com.tw/rwd/zh/afterTrading/MI_INDEX?date=20260901&type=ALL&response=json",
         "bytes": 4765471,
         "attempt": 1,
-        "elapsed_seconds": 3.459,
+        "elapsed_seconds": 3.161,
         "top_keys": [
           "tables",
           "type",
@@ -148,23 +184,23 @@
         "url": "https://www.tpex.org.tw/openapi/v1/tpex_warrant_issue",
         "bytes": 4157530,
         "attempt": 1,
-        "elapsed_seconds": 7.617,
+        "elapsed_seconds": 6.72,
         "rows": 9904
       },
       "tpex_daily": {
         "ok": true,
         "url": "https://www.tpex.org.tw/openapi/v1/tpex_warrant_daily_quts",
         "bytes": 3112663,
-        "attempt": 2,
-        "elapsed_seconds": 15.974,
+        "attempt": 1,
+        "elapsed_seconds": 7.423,
         "rows": 9800
       },
       "tpex_trade": {
         "ok": true,
         "url": "https://www.tpex.org.tw/openapi/v1/mopsfin_t187ap42_O",
         "bytes": 1483194,
-        "attempt": 3,
-        "elapsed_seconds": 34.625,
+        "attempt": 1,
+        "elapsed_seconds": 3.626,
         "rows": 9756
       },
       "tpex_underlying": {
@@ -172,7 +208,7 @@
         "url": "https://www.tpex.org.tw/openapi/v1/tpex_mainboard_quotes",
         "bytes": 357148,
         "attempt": 1,
-        "elapsed_seconds": 4.29,
+        "elapsed_seconds": 0.844,
         "rows": 1013
       }
     }
@@ -200,7 +236,9 @@
         "TWSE t187ap37_L (2026-09-01)",
         "TWSE MI_INDEX type=ALL (2026-09-01)",
         "TWSE t187ap42_L (2026-09-01)"
-      ]
+      ],
+      "price_snapshot_date": "2026-09-01",
+      "price_snapshot_mode": "最近完整交易日同步收盤"
     }
   ],
   "bearish_puts": [],
@@ -229,6 +267,8 @@
           "TWSE MI_INDEX type=ALL (2026-09-01)",
           "TWSE t187ap42_L (2026-09-01)"
         ],
+        "price_snapshot_date": "2026-09-01",
+        "price_snapshot_mode": "最近完整交易日同步收盤",
         "hard_fail_reasons": [
           "權證收盤價不在0.1～1.5"
         ]
@@ -256,6 +296,8 @@
           "TWSE MI_INDEX type=ALL (2026-09-01)",
           "TWSE t187ap42_L (2026-09-01)"
         ],
+        "price_snapshot_date": "2026-09-01",
+        "price_snapshot_mode": "最近完整交易日同步收盤",
         "hard_fail_reasons": [
           "剩餘天數不在365～3650"
         ]
@@ -283,6 +325,8 @@
           "TWSE MI_INDEX type=ALL (2026-09-01)",
           "TWSE t187ap42_L (2026-09-01)"
         ],
+        "price_snapshot_date": "2026-09-01",
+        "price_snapshot_mode": "最近完整交易日同步收盤",
         "hard_fail_reasons": [
           "剩餘天數不在365～3650"
         ]
@@ -312,6 +356,8 @@
           "TWSE MI_INDEX type=ALL (2026-09-01)",
           "TWSE t187ap42_L (2026-09-01)"
         ],
+        "price_snapshot_date": "2026-09-01",
+        "price_snapshot_mode": "最近完整交易日同步收盤",
         "hard_fail_reasons": [
           "剩餘天數不在365～3650"
         ]
@@ -339,23 +385,25 @@
           "TWSE MI_INDEX type=ALL (2026-09-01)",
           "TWSE t187ap42_L (2026-09-01)"
         ],
+        "price_snapshot_date": "2026-09-01",
+        "price_snapshot_mode": "最近完整交易日同步收盤",
         "hard_fail_reasons": [
           "剩餘天數不在365～3650"
         ]
       },
       {
-        "warrant_code": "03021T",
-        "name": "華泰台新5A售01",
-        "underlying": "華泰",
+        "warrant_code": "03545T",
+        "name": "元債2X台新5C售01",
+        "underlying": "元大美債20正2",
         "issuer": "未知",
-        "warrant_close": 1.46,
+        "warrant_close": 1.07,
         "price_nature": "最近官方最後收盤價",
-        "remaining_days": 47,
-        "premium_pct": 7.0694,
-        "directional_moneyness_pct": 10.9072,
+        "remaining_days": 103,
+        "premium_pct": 9.4907,
+        "directional_moneyness_pct": -1.25,
         "effective_leverage": "未知",
-        "volume_lots": 400,
-        "trade_value_ntd": 582100,
+        "volume_lots": 0,
+        "trade_value_ntd": 0,
         "spread_pct": "未知",
         "liquidity_score": "未知",
         "suspected_broker_involvement": "無法判斷",
@@ -364,8 +412,11 @@
         "source": [
           "TWSE t187ap37_L (2026-09-01)",
           "TWSE MI_INDEX type=ALL (2026-09-01)",
-          "TWSE t187ap42_L (2026-09-01)"
+          "TWSE t187ap42_L (2026-09-01)",
+          "TWSE MI_INDEX 同步歷史收盤 carry-forward (2026-08-28)"
         ],
+        "price_snapshot_date": "2026-08-28",
+        "price_snapshot_mode": "官方歷史同步收盤 carry-forward",
         "hard_fail_reasons": [
           "剩餘天數不在365～3650"
         ]
