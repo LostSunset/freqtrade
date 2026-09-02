@@ -6,6 +6,7 @@ on:
     paths:
       - "user_data/tw_warrant_heartbeat/probe.py"
       - "user_data/tw_warrant_heartbeat/build_heartbeat.py"
+      - "user_data/tw_warrant_heartbeat/build_heartbeat_v3.py"
       - ".github/workflows/tw-warrant-heartbeat-probe.yml"
   schedule:
     # 07:30 Asia/Taipei = 23:30 UTC (previous calendar day)
@@ -35,7 +36,7 @@ jobs:
           python-version: "3.12"
 
       - name: Build compact heartbeat data from official sources
-        run: python user_data/tw_warrant_heartbeat/build_heartbeat.py
+        run: python user_data/tw_warrant_heartbeat/build_heartbeat_v3.py
 
       - name: Validate compact result
         run: |
