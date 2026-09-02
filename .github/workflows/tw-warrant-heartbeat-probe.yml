@@ -1,4 +1,4 @@
-name: TW Warrant Heartbeat Probe
+name: TW Warrant Heartbeat Data Builder
 
 on:
   push:
@@ -8,21 +8,21 @@ on:
       - "user_data/tw_warrant_heartbeat/build_heartbeat.py"
       - ".github/workflows/tw-warrant-heartbeat-probe.yml"
   schedule:
-    # 07:45 Asia/Taipei = 23:45 UTC (previous calendar day)
-    - cron: "45 23 * * *"
+    # 07:30 Asia/Taipei = 23:30 UTC (previous calendar day)
+    - cron: "30 23 * * *"
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: tw-warrant-heartbeat-probe
+  group: tw-warrant-heartbeat-data-builder
   cancel-in-progress: true
 
 jobs:
-  probe:
+  build:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,33 +34,41 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Probe official TWSE and TPEx APIs
-        run: python user_data/tw_warrant_heartbeat/probe.py
+      - name: Build compact heartbeat data from official sources
+        run: python user_data/tw_warrant_heartbeat/build_heartbeat.py
 
-      - name: Validate probe output
+      - name: Validate compact result
         run: |
           python - <<'PY'
           import json
           from pathlib import Path
-          p = Path('user_data/tw_warrant_heartbeat/latest_probe.json')
+          p = Path('user_data/tw_warrant_heartbeat/latest.json')
           d = json.loads(p.read_text(encoding='utf-8'))
-          endpoints = d.get('endpoints', {})
-          if not endpoints:
-              raise SystemExit('No endpoint results generated')
-          ok = sum(1 for v in endpoints.values() if v.get('ok'))
-          print(f'Official endpoints reachable: {ok}/{len(endpoints)}')
-          if ok == 0:
-              raise SystemExit('All official endpoints failed')
+          required = ['pipeline', 'data_status', 'bullish_calls', 'bearish_puts', 'near_miss']
+          missing = [k for k in required if k not in d]
+          if missing:
+              raise SystemExit(f'Missing output keys: {missing}')
+          if not d['data_status']['twse']['mother_count'] and not d['data_status']['tpex']['mother_count']:
+              raise SystemExit('Both warrant universes are empty')
+          print(d['pipeline']['certification_message'])
+          print('TWSE mother:', d['data_status']['twse']['mother_count'])
+          print('TPEx mother:', d['data_status']['tpex']['mother_count'])
+          print('Calls:', len(d['bullish_calls']))
+          print('Puts:', len(d['bearish_puts']))
           PY
 
-      - name: Commit latest schema/status snapshot
+      - name: Commit compact heartbeat snapshot
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -f user_data/tw_warrant_heartbeat/latest_probe.json
+          git add -f user_data/tw_warrant_heartbeat/latest.json
+          if [ -f user_data/tw_warrant_heartbeat/previous.json ]; then
+            git add -f user_data/tw_warrant_heartbeat/previous.json
+          fi
           if git diff --cached --quiet; then
-            echo "No probe changes"
+            echo "No heartbeat data changes"
           else
-            git commit -m "Update TW warrant official API probe"
+            git commit -m "Update TW warrant heartbeat data"
+            git pull --rebase origin develop
             git push origin HEAD:develop
           fi
