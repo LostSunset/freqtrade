@@ -4,7 +4,8 @@ on:
   push:
     branches: [develop]
     paths:
-      - "user_data/tw_warrant_heartbeat/**"
+      - "user_data/tw_warrant_heartbeat/probe.py"
+      - "user_data/tw_warrant_heartbeat/build_heartbeat.py"
       - ".github/workflows/tw-warrant-heartbeat-probe.yml"
   schedule:
     # 07:45 Asia/Taipei = 23:45 UTC (previous calendar day)
