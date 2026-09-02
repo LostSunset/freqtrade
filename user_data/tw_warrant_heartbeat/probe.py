@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import ssl
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -18,17 +19,20 @@ URLS = {
     "tpex_underlying": "https://www.tpex.org.tw/openapi/v1/tpex_mainboard_quotes",
 }
 
+REQUEST_TIMEOUT = 45
+MAX_WORKERS = len(URLS)
+
 
 def fetch_json(url: str):
     req = urllib.request.Request(
         url,
         headers={
-            "User-Agent": "Mozilla/5.0 tw-warrant-heartbeat/1.0",
+            "User-Agent": "Mozilla/5.0 tw-warrant-heartbeat/1.1",
             "Accept": "application/json,text/plain,*/*",
         },
     )
     ctx = ssl.create_default_context()
-    with urllib.request.urlopen(req, timeout=120, context=ctx) as resp:
+    with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT, context=ctx) as resp:
         raw = resp.read()
         text = raw.decode("utf-8-sig", errors="replace")
         return json.loads(text), len(raw), resp.headers.get("Content-Type")
@@ -57,21 +61,35 @@ def describe(data):
     return result
 
 
+def probe_one(name: str, url: str):
+    entry = {"url": url}
+    started = datetime.now(timezone.utc)
+    try:
+        data, nbytes, ctype = fetch_json(url)
+        entry.update({"ok": True, "bytes": nbytes, "content_type": ctype})
+        entry.update(describe(data))
+    except Exception as exc:
+        entry.update({"ok": False, "error": f"{type(exc).__name__}: {exc}"})
+    elapsed = (datetime.now(timezone.utc) - started).total_seconds()
+    entry["elapsed_seconds"] = round(elapsed, 3)
+    return name, entry
+
+
 def main():
     out = {
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "request_timeout_seconds": REQUEST_TIMEOUT,
         "endpoints": {},
     }
-    for name, url in URLS.items():
-        entry = {"url": url}
-        try:
-            data, nbytes, ctype = fetch_json(url)
-            entry.update({"ok": True, "bytes": nbytes, "content_type": ctype})
-            entry.update(describe(data))
-        except Exception as exc:
-            entry.update({"ok": False, "error": f"{type(exc).__name__}: {exc}"})
-        out["endpoints"][name] = entry
 
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
+        futures = [pool.submit(probe_one, name, url) for name, url in URLS.items()]
+        for future in as_completed(futures):
+            name, entry = future.result()
+            out["endpoints"][name] = entry
+            print(f"{name}: {'OK' if entry.get('ok') else 'FAIL'} ({entry.get('elapsed_seconds')}s)")
+
+    out["endpoints"] = {name: out["endpoints"][name] for name in URLS}
     target = Path(__file__).with_name("latest_probe.json")
     target.write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps(out, ensure_ascii=False, indent=2))
