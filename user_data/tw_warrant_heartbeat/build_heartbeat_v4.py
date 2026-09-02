@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+import json
+import ssl
+import time
+import urllib.parse
+import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, timedelta
 
@@ -12,6 +17,7 @@ _original_output_row = base.output_row
 
 HISTORY_LOOKBACK_TRADING_DAYS = 10
 HISTORY_FETCH_WORKERS = 5
+HISTORY_REQUEST_TIMEOUT = 45
 
 
 def previous_weekdays(d: date, count: int) -> list[date]:
@@ -25,19 +31,45 @@ def previous_weekdays(d: date, count: int) -> list[date]:
 
 
 def fetch_twse_history(d: date):
-    payload, meta = base.fetch_json(
-        base.URLS["twse_mi_index"],
-        {"date": d.strftime("%Y%m%d"), "type": "ALL", "response": "json"},
-    )
-    mi = base.parse_twse_mi(payload)
-    usable = bool(mi.get("security_by_code"))
-    return d, mi, meta, usable
+    params = {"date": d.strftime("%Y%m%d"), "type": "ALL", "response": "json"}
+    url = f"{base.URLS['twse_mi_index']}?{urllib.parse.urlencode(params)}"
+    started = time.monotonic()
+    meta = {"url": url, "ok": False}
+    try:
+        req = urllib.request.Request(
+            url,
+            headers={
+                "User-Agent": "Mozilla/5.0 tw-warrant-heartbeat-history/4.1",
+                "Accept": "application/json,text/plain,*/*",
+                "Accept-Encoding": "identity",
+            },
+        )
+        with urllib.request.urlopen(
+            req,
+            timeout=HISTORY_REQUEST_TIMEOUT,
+            context=ssl.create_default_context(),
+        ) as resp:
+            raw = resp.read()
+            payload = json.loads(raw.decode("utf-8-sig", errors="strict"))
+        mi = base.parse_twse_mi(payload)
+        usable = bool(mi.get("security_by_code"))
+        meta.update({
+            "ok": usable,
+            "bytes": len(raw),
+            "elapsed_seconds": round(time.monotonic() - started, 3),
+        })
+        return d, mi, meta, usable
+    except Exception as exc:
+        meta.update({
+            "error": f"{type(exc).__name__}: {exc}",
+            "elapsed_seconds": round(time.monotonic() - started, 3),
+        })
+        return d, {"security_by_code": {}, "security_by_name": {}, "index_by_name": {}}, meta, False
 
 
 def build_twse_v4(execution_date, close_date, basic, daily, stock_rows, mi, status):
     result = _original_build_twse(execution_date, close_date, basic, daily, stock_rows, mi, status)
 
-    # Current-date synchronized snapshots are explicitly marked.
     for row in result["rows"]:
         if row.get("warrant_close") is not None and row.get("underlying_close") is not None:
             row["price_snapshot_date"] = close_date.isoformat()
@@ -50,6 +82,7 @@ def build_twse_v4(execution_date, close_date, basic, daily, stock_rows, mi, stat
     if not unresolved:
         status["historical_carry_forward"] = {
             "lookback_weekdays": HISTORY_LOOKBACK_TRADING_DAYS,
+            "request_timeout_seconds": HISTORY_REQUEST_TIMEOUT,
             "recovered": 0,
             "remaining_unresolved": 0,
         }
@@ -57,12 +90,15 @@ def build_twse_v4(execution_date, close_date, basic, daily, stock_rows, mi, stat
 
     history_dates = previous_weekdays(close_date, HISTORY_LOOKBACK_TRADING_DAYS)
     history: list[tuple[date, dict, dict]] = []
+    history_failures: list[dict] = []
     with ThreadPoolExecutor(max_workers=HISTORY_FETCH_WORKERS) as pool:
         futures = [pool.submit(fetch_twse_history, d) for d in history_dates]
         for future in as_completed(futures):
             d, hist_mi, meta, usable = future.result()
             if usable:
                 history.append((d, hist_mi, meta))
+            else:
+                history_failures.append({"date": d.isoformat(), **meta})
     history.sort(key=lambda x: x[0], reverse=True)
 
     recovered = 0
@@ -76,8 +112,6 @@ def build_twse_v4(execution_date, close_date, basic, daily, stock_rows, mi, stat
             if warrant_close is None:
                 continue
 
-            # Critical integrity rule: premium/moneyness must use an underlying close
-            # from the SAME historical snapshot date as the carried warrant close.
             underlying_close = base.twse_underlying_close(underlying, hist_mi, [])
             if underlying_close is None:
                 continue
@@ -105,7 +139,9 @@ def build_twse_v4(execution_date, close_date, basic, daily, stock_rows, mi, stat
     status["historical_carry_forward"] = {
         "rule": "僅在權證收盤價與標的收盤價可由同一TWSE MI_INDEX歷史交易日同步取得時回補",
         "lookback_weekdays": HISTORY_LOOKBACK_TRADING_DAYS,
+        "request_timeout_seconds": HISTORY_REQUEST_TIMEOUT,
         "history_dates_used": [d.isoformat() for d, _, _ in history],
+        "history_fetch_failures": history_failures,
         "initial_warrant_close_missing": len(unresolved),
         "recovered": recovered,
         "recovered_by_date": recovered_by_date,
@@ -120,8 +156,6 @@ def build_tpex_v4(execution_date, close_date, issue, daily, trade, underlying_ro
         if not row.get("hard_missing") and row.get("warrant_close") is not None and row.get("underlying_close") is not None:
             row["price_snapshot_date"] = close_date.isoformat()
             row["price_snapshot_mode"] = "最近完整交易日同步收盤"
-    # TPEx monthly_quts does not expose the exact trading date of its carried Close,
-    # so it is intentionally NOT used for premium/hard-condition certification.
     status["historical_carry_forward"] = {
         "monthly_endpoint": "https://www.tpex.org.tw/openapi/v1/tpex_warrant_monthly_quts",
         "used_for_hard_certification": False,
