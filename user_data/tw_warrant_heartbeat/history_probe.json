@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-09-02T11:46:37.698743+00:00",
+  "generated_at_utc": "2026-09-02T11:47:51.454411+00:00",
   "endpoints": {
     "tpex_warrant_monthly_quts": {
       "ok": true,
@@ -83,7 +83,9 @@
       ],
       "last_dates": [
         "11509"
-      ]
+      ],
+      "nonblank_close_count": 4741,
+      "nonzero_trade_count": 5824
     },
     "tpex_warrant_daily_quts": {
       "ok": true,
@@ -167,7 +169,86 @@
       ],
       "last_dates": [
         "1150902"
-      ]
+      ],
+      "nonblank_close_count": 4729,
+      "nonzero_trade_count": 4729
     }
+  },
+  "comparison": {
+    "monthly_nonblank_but_daily_blank_count": 12,
+    "samples": [
+      {
+        "Code": "704784",
+        "Name": "沛亨凱基59購01",
+        "monthly_Close": "3.49",
+        "daily_Close": ""
+      },
+      {
+        "Code": "704795",
+        "Name": "世紀*群益59購01",
+        "monthly_Close": "1.13",
+        "daily_Close": ""
+      },
+      {
+        "Code": "704804",
+        "Name": "弘塑元大59購03",
+        "monthly_Close": "0.59",
+        "daily_Close": ""
+      },
+      {
+        "Code": "704829",
+        "Name": "信驊國票59購04",
+        "monthly_Close": "6.75",
+        "daily_Close": ""
+      },
+      {
+        "Code": "704837",
+        "Name": "磐儀國票59購01",
+        "monthly_Close": "0.01",
+        "daily_Close": ""
+      },
+      {
+        "Code": "704851",
+        "Name": "擎亞富邦59購01",
+        "monthly_Close": "1.06",
+        "daily_Close": ""
+      },
+      {
+        "Code": "705588",
+        "Name": "精星永豐59購01",
+        "monthly_Close": "0.14",
+        "daily_Close": ""
+      },
+      {
+        "Code": "705592",
+        "Name": "均華元大59購01",
+        "monthly_Close": "1.84",
+        "daily_Close": ""
+      },
+      {
+        "Code": "705625",
+        "Name": "環球晶群益59購03",
+        "monthly_Close": "11.00",
+        "daily_Close": ""
+      },
+      {
+        "Code": "705626",
+        "Name": "環球晶群益59購04",
+        "monthly_Close": "11.60",
+        "daily_Close": ""
+      },
+      {
+        "Code": "735650",
+        "Name": "台特化統一59購01",
+        "monthly_Close": "0.34",
+        "daily_Close": ""
+      },
+      {
+        "Code": "738588",
+        "Name": "譜瑞元大59購02",
+        "monthly_Close": "0.03",
+        "daily_Close": ""
+      }
+    ]
   }
 }
