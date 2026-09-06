@@ -8,6 +8,7 @@ on:
       - "user_data/tw_warrant_heartbeat/build_heartbeat.py"
       - "user_data/tw_warrant_heartbeat/build_heartbeat_v3.py"
       - "user_data/tw_warrant_heartbeat/build_heartbeat_v4.py"
+      - "user_data/tw_warrant_heartbeat/build_heartbeat_v5.py"
       - ".github/workflows/tw-warrant-heartbeat-probe.yml"
   schedule:
     # 07:30 Asia/Taipei = 23:30 UTC (previous calendar day)
@@ -37,7 +38,7 @@ jobs:
           python-version: "3.12"
 
       - name: Build compact heartbeat data from official sources
-        run: python user_data/tw_warrant_heartbeat/build_heartbeat_v4.py
+        run: python user_data/tw_warrant_heartbeat/build_heartbeat_v5.py
 
       - name: Validate compact result
         run: |
@@ -46,18 +47,38 @@ jobs:
           from pathlib import Path
           p = Path('user_data/tw_warrant_heartbeat/latest.json')
           d = json.loads(p.read_text(encoding='utf-8'))
-          required = ['pipeline', 'data_status', 'bullish_calls', 'bearish_puts', 'near_miss']
+          required = [
+              'pipeline',
+              'data_status',
+              'pure_warrant_top100_summary',
+              'pure_warrant_top100',
+              'filter_funnel',
+              'bullish_calls',
+              'bearish_puts',
+              'formal_candidates_all',
+              'heartbeat_comparison',
+          ]
           missing = [k for k in required if k not in d]
           if missing:
               raise SystemExit(f'Missing output keys: {missing}')
+          if d.get('schema_version') != 5:
+              raise SystemExit(f"Unexpected schema_version: {d.get('schema_version')}")
           if not d['data_status']['twse']['mother_count'] and not d['data_status']['tpex']['mother_count']:
               raise SystemExit('Both warrant universes are empty')
-          twse_cf = d['data_status']['twse'].get('historical_carry_forward', {})
+          top100 = d['pure_warrant_top100']
+          if len(top100) > 100:
+              raise SystemExit(f'Top100 contains {len(top100)} rows')
+          for row in top100:
+              if row.get('type') not in {'認購', '認售'}:
+                  raise SystemExit(f"Non-warrant type in Top100: {row}")
+              if row.get('market') not in {'TWSE', 'TPEx'}:
+                  raise SystemExit(f"Unexpected market in Top100: {row}")
           print(d['pipeline']['certification_message'])
           print('TWSE mother:', d['data_status']['twse']['mother_count'])
-          print('TWSE hard complete:', d['data_status']['twse']['hard_fields_complete_count'])
-          print('TWSE carry recovered:', twse_cf.get('recovered', 0))
           print('TPEx mother:', d['data_status']['tpex']['mother_count'])
+          print('Top100:', len(top100))
+          print('Price <= 1.5:', d['filter_funnel']['top100_price_le_1_5_count'])
+          print('Final > 180 days:', d['filter_funnel']['final_remaining_days_gt_180_count'])
           print('Calls:', len(d['bullish_calls']))
           print('Puts:', len(d['bearish_puts']))
           PY
