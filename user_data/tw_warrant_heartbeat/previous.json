@@ -1,7 +1,7 @@
 {
   "schema_version": 5,
   "pipeline": {
-    "generated_at_asia_taipei": "2026-09-06T08:06:44.743273+08:00",
+    "generated_at_asia_taipei": "2026-09-06T09:15:20.886429+08:00",
     "intended_heartbeat_time": "08:00 Asia/Taipei",
     "execution_date": "2026-09-06",
     "market_state": "週末",
@@ -139,7 +139,7 @@
         "transfer_bytes": 790,
         "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 0.735,
+        "elapsed_seconds": 0.678,
         "rows": 27
       },
       "twse_basic": {
@@ -149,7 +149,7 @@
         "transfer_bytes": 3247115,
         "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 2.899,
+        "elapsed_seconds": 3.347,
         "rows": 37312
       },
       "twse_daily": {
@@ -159,7 +159,7 @@
         "transfer_bytes": 539956,
         "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 1.491,
+        "elapsed_seconds": 1.6,
         "rows": 32713
       },
       "twse_underlying": {
@@ -169,7 +169,7 @@
         "transfer_bytes": 73936,
         "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 0.88,
+        "elapsed_seconds": 1.452,
         "rows": 1380
       },
       "twse_mi_index": {
@@ -179,7 +179,7 @@
         "transfer_bytes": 907285,
         "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 1.995,
+        "elapsed_seconds": 2.722,
         "top_keys": [
           "tables",
           "type",
@@ -192,40 +192,40 @@
         "ok": true,
         "url": "https://www.tpex.org.tw/openapi/v1/tpex_warrant_issue",
         "bytes": 4176003,
-        "transfer_bytes": 227739,
-        "content_encoding": "gzip",
+        "transfer_bytes": 4176003,
+        "content_encoding": "identity",
         "attempt": 1,
-        "elapsed_seconds": 6.202,
+        "elapsed_seconds": 7.732,
         "rows": 9950
       },
       "tpex_daily": {
         "ok": true,
         "url": "https://www.tpex.org.tw/openapi/v1/tpex_warrant_daily_quts",
         "bytes": 3147251,
-        "transfer_bytes": 244517,
-        "content_encoding": "gzip",
+        "transfer_bytes": 3147251,
+        "content_encoding": "identity",
         "attempt": 1,
-        "elapsed_seconds": 4.125,
+        "elapsed_seconds": 5.563,
         "rows": 9950
       },
       "tpex_trade": {
         "ok": true,
         "url": "https://www.tpex.org.tw/openapi/v1/mopsfin_t187ap42_O",
         "bytes": 1504356,
-        "transfer_bytes": 120201,
-        "content_encoding": "gzip",
+        "transfer_bytes": 1504356,
+        "content_encoding": "identity",
         "attempt": 1,
-        "elapsed_seconds": 2.4,
+        "elapsed_seconds": 2.603,
         "rows": 9950
       },
       "tpex_underlying": {
         "ok": true,
         "url": "https://www.tpex.org.tw/openapi/v1/tpex_mainboard_quotes",
         "bytes": 357217,
-        "transfer_bytes": 58025,
-        "content_encoding": "gzip",
+        "transfer_bytes": 357217,
+        "content_encoding": "identity",
         "attempt": 1,
-        "elapsed_seconds": 1.775,
+        "elapsed_seconds": 1.557,
         "rows": 1013
       }
     }
@@ -4523,10 +4523,11 @@
     }
   ],
   "heartbeat_comparison": {
-    "status": "首次執行新純權證Top100 schema／無可比較前次基準",
+    "status": "已比較前次純權證Top100 snapshot",
     "top100_added": [],
     "top100_removed": [],
     "candidate_added": [],
-    "candidate_removed": []
+    "candidate_removed": [],
+    "rank_changes_ge_10": []
   }
 }
