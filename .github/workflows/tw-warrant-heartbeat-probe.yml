@@ -12,11 +12,12 @@ on:
       - "user_data/tw_warrant_heartbeat/build_heartbeat_v6.py"
       - ".github/workflows/tw-warrant-heartbeat-probe.yml"
   schedule:
-    # Staggered pre-08:00 Asia/Taipei builds. Later successful runs refresh the same compact snapshot.
-    # 06:50 / 07:20 / 07:45 Asia/Taipei = 22:50 / 23:20 / 23:45 UTC (previous calendar day)
-    - cron: "50 22 * * *"
+    # Redundant pre-08:00 Asia/Taipei attempts. Once today's certified snapshot exists,
+    # later attempts short-circuit without re-downloading the official datasets.
+    # 05:30 / 06:30 / 07:20 Asia/Taipei = 21:30 / 22:30 / 23:20 UTC (previous calendar day)
+    - cron: "30 21 * * *"
+    - cron: "30 22 * * *"
     - cron: "20 23 * * *"
-    - cron: "45 23 * * *"
   workflow_dispatch:
 
 permissions:
@@ -41,15 +42,54 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Check whether today's snapshot is already certified
+        id: precheck
+        shell: bash
+        run: |
+          current=$(python - <<'PY'
+          import json
+          from datetime import datetime
+          from pathlib import Path
+          from zoneinfo import ZoneInfo
+
+          p = Path('user_data/tw_warrant_heartbeat/latest.json')
+          ok = False
+          if p.exists():
+              try:
+                  d = json.loads(p.read_text(encoding='utf-8'))
+                  today = datetime.now(ZoneInfo('Asia/Taipei')).date().isoformat()
+                  pipe = d.get('pipeline', {})
+                  ok = (
+                      pipe.get('execution_date') == today
+                      and pipe.get('all_market_pure_warrant_top100_certifiable') is True
+                      and pipe.get('final_count_certifiable') is True
+                  )
+              except Exception:
+                  ok = False
+          print('true' if ok else 'false')
+          PY
+          )
+          echo "current=${current}" >> "$GITHUB_OUTPUT"
+          echo "Today's certified snapshot already present: ${current}"
+
+      - name: Resolve Taipei cache date
+        if: steps.precheck.outputs.current != 'true'
+        id: cache_date
+        shell: bash
+        run: echo "date=$(TZ=Asia/Taipei date +%F)" >> "$GITHUB_OUTPUT"
+
       - name: Restore short-lived official source cache
+        if: steps.precheck.outputs.current != 'true'
         uses: actions/cache@v4
         with:
           path: user_data/tw_warrant_heartbeat/.source_cache
-          key: tw-warrant-source-cache-v1-${{ runner.os }}-${{ github.run_id }}
+          # One immutable cache per Taipei calendar day. Later same-day retries reuse it instead of creating copies.
+          key: tw-warrant-source-cache-v1-${{ runner.os }}-${{ steps.cache_date.outputs.date }}
           restore-keys: |
             tw-warrant-source-cache-v1-${{ runner.os }}-
 
       - name: Build compact heartbeat data from resilient official sources
+        if: steps.precheck.outputs.current != 'true'
         shell: bash
         run: |
           set +e
@@ -68,10 +108,11 @@ jobs:
             sleep $((attempt * 20))
           done
           echo "all_market_certified=${certified}"
-          # Keep partial official output if all retries are still degraded; validation below checks schema integrity.
+          # Preserve a schema-valid partial official snapshot if every attempt remains degraded.
           exit 0
 
       - name: Validate compact result
+        if: steps.precheck.outputs.current != 'true'
         run: |
           python - <<'PY'
           import json
@@ -119,6 +160,7 @@ jobs:
           PY
 
       - name: Commit compact heartbeat snapshot
+        if: steps.precheck.outputs.current != 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
