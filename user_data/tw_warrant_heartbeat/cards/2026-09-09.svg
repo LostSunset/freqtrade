@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500">
+  <rect width="1200" height="1500" fill="#ffffff"/>
+  <style>
+    text{font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","Microsoft JhengHei",sans-serif;fill:#111827}
+    .title{font-size:48px;font-weight:700}.sub{font-size:24px}.h{font-size:30px;font-weight:700}.b{font-size:24px}.s{font-size:20px}.warn{fill:#991b1b;font-weight:700}.muted{fill:#4b5563}
+  </style>
+  <text x="60" y="82" class="title">台股權證每日篩選 Heartbeat</text>
+  <text x="60" y="126" class="sub">執行日 2026-09-09｜交易日盤前｜價格性質：最近官方最後收盤價</text>
+  <line x1="60" y1="154" x2="1140" y2="154" stroke="#111827" stroke-width="2"/>
+
+  <rect x="60" y="190" width="1080" height="270" rx="8" fill="#f9fafb" stroke="#9ca3af"/>
+  <text x="90" y="235" class="h">資料狀態</text>
+  <text x="90" y="280" class="b">最近完整交易日：2026-09-08</text>
+  <text x="90" y="320" class="b warn">本次無法完成全市場純權證 Top100 認證</text>
+  <text x="90" y="360" class="b">原因：GitHub latest.json 尚停在 2026-09-07 收盤資料。</text>
+  <text x="90" y="400" class="b">官方 TWSE 已確認 2026-09-08 有權證成交，但本次未取得</text>
+  <text x="90" y="435" class="b">TWSE + TPEx 兩市場逐檔純權證完整成交量母體。</text>
+
+  <rect x="60" y="500" width="1080" height="255" rx="8" fill="#ffffff" stroke="#9ca3af"/>
+  <text x="90" y="545" class="h">今日篩選漏斗</text>
+  <text x="90" y="595" class="b">全市場純權證母體：未認證</text>
+  <text x="90" y="635" class="b">純權證成交量 Top100：未認證</text>
+  <text x="90" y="675" class="b">Top100 中收盤價 ≤ 1.5 元：不可計數</text>
+  <text x="90" y="715" class="b">再符合剩餘期限 &gt; 180 天：不可計數</text>
+
+  <rect x="60" y="795" width="1080" height="310" rx="8" fill="#fff7ed" stroke="#fdba74"/>
+  <text x="90" y="840" class="h">正式候選</text>
+  <text x="90" y="895" class="b warn">看多認購：本次不列</text>
+  <text x="90" y="940" class="b warn">看空認售：本次不列</text>
+  <text x="90" y="990" class="b">這不是「0 檔符合」。第一關的 2026-09-08 全市場純權證</text>
+  <text x="90" y="1030" class="b">成交量 Top100 尚未完成認證，因此不得沿用 2026-09-07</text>
+  <text x="90" y="1070" class="b">排名或候選冒充今日結果。</text>
+
+  <rect x="60" y="1145" width="1080" height="215" rx="8" fill="#f9fafb" stroke="#9ca3af"/>
+  <text x="90" y="1190" class="h">最近可認證基準</text>
+  <text x="90" y="1240" class="b">2026-09-08 snapshot 使用 2026-09-07 收盤資料：</text>
+  <text x="90" y="1280" class="b">全市場 Top100 已認證，正式候選 26 檔（認購 25、認售 1）。</text>
+  <text x="90" y="1320" class="s muted">僅作前次資料品質基準，不視為今日候選。</text>
+
+  <line x1="60" y1="1400" x2="1140" y2="1400" stroke="#d1d5db"/>
+  <text x="60" y="1440" class="s muted">研究整理用途，不執行委託或交易。疑似券商介入：08:00 一律無法判斷。</text>
+  <text x="60" y="1472" class="s muted">圖卡為純 UTF-8 SVG，無嵌入點陣圖／字型；30 日滾動保留。</text>
+</svg>
