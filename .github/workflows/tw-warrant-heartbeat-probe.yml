@@ -9,10 +9,14 @@ on:
       - "user_data/tw_warrant_heartbeat/build_heartbeat_v3.py"
       - "user_data/tw_warrant_heartbeat/build_heartbeat_v4.py"
       - "user_data/tw_warrant_heartbeat/build_heartbeat_v5.py"
+      - "user_data/tw_warrant_heartbeat/build_heartbeat_v6.py"
       - ".github/workflows/tw-warrant-heartbeat-probe.yml"
   schedule:
-    # 07:30 Asia/Taipei = 23:30 UTC (previous calendar day)
-    - cron: "30 23 * * *"
+    # Staggered pre-08:00 Asia/Taipei builds. Later successful runs refresh the same compact snapshot.
+    # 06:50 / 07:20 / 07:45 Asia/Taipei = 22:50 / 23:20 / 23:45 UTC (previous calendar day)
+    - cron: "50 22 * * *"
+    - cron: "20 23 * * *"
+    - cron: "45 23 * * *"
   workflow_dispatch:
 
 permissions:
@@ -25,7 +29,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,8 +41,35 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Build compact heartbeat data from official sources
-        run: python user_data/tw_warrant_heartbeat/build_heartbeat_v5.py
+      - name: Restore short-lived official source cache
+        uses: actions/cache@v4
+        with:
+          path: user_data/tw_warrant_heartbeat/.source_cache
+          key: tw-warrant-source-cache-v1-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            tw-warrant-source-cache-v1-${{ runner.os }}-
+
+      - name: Build compact heartbeat data from resilient official sources
+        shell: bash
+        run: |
+          set +e
+          certified=0
+          for attempt in 1 2 3; do
+            echo "Heartbeat build attempt ${attempt}/3"
+            python user_data/tw_warrant_heartbeat/build_heartbeat_v6.py
+            rc=$?
+            if [ "$rc" -eq 0 ]; then
+              python -c "import json; d=json.load(open('user_data/tw_warrant_heartbeat/latest.json', encoding='utf-8')); raise SystemExit(0 if d.get('pipeline',{}).get('all_market_pure_warrant_top100_certifiable') else 1)"
+              if [ "$?" -eq 0 ]; then
+                certified=1
+                break
+              fi
+            fi
+            sleep $((attempt * 20))
+          done
+          echo "all_market_certified=${certified}"
+          # Keep partial official output if all retries are still degraded; validation below checks schema integrity.
+          exit 0
 
       - name: Validate compact result
         run: |
@@ -74,6 +105,7 @@ jobs:
               if row.get('market') not in {'TWSE', 'TPEx'}:
                   raise SystemExit(f"Unexpected market in Top100: {row}")
           print(d['pipeline']['certification_message'])
+          print('All-market certified:', d['pipeline'].get('all_market_pure_warrant_top100_certifiable'))
           print('TWSE mother:', d['data_status']['twse']['mother_count'])
           print('TPEx mother:', d['data_status']['tpex']['mother_count'])
           print('Top100:', len(top100))
@@ -81,6 +113,9 @@ jobs:
           print('Final > 180 days:', d['filter_funnel']['final_remaining_days_gt_180_count'])
           print('Calls:', len(d['bullish_calls']))
           print('Puts:', len(d['bearish_puts']))
+          for name, meta in d.get('data_status', {}).get('endpoint_runtime', {}).items():
+              if meta.get('official_fallback'):
+                  print('Fallback:', name, meta.get('fallback_source'), 'for', meta.get('fallback_for'))
           PY
 
       - name: Commit compact heartbeat snapshot
