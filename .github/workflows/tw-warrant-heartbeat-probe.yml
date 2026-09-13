@@ -42,6 +42,15 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Install current CA bundle
+        shell: bash
+        run: |
+          python -m pip install --disable-pip-version-check --upgrade certifi
+          CERT_FILE=$(python -m certifi)
+          echo "SSL_CERT_FILE=${CERT_FILE}" >> "$GITHUB_ENV"
+          echo "REQUESTS_CA_BUNDLE=${CERT_FILE}" >> "$GITHUB_ENV"
+          echo "Using CA bundle: ${CERT_FILE}"
+
       - name: Check whether today's snapshot is already certified
         id: precheck
         shell: bash
