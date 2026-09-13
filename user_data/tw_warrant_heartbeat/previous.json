@@ -1,7 +1,7 @@
 {
   "schema_version": 5,
   "pipeline": {
-    "generated_at_asia_taipei": "2026-09-13T07:10:50.641142+08:00",
+    "generated_at_asia_taipei": "2026-09-13T08:11:52.664004+08:00",
     "intended_heartbeat_time": "08:00 Asia/Taipei",
     "execution_date": "2026-09-13",
     "market_state": "週末",
@@ -133,9 +133,9 @@
         "transfer_bytes": 790,
         "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 1.339,
+        "elapsed_seconds": 0.603,
         "outer_attempt": 1,
-        "resilient_elapsed_seconds": 1.339,
+        "resilient_elapsed_seconds": 0.603,
         "rows": 27
       },
       "twse_basic": {
@@ -145,9 +145,9 @@
         "transfer_bytes": 3343860,
         "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 2.542,
+        "elapsed_seconds": 2.422,
         "outer_attempt": 1,
-        "resilient_elapsed_seconds": 2.542,
+        "resilient_elapsed_seconds": 2.423,
         "rows": 38688
       },
       "twse_daily": {
@@ -157,9 +157,9 @@
         "transfer_bytes": 544578,
         "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 1.478,
+        "elapsed_seconds": 1.459,
         "outer_attempt": 1,
-        "resilient_elapsed_seconds": 1.478,
+        "resilient_elapsed_seconds": 1.459,
         "rows": 33257
       },
       "twse_underlying": {
@@ -169,9 +169,9 @@
         "transfer_bytes": 74036,
         "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 0.872,
+        "elapsed_seconds": 0.722,
         "outer_attempt": 1,
-        "resilient_elapsed_seconds": 0.872,
+        "resilient_elapsed_seconds": 0.722,
         "rows": 1379
       },
       "twse_mi_index": {
@@ -181,9 +181,9 @@
         "transfer_bytes": 905304,
         "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 2.051,
+        "elapsed_seconds": 1.746,
         "outer_attempt": 1,
-        "resilient_elapsed_seconds": 2.051,
+        "resilient_elapsed_seconds": 1.746,
         "top_keys": [
           "tables",
           "type",
@@ -196,37 +196,37 @@
         "ok": false,
         "url": "https://www.tpex.org.tw/openapi/v1/tpex_warrant_issue",
         "attempt": 3,
-        "elapsed_seconds": 4.772,
+        "elapsed_seconds": 4.61,
         "error": "URLError: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010)>",
         "outer_attempt": 2,
-        "resilient_elapsed_seconds": 13.931
+        "resilient_elapsed_seconds": 13.209
       },
       "tpex_daily": {
         "ok": false,
         "url": "https://www.tpex.org.tw/openapi/v1/tpex_warrant_daily_quts",
         "attempt": 3,
-        "elapsed_seconds": 4.627,
+        "elapsed_seconds": 4.585,
         "error": "URLError: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010)>",
         "outer_attempt": 2,
-        "resilient_elapsed_seconds": 13.261
+        "resilient_elapsed_seconds": 13.173
       },
       "tpex_trade": {
         "ok": false,
         "url": "https://www.tpex.org.tw/openapi/v1/mopsfin_t187ap42_O",
         "attempt": 3,
-        "elapsed_seconds": 4.627,
+        "elapsed_seconds": 4.584,
         "error": "URLError: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010)>",
         "outer_attempt": 2,
-        "resilient_elapsed_seconds": 13.258
+        "resilient_elapsed_seconds": 13.163
       },
       "tpex_underlying": {
         "ok": false,
         "url": "https://www.tpex.org.tw/openapi/v1/tpex_mainboard_quotes",
         "attempt": 3,
-        "elapsed_seconds": 5.228,
+        "elapsed_seconds": 4.634,
         "error": "URLError: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010)>",
         "outer_attempt": 2,
-        "resilient_elapsed_seconds": 13.969
+        "resilient_elapsed_seconds": 13.227
       }
     }
   },
