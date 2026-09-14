@@ -1,7 +1,7 @@
 {
   "schema_version": 5,
   "pipeline": {
-    "generated_at_asia_taipei": "2026-09-14T07:20:41.780757+08:00",
+    "generated_at_asia_taipei": "2026-09-14T08:23:13.319795+08:00",
     "intended_heartbeat_time": "08:00 Asia/Taipei",
     "execution_date": "2026-09-14",
     "market_state": "交易日盤前",
@@ -133,9 +133,9 @@
         "transfer_bytes": 790,
         "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 0.656,
+        "elapsed_seconds": 0.699,
         "outer_attempt": 1,
-        "resilient_elapsed_seconds": 0.656,
+        "resilient_elapsed_seconds": 0.699,
         "rows": 27
       },
       "twse_basic": {
@@ -145,9 +145,9 @@
         "transfer_bytes": 3343926,
         "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 3.305,
+        "elapsed_seconds": 2.613,
         "outer_attempt": 1,
-        "resilient_elapsed_seconds": 3.305,
+        "resilient_elapsed_seconds": 2.613,
         "rows": 38688
       },
       "twse_daily": {
@@ -157,9 +157,9 @@
         "transfer_bytes": 544578,
         "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 1.515,
+        "elapsed_seconds": 7.989,
         "outer_attempt": 1,
-        "resilient_elapsed_seconds": 1.515,
+        "resilient_elapsed_seconds": 7.989,
         "rows": 33257
       },
       "twse_underlying": {
@@ -169,9 +169,9 @@
         "transfer_bytes": 74036,
         "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 0.934,
+        "elapsed_seconds": 1.056,
         "outer_attempt": 1,
-        "resilient_elapsed_seconds": 0.934,
+        "resilient_elapsed_seconds": 1.056,
         "rows": 1379
       },
       "twse_mi_index": {
@@ -181,9 +181,9 @@
         "transfer_bytes": 905304,
         "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 1.844,
+        "elapsed_seconds": 2.107,
         "outer_attempt": 1,
-        "resilient_elapsed_seconds": 1.844,
+        "resilient_elapsed_seconds": 2.107,
         "top_keys": [
           "tables",
           "type",
@@ -196,10 +196,10 @@
         "ok": false,
         "url": "https://www.tpex.org.tw/openapi/v1/tpex_warrant_issue",
         "attempt": 3,
-        "elapsed_seconds": 4.658,
+        "elapsed_seconds": 4.655,
         "error": "URLError: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010)>",
         "outer_attempt": 2,
-        "resilient_elapsed_seconds": 13.52
+        "resilient_elapsed_seconds": 13.332
       },
       "tpex_daily": {
         "ok": false,
@@ -208,25 +208,25 @@
         "elapsed_seconds": 4.669,
         "error": "URLError: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010)>",
         "outer_attempt": 2,
-        "resilient_elapsed_seconds": 13.413
+        "resilient_elapsed_seconds": 13.327
       },
       "tpex_trade": {
         "ok": false,
         "url": "https://www.tpex.org.tw/openapi/v1/mopsfin_t187ap42_O",
         "attempt": 3,
-        "elapsed_seconds": 5.28,
+        "elapsed_seconds": 4.814,
         "error": "URLError: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010)>",
         "outer_attempt": 2,
-        "resilient_elapsed_seconds": 13.93
+        "resilient_elapsed_seconds": 13.501
       },
       "tpex_underlying": {
         "ok": false,
         "url": "https://www.tpex.org.tw/openapi/v1/tpex_mainboard_quotes",
         "attempt": 3,
-        "elapsed_seconds": 4.998,
+        "elapsed_seconds": 4.789,
         "error": "URLError: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010)>",
         "outer_attempt": 2,
-        "resilient_elapsed_seconds": 13.824
+        "resilient_elapsed_seconds": 13.573
       }
     }
   },
