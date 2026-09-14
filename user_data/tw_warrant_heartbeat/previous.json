@@ -1,7 +1,7 @@
 {
   "schema_version": 5,
   "pipeline": {
-    "generated_at_asia_taipei": "2026-09-14T09:12:48.955048+08:00",
+    "generated_at_asia_taipei": "2026-09-14T09:17:45.824604+08:00",
     "intended_heartbeat_time": "08:00 Asia/Taipei",
     "execution_date": "2026-09-14",
     "market_state": "交易日盤前",
@@ -133,9 +133,9 @@
         "transfer_bytes": 790,
         "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 0.756,
+        "elapsed_seconds": 0.596,
         "outer_attempt": 1,
-        "resilient_elapsed_seconds": 0.756,
+        "resilient_elapsed_seconds": 0.596,
         "rows": 27
       },
       "twse_basic": {
@@ -145,9 +145,9 @@
         "transfer_bytes": 3343926,
         "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 114.117,
+        "elapsed_seconds": 16.892,
         "outer_attempt": 1,
-        "resilient_elapsed_seconds": 114.118,
+        "resilient_elapsed_seconds": 16.892,
         "rows": 38688
       },
       "twse_daily": {
@@ -157,9 +157,9 @@
         "transfer_bytes": 544578,
         "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 4.661,
+        "elapsed_seconds": 4.456,
         "outer_attempt": 1,
-        "resilient_elapsed_seconds": 4.661,
+        "resilient_elapsed_seconds": 4.456,
         "rows": 33257
       },
       "twse_underlying": {
@@ -169,9 +169,9 @@
         "transfer_bytes": 74036,
         "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 1.142,
+        "elapsed_seconds": 1.528,
         "outer_attempt": 1,
-        "resilient_elapsed_seconds": 1.142,
+        "resilient_elapsed_seconds": 1.528,
         "rows": 1379
       },
       "twse_mi_index": {
@@ -181,9 +181,9 @@
         "transfer_bytes": 905304,
         "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 3.469,
+        "elapsed_seconds": 1.728,
         "outer_attempt": 1,
-        "resilient_elapsed_seconds": 3.469,
+        "resilient_elapsed_seconds": 1.728,
         "top_keys": [
           "tables",
           "type",
@@ -196,37 +196,37 @@
         "ok": false,
         "url": "https://www.tpex.org.tw/openapi/v1/tpex_warrant_issue",
         "attempt": 3,
-        "elapsed_seconds": 5.077,
-        "error": "URLError: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010)>",
+        "elapsed_seconds": 6.563,
+        "error": "IncompleteRead: IncompleteRead(24189 bytes read, 4248220 more expected)",
         "outer_attempt": 2,
-        "resilient_elapsed_seconds": 13.947
+        "resilient_elapsed_seconds": 17.271
       },
       "tpex_daily": {
         "ok": false,
         "url": "https://www.tpex.org.tw/openapi/v1/tpex_warrant_daily_quts",
         "attempt": 3,
-        "elapsed_seconds": 5.618,
-        "error": "IncompleteRead: IncompleteRead(15992 bytes read, 3196709 more expected)",
+        "elapsed_seconds": 6.568,
+        "error": "IncompleteRead: IncompleteRead(24184 bytes read, 3188517 more expected)",
         "outer_attempt": 2,
-        "resilient_elapsed_seconds": 14.495
+        "resilient_elapsed_seconds": 17.193
       },
       "tpex_trade": {
         "ok": false,
         "url": "https://www.tpex.org.tw/openapi/v1/mopsfin_t187ap42_O",
         "attempt": 3,
-        "elapsed_seconds": 6.701,
-        "error": "IncompleteRead: IncompleteRead(24189 bytes read, 1513203 more expected)",
+        "elapsed_seconds": 6.461,
+        "error": "IncompleteRead: IncompleteRead(15997 bytes read, 1521395 more expected)",
         "outer_attempt": 2,
-        "resilient_elapsed_seconds": 18.02
+        "resilient_elapsed_seconds": 17.121
       },
       "tpex_underlying": {
         "ok": false,
         "url": "https://www.tpex.org.tw/openapi/v1/tpex_mainboard_quotes",
         "attempt": 3,
-        "elapsed_seconds": 6.676,
+        "elapsed_seconds": 6.43,
         "error": "IncompleteRead: IncompleteRead(15996 bytes read, 340980 more expected)",
         "outer_attempt": 2,
-        "resilient_elapsed_seconds": 17.104
+        "resilient_elapsed_seconds": 17.036
       }
     }
   },
