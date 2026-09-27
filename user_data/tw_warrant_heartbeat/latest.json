@@ -1,10 +1,10 @@
 {
   "schema_version": 5,
   "pipeline": {
-    "generated_at_asia_taipei": "2026-09-27T07:44:41.269002+08:00",
+    "generated_at_asia_taipei": "2026-09-28T07:52:12.804948+08:00",
     "intended_heartbeat_time": "08:00 Asia/Taipei",
-    "execution_date": "2026-09-27",
-    "market_state": "週末",
+    "execution_date": "2026-09-28",
+    "market_state": "休市",
     "last_completed_trading_date": "2026-09-24",
     "price_nature": "最近官方最後收盤價",
     "transport_note": "本檔僅為 TWSE/TPEx 官方資料的正規化／compact snapshot；不使用第三方行情產生正式排名。",
@@ -29,7 +29,7 @@
       "mother_count": 35389,
       "mother_complete": true,
       "basic_data_dates": [
-        "2026-09-26"
+        "2026-09-27"
       ],
       "daily_data_dates": [
         "2026-09-24"
@@ -139,21 +139,21 @@
         "transfer_bytes": 790,
         "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 1.245,
+        "elapsed_seconds": 0.796,
         "outer_attempt": 1,
-        "resilient_elapsed_seconds": 1.245,
+        "resilient_elapsed_seconds": 0.796,
         "rows": 27
       },
       "twse_basic": {
         "ok": true,
         "url": "https://openapi.twse.com.tw/v1/opendata/t187ap37_L",
         "bytes": 42400363,
-        "transfer_bytes": 3573760,
+        "transfer_bytes": 3573761,
         "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 2.744,
+        "elapsed_seconds": 3.142,
         "outer_attempt": 1,
-        "resilient_elapsed_seconds": 2.744,
+        "resilient_elapsed_seconds": 3.143,
         "rows": 41636
       },
       "twse_daily": {
@@ -172,9 +172,9 @@
         "transfer_bytes": 73391,
         "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 0.771,
+        "elapsed_seconds": 1.233,
         "outer_attempt": 1,
-        "resilient_elapsed_seconds": 0.771,
+        "resilient_elapsed_seconds": 1.233,
         "rows": 1380
       },
       "twse_mi_index": {
@@ -184,9 +184,9 @@
         "transfer_bytes": 925978,
         "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 1.774,
+        "elapsed_seconds": 2.443,
         "outer_attempt": 1,
-        "resilient_elapsed_seconds": 1.774,
+        "resilient_elapsed_seconds": 2.443,
         "top_keys": [
           "tables",
           "type",
@@ -199,24 +199,24 @@
         "ok": true,
         "url": "https://www.tpex.org.tw/openapi/v1/tpex_warrant_issue",
         "bytes": 4466952,
-        "transfer_bytes": 249208,
+        "transfer_bytes": 240407,
         "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 5.757,
+        "elapsed_seconds": 8.956,
         "outer_attempt": 1,
-        "resilient_elapsed_seconds": 5.757,
+        "resilient_elapsed_seconds": 8.956,
         "rows": 10649
       },
       "tpex_daily": {
         "ok": true,
         "url": "https://www.tpex.org.tw/openapi/v1/tpex_warrant_daily_quts",
         "bytes": 3372010,
-        "transfer_bytes": 263872,
+        "transfer_bytes": 258781,
         "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 5.973,
+        "elapsed_seconds": 6.792,
         "outer_attempt": 1,
-        "resilient_elapsed_seconds": 5.973,
+        "resilient_elapsed_seconds": 6.792,
         "rows": 10645
       },
       "tpex_trade": {
@@ -235,9 +235,9 @@
         "transfer_bytes": 58784,
         "content_encoding": "gzip",
         "attempt": 1,
-        "elapsed_seconds": 0.544,
+        "elapsed_seconds": 0.844,
         "outer_attempt": 1,
-        "resilient_elapsed_seconds": 0.544,
+        "resilient_elapsed_seconds": 0.844,
         "rows": 1015
       }
     }
@@ -266,11 +266,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日官方收盤",
       "expiry_date": "2026-11-30",
-      "remaining_days": 64,
+      "remaining_days": 63,
       "volume_lots": 10086,
       "trade_value_ntd": 3312360,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -296,7 +296,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2026-12-02",
-      "remaining_days": 66,
+      "remaining_days": 65,
       "volume_lots": 8896,
       "trade_value_ntd": 12621790,
       "source": [
@@ -326,11 +326,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-01-18",
-      "remaining_days": 113,
+      "remaining_days": 112,
       "volume_lots": 8589,
       "trade_value_ntd": 5241710,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -356,11 +356,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-01-08",
-      "remaining_days": 103,
+      "remaining_days": 102,
       "volume_lots": 8489,
       "trade_value_ntd": 594290,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -386,11 +386,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2028-02-08",
-      "remaining_days": 499,
+      "remaining_days": 498,
       "volume_lots": 7755,
       "trade_value_ntd": 4933430,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -416,11 +416,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2026-12-28",
-      "remaining_days": 92,
+      "remaining_days": 91,
       "volume_lots": 6859,
       "trade_value_ntd": 6599400,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -446,11 +446,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-01-11",
-      "remaining_days": 106,
+      "remaining_days": 105,
       "volume_lots": 6337,
       "trade_value_ntd": 5437330,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -476,11 +476,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2026-12-16",
-      "remaining_days": 80,
+      "remaining_days": 79,
       "volume_lots": 5702,
       "trade_value_ntd": 1102810,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -506,11 +506,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-05-20",
-      "remaining_days": 235,
+      "remaining_days": 234,
       "volume_lots": 5046,
       "trade_value_ntd": 4385610,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -536,7 +536,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-11-05",
-      "remaining_days": 404,
+      "remaining_days": 403,
       "volume_lots": 4931,
       "trade_value_ntd": 3332490,
       "source": [
@@ -566,7 +566,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2026-11-03",
-      "remaining_days": 37,
+      "remaining_days": 36,
       "volume_lots": 4869,
       "trade_value_ntd": 4432600,
       "source": [
@@ -596,11 +596,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-01-18",
-      "remaining_days": 113,
+      "remaining_days": 112,
       "volume_lots": 4848,
       "trade_value_ntd": 3216370,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -626,11 +626,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-11-16",
-      "remaining_days": 415,
+      "remaining_days": 414,
       "volume_lots": 4843,
       "trade_value_ntd": 2897890,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -656,7 +656,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2026-12-03",
-      "remaining_days": 67,
+      "remaining_days": 66,
       "volume_lots": 4692,
       "trade_value_ntd": 1840150,
       "source": [
@@ -686,11 +686,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-03-22",
-      "remaining_days": 176,
+      "remaining_days": 175,
       "volume_lots": 4605,
       "trade_value_ntd": 11786850,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -716,11 +716,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-04-07",
-      "remaining_days": 192,
+      "remaining_days": 191,
       "volume_lots": 4445,
       "trade_value_ntd": 8534950,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -746,11 +746,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2026-12-15",
-      "remaining_days": 79,
+      "remaining_days": 78,
       "volume_lots": 4382,
       "trade_value_ntd": 1956030,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -776,7 +776,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-01-06",
-      "remaining_days": 101,
+      "remaining_days": 100,
       "volume_lots": 4318,
       "trade_value_ntd": 1061340,
       "source": [
@@ -806,11 +806,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2026-11-06",
-      "remaining_days": 40,
+      "remaining_days": 39,
       "volume_lots": 4302,
       "trade_value_ntd": 43220,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -836,11 +836,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-12-13",
-      "remaining_days": 442,
+      "remaining_days": 441,
       "volume_lots": 4298,
       "trade_value_ntd": 3202880,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -866,11 +866,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-09-20",
-      "remaining_days": 358,
+      "remaining_days": 357,
       "volume_lots": 4278,
       "trade_value_ntd": 3046060,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -896,11 +896,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-03-02",
-      "remaining_days": 156,
+      "remaining_days": 155,
       "volume_lots": 4018,
       "trade_value_ntd": 8224200,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -926,7 +926,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-01-22",
-      "remaining_days": 117,
+      "remaining_days": 116,
       "volume_lots": 4008,
       "trade_value_ntd": 1392090,
       "source": [
@@ -956,11 +956,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-02-12",
-      "remaining_days": 138,
+      "remaining_days": 137,
       "volume_lots": 3994,
       "trade_value_ntd": 1743130,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -986,11 +986,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-03-26",
-      "remaining_days": 180,
+      "remaining_days": 179,
       "volume_lots": 3947,
       "trade_value_ntd": 3529870,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -1016,7 +1016,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-03-02",
-      "remaining_days": 156,
+      "remaining_days": 155,
       "volume_lots": 3922,
       "trade_value_ntd": 5833030,
       "source": [
@@ -1046,11 +1046,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2026-11-23",
-      "remaining_days": 57,
+      "remaining_days": 56,
       "volume_lots": 3901,
       "trade_value_ntd": 195050,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -1076,11 +1076,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-04-07",
-      "remaining_days": 192,
+      "remaining_days": 191,
       "volume_lots": 3835,
       "trade_value_ntd": 7252550,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -1106,11 +1106,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2026-11-16",
-      "remaining_days": 50,
+      "remaining_days": 49,
       "volume_lots": 3811,
       "trade_value_ntd": 649990,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -1136,11 +1136,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-03-10",
-      "remaining_days": 164,
+      "remaining_days": 163,
       "volume_lots": 3711,
       "trade_value_ntd": 521970,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -1166,11 +1166,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-03-15",
-      "remaining_days": 169,
+      "remaining_days": 168,
       "volume_lots": 3679,
       "trade_value_ntd": 4705020,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -1196,11 +1196,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-05-10",
-      "remaining_days": 225,
+      "remaining_days": 224,
       "volume_lots": 3616,
       "trade_value_ntd": 3214760,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -1226,7 +1226,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2026-12-04",
-      "remaining_days": 68,
+      "remaining_days": 67,
       "volume_lots": 3604,
       "trade_value_ntd": 4777740,
       "source": [
@@ -1256,7 +1256,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2026-11-03",
-      "remaining_days": 37,
+      "remaining_days": 36,
       "volume_lots": 3602,
       "trade_value_ntd": 1509680,
       "source": [
@@ -1286,7 +1286,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-04-16",
-      "remaining_days": 201,
+      "remaining_days": 200,
       "volume_lots": 3568,
       "trade_value_ntd": 4842060,
       "source": [
@@ -1316,11 +1316,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2026-10-08",
-      "remaining_days": 11,
+      "remaining_days": 10,
       "volume_lots": 3561,
       "trade_value_ntd": 178050,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -1346,7 +1346,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-01-20",
-      "remaining_days": 115,
+      "remaining_days": 114,
       "volume_lots": 3556,
       "trade_value_ntd": 2791680,
       "source": [
@@ -1376,7 +1376,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-03-24",
-      "remaining_days": 178,
+      "remaining_days": 177,
       "volume_lots": 3549,
       "trade_value_ntd": 2251140,
       "source": [
@@ -1406,11 +1406,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2026-12-21",
-      "remaining_days": 85,
+      "remaining_days": 84,
       "volume_lots": 3503,
       "trade_value_ntd": 1585790,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -1436,11 +1436,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-01-21",
-      "remaining_days": 116,
+      "remaining_days": 115,
       "volume_lots": 3495,
       "trade_value_ntd": 1798160,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -1466,11 +1466,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-03-18",
-      "remaining_days": 172,
+      "remaining_days": 171,
       "volume_lots": 3491,
       "trade_value_ntd": 1327240,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -1496,11 +1496,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-05-25",
-      "remaining_days": 240,
+      "remaining_days": 239,
       "volume_lots": 3478,
       "trade_value_ntd": 1356420,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -1526,11 +1526,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2026-11-26",
-      "remaining_days": 60,
+      "remaining_days": 59,
       "volume_lots": 3383,
       "trade_value_ntd": 386310,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -1556,11 +1556,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-04-13",
-      "remaining_days": 198,
+      "remaining_days": 197,
       "volume_lots": 3381,
       "trade_value_ntd": 803500,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -1586,11 +1586,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-03-15",
-      "remaining_days": 169,
+      "remaining_days": 168,
       "volume_lots": 3370,
       "trade_value_ntd": 2325830,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -1616,11 +1616,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2026-12-07",
-      "remaining_days": 71,
+      "remaining_days": 70,
       "volume_lots": 3346,
       "trade_value_ntd": 336080,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -1646,11 +1646,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-06-28",
-      "remaining_days": 274,
+      "remaining_days": 273,
       "volume_lots": 3290,
       "trade_value_ntd": 3778430,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -1676,7 +1676,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-04-13",
-      "remaining_days": 198,
+      "remaining_days": 197,
       "volume_lots": 3222,
       "trade_value_ntd": 3313930,
       "source": [
@@ -1706,11 +1706,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日官方收盤",
       "expiry_date": "2027-03-04",
-      "remaining_days": 158,
+      "remaining_days": 157,
       "volume_lots": 3207,
       "trade_value_ntd": 1751950,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -1736,11 +1736,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-01-05",
-      "remaining_days": 100,
+      "remaining_days": 99,
       "volume_lots": 3157,
       "trade_value_ntd": 2050760,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -1766,7 +1766,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-05-28",
-      "remaining_days": 243,
+      "remaining_days": 242,
       "volume_lots": 3140,
       "trade_value_ntd": 4564100,
       "source": [
@@ -1796,11 +1796,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2026-12-28",
-      "remaining_days": 92,
+      "remaining_days": 91,
       "volume_lots": 3109,
       "trade_value_ntd": 1351380,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -1826,11 +1826,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-04-15",
-      "remaining_days": 200,
+      "remaining_days": 199,
       "volume_lots": 3082,
       "trade_value_ntd": 4739340,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -1856,7 +1856,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-03-22",
-      "remaining_days": 176,
+      "remaining_days": 175,
       "volume_lots": 3063,
       "trade_value_ntd": 1182900,
       "source": [
@@ -1886,7 +1886,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-02-01",
-      "remaining_days": 127,
+      "remaining_days": 126,
       "volume_lots": 3054,
       "trade_value_ntd": 3635480,
       "source": [
@@ -1916,11 +1916,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2026-12-28",
-      "remaining_days": 92,
+      "remaining_days": 91,
       "volume_lots": 3049,
       "trade_value_ntd": 3077200,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -1946,11 +1946,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-02-25",
-      "remaining_days": 151,
+      "remaining_days": 150,
       "volume_lots": 3047,
       "trade_value_ntd": 4648230,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -1976,11 +1976,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-03-09",
-      "remaining_days": 163,
+      "remaining_days": 162,
       "volume_lots": 3044,
       "trade_value_ntd": 1545430,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -2006,7 +2006,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-04-13",
-      "remaining_days": 198,
+      "remaining_days": 197,
       "volume_lots": 3039,
       "trade_value_ntd": 3675340,
       "source": [
@@ -2036,7 +2036,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-01-07",
-      "remaining_days": 102,
+      "remaining_days": 101,
       "volume_lots": 3006,
       "trade_value_ntd": 1040320,
       "source": [
@@ -2066,7 +2066,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-08-09",
-      "remaining_days": 316,
+      "remaining_days": 315,
       "volume_lots": 2984,
       "trade_value_ntd": 3570310,
       "source": [
@@ -2096,11 +2096,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-03-02",
-      "remaining_days": 156,
+      "remaining_days": 155,
       "volume_lots": 2981,
       "trade_value_ntd": 4680490,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -2126,7 +2126,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-05-20",
-      "remaining_days": 235,
+      "remaining_days": 234,
       "volume_lots": 2969,
       "trade_value_ntd": 4583200,
       "source": [
@@ -2156,7 +2156,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-02-18",
-      "remaining_days": 144,
+      "remaining_days": 143,
       "volume_lots": 2966,
       "trade_value_ntd": 2755910,
       "source": [
@@ -2186,7 +2186,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-12-21",
-      "remaining_days": 450,
+      "remaining_days": 449,
       "volume_lots": 2946,
       "trade_value_ntd": 1904500,
       "source": [
@@ -2216,11 +2216,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-03-16",
-      "remaining_days": 170,
+      "remaining_days": 169,
       "volume_lots": 2882,
       "trade_value_ntd": 2537180,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -2246,11 +2246,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-09-20",
-      "remaining_days": 358,
+      "remaining_days": 357,
       "volume_lots": 2846,
       "trade_value_ntd": 2806940,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -2276,11 +2276,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-03-15",
-      "remaining_days": 169,
+      "remaining_days": 168,
       "volume_lots": 2838,
       "trade_value_ntd": 3397720,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -2306,11 +2306,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-03-26",
-      "remaining_days": 180,
+      "remaining_days": 179,
       "volume_lots": 2799,
       "trade_value_ntd": 2379550,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -2336,11 +2336,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2026-12-14",
-      "remaining_days": 78,
+      "remaining_days": 77,
       "volume_lots": 2791,
       "trade_value_ntd": 223280,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -2366,11 +2366,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-01-08",
-      "remaining_days": 103,
+      "remaining_days": 102,
       "volume_lots": 2788,
       "trade_value_ntd": 1640620,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -2396,7 +2396,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-05-31",
-      "remaining_days": 246,
+      "remaining_days": 245,
       "volume_lots": 2776,
       "trade_value_ntd": 1595110,
       "source": [
@@ -2426,11 +2426,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-01-14",
-      "remaining_days": 109,
+      "remaining_days": 108,
       "volume_lots": 2748,
       "trade_value_ntd": 110520,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -2456,11 +2456,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-03-02",
-      "remaining_days": 156,
+      "remaining_days": 155,
       "volume_lots": 2694,
       "trade_value_ntd": 7820890,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -2486,11 +2486,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2026-11-18",
-      "remaining_days": 52,
+      "remaining_days": 51,
       "volume_lots": 2682,
       "trade_value_ntd": 2203000,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -2516,11 +2516,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-03-31",
-      "remaining_days": 185,
+      "remaining_days": 184,
       "volume_lots": 2680,
       "trade_value_ntd": 1255020,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -2546,11 +2546,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2026-12-21",
-      "remaining_days": 85,
+      "remaining_days": 84,
       "volume_lots": 2644,
       "trade_value_ntd": 291500,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -2576,11 +2576,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-03-02",
-      "remaining_days": 156,
+      "remaining_days": 155,
       "volume_lots": 2641,
       "trade_value_ntd": 5360810,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -2606,11 +2606,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-05-07",
-      "remaining_days": 222,
+      "remaining_days": 221,
       "volume_lots": 2635,
       "trade_value_ntd": 3000130,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -2636,11 +2636,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-02-25",
-      "remaining_days": 151,
+      "remaining_days": 150,
       "volume_lots": 2621,
       "trade_value_ntd": 2582540,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -2666,11 +2666,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-03-10",
-      "remaining_days": 164,
+      "remaining_days": 163,
       "volume_lots": 2613,
       "trade_value_ntd": 3124090,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -2696,7 +2696,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-03-09",
-      "remaining_days": 163,
+      "remaining_days": 162,
       "volume_lots": 2613,
       "trade_value_ntd": 2066890,
       "source": [
@@ -2726,7 +2726,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2026-12-22",
-      "remaining_days": 86,
+      "remaining_days": 85,
       "volume_lots": 2588,
       "trade_value_ntd": 2869540,
       "source": [
@@ -2756,7 +2756,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-01-13",
-      "remaining_days": 108,
+      "remaining_days": 107,
       "volume_lots": 2588,
       "trade_value_ntd": 258800,
       "source": [
@@ -2786,11 +2786,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-05-20",
-      "remaining_days": 235,
+      "remaining_days": 234,
       "volume_lots": 2583,
       "trade_value_ntd": 2727930,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -2816,11 +2816,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-05-03",
-      "remaining_days": 218,
+      "remaining_days": 217,
       "volume_lots": 2577,
       "trade_value_ntd": 1780440,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -2846,7 +2846,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-01-28",
-      "remaining_days": 123,
+      "remaining_days": 122,
       "volume_lots": 2569,
       "trade_value_ntd": 2974350,
       "source": [
@@ -2876,11 +2876,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2026-11-16",
-      "remaining_days": 50,
+      "remaining_days": 49,
       "volume_lots": 2567,
       "trade_value_ntd": 1155540,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -2906,11 +2906,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-06-10",
-      "remaining_days": 256,
+      "remaining_days": 255,
       "volume_lots": 2545,
       "trade_value_ntd": 1975520,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -2936,11 +2936,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-01-14",
-      "remaining_days": 109,
+      "remaining_days": 108,
       "volume_lots": 2539,
       "trade_value_ntd": 2848230,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -2966,11 +2966,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2026-10-01",
-      "remaining_days": 4,
+      "remaining_days": 3,
       "volume_lots": 2534,
       "trade_value_ntd": 76020,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -2996,7 +2996,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-03-09",
-      "remaining_days": 163,
+      "remaining_days": 162,
       "volume_lots": 2528,
       "trade_value_ntd": 2897110,
       "source": [
@@ -3026,11 +3026,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-04-26",
-      "remaining_days": 211,
+      "remaining_days": 210,
       "volume_lots": 2515,
       "trade_value_ntd": 1156700,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -3056,11 +3056,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-04-20",
-      "remaining_days": 205,
+      "remaining_days": 204,
       "volume_lots": 2498,
       "trade_value_ntd": 682060,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -3086,7 +3086,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-12-06",
-      "remaining_days": 435,
+      "remaining_days": 434,
       "volume_lots": 2495,
       "trade_value_ntd": 1701590,
       "source": [
@@ -3116,11 +3116,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-04-19",
-      "remaining_days": 204,
+      "remaining_days": 203,
       "volume_lots": 2481,
       "trade_value_ntd": 1711310,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -3146,11 +3146,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2026-11-30",
-      "remaining_days": 64,
+      "remaining_days": 63,
       "volume_lots": 2470,
       "trade_value_ntd": 1096030,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -3176,11 +3176,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-05-17",
-      "remaining_days": 232,
+      "remaining_days": 231,
       "volume_lots": 2469,
       "trade_value_ntd": 2035990,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -3206,7 +3206,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-05-17",
-      "remaining_days": 232,
+      "remaining_days": 231,
       "volume_lots": 2461,
       "trade_value_ntd": 1636720,
       "source": [
@@ -3236,11 +3236,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-01-07",
-      "remaining_days": 102,
+      "remaining_days": 101,
       "volume_lots": 2460,
       "trade_value_ntd": 2187850,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -3282,11 +3282,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2028-02-08",
-      "remaining_days": 499,
+      "remaining_days": 498,
       "volume_lots": 7755,
       "trade_value_ntd": 4933430,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -3312,11 +3312,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-05-20",
-      "remaining_days": 235,
+      "remaining_days": 234,
       "volume_lots": 5046,
       "trade_value_ntd": 4385610,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -3342,7 +3342,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-11-05",
-      "remaining_days": 404,
+      "remaining_days": 403,
       "volume_lots": 4931,
       "trade_value_ntd": 3332490,
       "source": [
@@ -3372,11 +3372,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-11-16",
-      "remaining_days": 415,
+      "remaining_days": 414,
       "volume_lots": 4843,
       "trade_value_ntd": 2897890,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -3402,11 +3402,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-12-13",
-      "remaining_days": 442,
+      "remaining_days": 441,
       "volume_lots": 4298,
       "trade_value_ntd": 3202880,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -3432,11 +3432,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-09-20",
-      "remaining_days": 358,
+      "remaining_days": 357,
       "volume_lots": 4278,
       "trade_value_ntd": 3046060,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -3462,11 +3462,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-05-10",
-      "remaining_days": 225,
+      "remaining_days": 224,
       "volume_lots": 3616,
       "trade_value_ntd": 3214760,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -3492,7 +3492,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-04-16",
-      "remaining_days": 201,
+      "remaining_days": 200,
       "volume_lots": 3568,
       "trade_value_ntd": 4842060,
       "source": [
@@ -3522,11 +3522,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-05-25",
-      "remaining_days": 240,
+      "remaining_days": 239,
       "volume_lots": 3478,
       "trade_value_ntd": 1356420,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -3552,11 +3552,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-04-13",
-      "remaining_days": 198,
+      "remaining_days": 197,
       "volume_lots": 3381,
       "trade_value_ntd": 803500,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -3582,11 +3582,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-06-28",
-      "remaining_days": 274,
+      "remaining_days": 273,
       "volume_lots": 3290,
       "trade_value_ntd": 3778430,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -3612,7 +3612,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-04-13",
-      "remaining_days": 198,
+      "remaining_days": 197,
       "volume_lots": 3222,
       "trade_value_ntd": 3313930,
       "source": [
@@ -3642,7 +3642,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-05-28",
-      "remaining_days": 243,
+      "remaining_days": 242,
       "volume_lots": 3140,
       "trade_value_ntd": 4564100,
       "source": [
@@ -3672,7 +3672,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-04-13",
-      "remaining_days": 198,
+      "remaining_days": 197,
       "volume_lots": 3039,
       "trade_value_ntd": 3675340,
       "source": [
@@ -3702,7 +3702,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-08-09",
-      "remaining_days": 316,
+      "remaining_days": 315,
       "volume_lots": 2984,
       "trade_value_ntd": 3570310,
       "source": [
@@ -3732,7 +3732,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-12-21",
-      "remaining_days": 450,
+      "remaining_days": 449,
       "volume_lots": 2946,
       "trade_value_ntd": 1904500,
       "source": [
@@ -3762,11 +3762,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-09-20",
-      "remaining_days": 358,
+      "remaining_days": 357,
       "volume_lots": 2846,
       "trade_value_ntd": 2806940,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -3792,7 +3792,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-05-31",
-      "remaining_days": 246,
+      "remaining_days": 245,
       "volume_lots": 2776,
       "trade_value_ntd": 1595110,
       "source": [
@@ -3822,11 +3822,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-03-31",
-      "remaining_days": 185,
+      "remaining_days": 184,
       "volume_lots": 2680,
       "trade_value_ntd": 1255020,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -3852,11 +3852,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-05-07",
-      "remaining_days": 222,
+      "remaining_days": 221,
       "volume_lots": 2635,
       "trade_value_ntd": 3000130,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -3882,11 +3882,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-05-20",
-      "remaining_days": 235,
+      "remaining_days": 234,
       "volume_lots": 2583,
       "trade_value_ntd": 2727930,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -3912,11 +3912,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-05-03",
-      "remaining_days": 218,
+      "remaining_days": 217,
       "volume_lots": 2577,
       "trade_value_ntd": 1780440,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -3942,11 +3942,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-06-10",
-      "remaining_days": 256,
+      "remaining_days": 255,
       "volume_lots": 2545,
       "trade_value_ntd": 1975520,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -3972,11 +3972,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-04-26",
-      "remaining_days": 211,
+      "remaining_days": 210,
       "volume_lots": 2515,
       "trade_value_ntd": 1156700,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -4002,11 +4002,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-04-20",
-      "remaining_days": 205,
+      "remaining_days": 204,
       "volume_lots": 2498,
       "trade_value_ntd": 682060,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -4035,11 +4035,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2028-02-08",
-      "remaining_days": 499,
+      "remaining_days": 498,
       "volume_lots": 7755,
       "trade_value_ntd": 4933430,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -4065,11 +4065,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-05-20",
-      "remaining_days": 235,
+      "remaining_days": 234,
       "volume_lots": 5046,
       "trade_value_ntd": 4385610,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -4095,7 +4095,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-11-05",
-      "remaining_days": 404,
+      "remaining_days": 403,
       "volume_lots": 4931,
       "trade_value_ntd": 3332490,
       "source": [
@@ -4125,11 +4125,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-11-16",
-      "remaining_days": 415,
+      "remaining_days": 414,
       "volume_lots": 4843,
       "trade_value_ntd": 2897890,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -4155,11 +4155,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-12-13",
-      "remaining_days": 442,
+      "remaining_days": 441,
       "volume_lots": 4298,
       "trade_value_ntd": 3202880,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -4185,11 +4185,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-09-20",
-      "remaining_days": 358,
+      "remaining_days": 357,
       "volume_lots": 4278,
       "trade_value_ntd": 3046060,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -4215,11 +4215,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-05-10",
-      "remaining_days": 225,
+      "remaining_days": 224,
       "volume_lots": 3616,
       "trade_value_ntd": 3214760,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -4245,7 +4245,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-04-16",
-      "remaining_days": 201,
+      "remaining_days": 200,
       "volume_lots": 3568,
       "trade_value_ntd": 4842060,
       "source": [
@@ -4275,11 +4275,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-05-25",
-      "remaining_days": 240,
+      "remaining_days": 239,
       "volume_lots": 3478,
       "trade_value_ntd": 1356420,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -4305,11 +4305,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-04-13",
-      "remaining_days": 198,
+      "remaining_days": 197,
       "volume_lots": 3381,
       "trade_value_ntd": 803500,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -4335,11 +4335,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-06-28",
-      "remaining_days": 274,
+      "remaining_days": 273,
       "volume_lots": 3290,
       "trade_value_ntd": 3778430,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -4365,7 +4365,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-04-13",
-      "remaining_days": 198,
+      "remaining_days": 197,
       "volume_lots": 3222,
       "trade_value_ntd": 3313930,
       "source": [
@@ -4395,7 +4395,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-05-28",
-      "remaining_days": 243,
+      "remaining_days": 242,
       "volume_lots": 3140,
       "trade_value_ntd": 4564100,
       "source": [
@@ -4425,7 +4425,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-04-13",
-      "remaining_days": 198,
+      "remaining_days": 197,
       "volume_lots": 3039,
       "trade_value_ntd": 3675340,
       "source": [
@@ -4455,7 +4455,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-08-09",
-      "remaining_days": 316,
+      "remaining_days": 315,
       "volume_lots": 2984,
       "trade_value_ntd": 3570310,
       "source": [
@@ -4485,7 +4485,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-12-21",
-      "remaining_days": 450,
+      "remaining_days": 449,
       "volume_lots": 2946,
       "trade_value_ntd": 1904500,
       "source": [
@@ -4515,11 +4515,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-09-20",
-      "remaining_days": 358,
+      "remaining_days": 357,
       "volume_lots": 2846,
       "trade_value_ntd": 2806940,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -4545,7 +4545,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-05-31",
-      "remaining_days": 246,
+      "remaining_days": 245,
       "volume_lots": 2776,
       "trade_value_ntd": 1595110,
       "source": [
@@ -4575,11 +4575,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-03-31",
-      "remaining_days": 185,
+      "remaining_days": 184,
       "volume_lots": 2680,
       "trade_value_ntd": 1255020,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -4605,11 +4605,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-05-07",
-      "remaining_days": 222,
+      "remaining_days": 221,
       "volume_lots": 2635,
       "trade_value_ntd": 3000130,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -4635,11 +4635,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-05-20",
-      "remaining_days": 235,
+      "remaining_days": 234,
       "volume_lots": 2583,
       "trade_value_ntd": 2727930,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -4665,11 +4665,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-05-03",
-      "remaining_days": 218,
+      "remaining_days": 217,
       "volume_lots": 2577,
       "trade_value_ntd": 1780440,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -4695,11 +4695,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-06-10",
-      "remaining_days": 256,
+      "remaining_days": 255,
       "volume_lots": 2545,
       "trade_value_ntd": 1975520,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -4725,11 +4725,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-04-26",
-      "remaining_days": 211,
+      "remaining_days": 210,
       "volume_lots": 2515,
       "trade_value_ntd": 1156700,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -4755,11 +4755,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-04-20",
-      "remaining_days": 205,
+      "remaining_days": 204,
       "volume_lots": 2498,
       "trade_value_ntd": 682060,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -4785,7 +4785,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-12-06",
-      "remaining_days": 435,
+      "remaining_days": 434,
       "volume_lots": 2495,
       "trade_value_ntd": 1701590,
       "source": [
@@ -4815,11 +4815,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-04-19",
-      "remaining_days": 204,
+      "remaining_days": 203,
       "volume_lots": 2481,
       "trade_value_ntd": 1711310,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -4845,11 +4845,11 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-05-17",
-      "remaining_days": 232,
+      "remaining_days": 231,
       "volume_lots": 2469,
       "trade_value_ntd": 2035990,
       "source": [
-        "TWSE t187ap37_L (2026-09-26)",
+        "TWSE t187ap37_L (2026-09-27)",
         "TWSE MI_INDEX type=ALL (2026-09-24)",
         "TWSE t187ap42_L (2026-09-24)"
       ],
@@ -4875,7 +4875,7 @@
       "price_snapshot_date": "2026-09-24",
       "price_snapshot_mode": "最近完整交易日同步收盤",
       "expiry_date": "2027-05-17",
-      "remaining_days": 232,
+      "remaining_days": 231,
       "volume_lots": 2461,
       "trade_value_ntd": 1636720,
       "source": [
@@ -4897,130 +4897,8 @@
     "status": "已比較前次純權證Top100 snapshot",
     "top100_added": [],
     "top100_removed": [],
-    "candidate_added": [
-      {
-        "volume_rank": 93,
-        "market": "TWSE",
-        "warrant_code": "082334",
-        "name": "臺指反元大64購02",
-        "type": "認購",
-        "underlying": "國泰臺灣加權反1",
-        "issuer": "未知",
-        "warrant_close": 0.45,
-        "price_nature": "最近官方最後收盤價",
-        "price_snapshot_date": "2026-09-24",
-        "price_snapshot_mode": "最近完整交易日同步收盤",
-        "expiry_date": "2027-04-26",
-        "remaining_days": 211,
-        "volume_lots": 2515,
-        "trade_value_ntd": 1156700,
-        "source": [
-          "TWSE t187ap37_L (2026-09-26)",
-          "TWSE MI_INDEX type=ALL (2026-09-24)",
-          "TWSE t187ap42_L (2026-09-24)"
-        ],
-        "premium_pct": 19.281,
-        "directional_moneyness_pct": -4.375,
-        "nominal_leverage": 6.8,
-        "delta": "未知",
-        "effective_leverage": "未知",
-        "spread_pct": "未知",
-        "liquidity_score": "未知",
-        "suspected_broker_involvement": "無法判斷"
-      },
-      {
-        "volume_rank": 94,
-        "market": "TWSE",
-        "warrant_code": "032944",
-        "name": "漢唐統一64購01",
-        "type": "認購",
-        "underlying": "漢唐",
-        "issuer": "未知",
-        "warrant_close": 0.28,
-        "price_nature": "最近官方最後收盤價",
-        "price_snapshot_date": "2026-09-24",
-        "price_snapshot_mode": "最近完整交易日同步收盤",
-        "expiry_date": "2027-04-20",
-        "remaining_days": 205,
-        "volume_lots": 2498,
-        "trade_value_ntd": 682060,
-        "source": [
-          "TWSE t187ap37_L (2026-09-26)",
-          "TWSE MI_INDEX type=ALL (2026-09-24)",
-          "TWSE t187ap42_L (2026-09-24)"
-        ],
-        "premium_pct": 43.7004,
-        "directional_moneyness_pct": -17.9726,
-        "nominal_leverage": 4.5893,
-        "delta": "未知",
-        "effective_leverage": "未知",
-        "spread_pct": "未知",
-        "liquidity_score": "未知",
-        "suspected_broker_involvement": "無法判斷"
-      }
-    ],
-    "candidate_removed": [
-      {
-        "volume_rank": 25,
-        "market": "TWSE",
-        "warrant_code": "077047",
-        "name": "晶技統一63購02",
-        "type": "認購",
-        "underlying": "晶技",
-        "issuer": "未知",
-        "warrant_close": 0.94,
-        "price_nature": "最近官方最後收盤價",
-        "price_snapshot_date": "2026-09-24",
-        "price_snapshot_mode": "最近完整交易日同步收盤",
-        "expiry_date": "2027-03-26",
-        "remaining_days": 181,
-        "volume_lots": 3947,
-        "trade_value_ntd": 3529870,
-        "source": [
-          "TWSE t187ap37_L (2026-09-25)",
-          "TWSE MI_INDEX type=ALL (2026-09-24)",
-          "TWSE t187ap42_L (2026-09-24)"
-        ],
-        "premium_pct": 24.601,
-        "directional_moneyness_pct": -1.4276,
-        "nominal_leverage": 4.3191,
-        "delta": "未知",
-        "effective_leverage": "未知",
-        "spread_pct": "未知",
-        "liquidity_score": "未知",
-        "suspected_broker_involvement": "無法判斷"
-      },
-      {
-        "volume_rank": 69,
-        "market": "TWSE",
-        "warrant_code": "061427",
-        "name": "智伸科統一63購01",
-        "type": "認購",
-        "underlying": "智伸科",
-        "issuer": "未知",
-        "warrant_close": 0.85,
-        "price_nature": "最近官方最後收盤價",
-        "price_snapshot_date": "2026-09-24",
-        "price_snapshot_mode": "最近完整交易日同步收盤",
-        "expiry_date": "2027-03-26",
-        "remaining_days": 181,
-        "volume_lots": 2799,
-        "trade_value_ntd": 2379550,
-        "source": [
-          "TWSE t187ap37_L (2026-09-25)",
-          "TWSE MI_INDEX type=ALL (2026-09-24)",
-          "TWSE t187ap42_L (2026-09-24)"
-        ],
-        "premium_pct": 25.3924,
-        "directional_moneyness_pct": -2.7133,
-        "nominal_leverage": 4.4241,
-        "delta": "未知",
-        "effective_leverage": "未知",
-        "spread_pct": "未知",
-        "liquidity_score": "未知",
-        "suspected_broker_involvement": "無法判斷"
-      }
-    ],
+    "candidate_added": [],
+    "candidate_removed": [],
     "rank_changes_ge_10": []
   }
 }
