@@ -10,6 +10,8 @@ on:
       - "user_data/tw_warrant_heartbeat/build_heartbeat_v4.py"
       - "user_data/tw_warrant_heartbeat/build_heartbeat_v5.py"
       - "user_data/tw_warrant_heartbeat/build_heartbeat_v6.py"
+      - "user_data/tw_warrant_heartbeat/render_card.py"
+      - "user_data/tw_warrant_heartbeat/cleanup_cards.py"
       - ".github/workflows/tw-warrant-heartbeat-probe.yml"
   schedule:
     # Redundant pre-08:00 Asia/Taipei attempts. Once today's certified snapshot exists,
@@ -18,6 +20,8 @@ on:
     - cron: "30 21 * * *"
     - cron: "30 22 * * *"
     - cron: "20 23 * * *"
+    # 08:00 Asia/Taipei exact heartbeat attempt.
+    - cron: "0 0 * * *"
   workflow_dispatch:
 
 permissions:
@@ -168,19 +172,57 @@ jobs:
                   print('Fallback:', name, meta.get('fallback_source'), 'for', meta.get('fallback_for'))
           PY
 
-      - name: Commit compact heartbeat snapshot
-        if: steps.precheck.outputs.current != 'true'
+      - name: Render lightweight SVG heartbeat card
+        shell: bash
+        run: |
+          python user_data/tw_warrant_heartbeat/render_card.py
+
+      - name: Remove heartbeat cards older than 30 calendar days
+        shell: bash
+        run: |
+          python user_data/tw_warrant_heartbeat/cleanup_cards.py
+
+      - name: Validate generated SVG card
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          root = Path('user_data/tw_warrant_heartbeat')
+          data = json.loads((root / 'latest.json').read_text(encoding='utf-8'))
+          day = data['pipeline']['execution_date']
+          daily = root / 'cards' / f'{day}.svg'
+          latest = root / 'cards' / 'latest.svg'
+          for p in (daily, latest):
+              if not p.exists():
+                  raise SystemExit(f'Missing SVG card: {p}')
+              if p.stat().st_size > 100_000:
+                  raise SystemExit(f'SVG exceeds 100 KB target: {p} {p.stat().st_size}')
+              ET.parse(p)
+          if daily.read_bytes() != latest.read_bytes():
+              raise SystemExit('cards/latest.svg does not match daily SVG')
+          print('Validated SVG:', daily, daily.stat().st_size, 'bytes')
+          PY
+
+      - name: Commit heartbeat snapshot and cards
+        shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
           git add -f user_data/tw_warrant_heartbeat/latest.json
           if [ -f user_data/tw_warrant_heartbeat/previous.json ]; then
             git add -f user_data/tw_warrant_heartbeat/previous.json
           fi
+          git add -f user_data/tw_warrant_heartbeat/cards/latest.svg
+          git add -f user_data/tw_warrant_heartbeat/cards/*.svg
+
           if git diff --cached --quiet; then
-            echo "No heartbeat data changes"
+            echo "No heartbeat data/card changes"
           else
-            git commit -m "Update TW warrant heartbeat data"
+            git commit -m "Update TW warrant heartbeat data and card"
             git pull --rebase origin develop
             git push origin HEAD:develop
           fi
