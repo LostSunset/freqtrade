@@ -118,8 +118,9 @@ def _fetch_mi_for_close():
 
 def _warrant_like_name(value: Any) -> bool:
     name = base.clean_text(value).replace(" ", "")
-    # TWSE listed warrants/bull-bear certificates conventionally end with 購/售/牛/熊 + 2 digits.
-    return bool(re.search(r"(?:購|售|牛|熊)\d{2}$", name))
+    # Heartbeat universe is plain call/put warrants only.
+    # Explicitly exclude CBBC bull/bear certificates (牛/熊), which are different products.
+    return bool(re.search(r"(?:購|售)\d{2}$", name))
 
 
 def _reconcile_twse_basic_cache(basic: Any):
