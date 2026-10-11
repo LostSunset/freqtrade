@@ -52,6 +52,110 @@ def norm_name(value: Any) -> str:
     return text
 
 
+PRODUCT_CLASSIFICATION_POLICY = "tw-warrant-product-v1"
+PRODUCT_CLASSIFICATION_RULES = (
+    "https://www.twse.com.tw/downloads/zh/stockSearch/warrant_introduce_zh.pdf"
+)
+
+
+def warrant_name_kind(value: Any) -> str | None:
+    """Use the product marker at the end, not 牛/熊 inside an underlying's name."""
+    match = re.search(r"(購|售|牛|熊)[0-9]{2}$", norm_name(value))
+    return {"購": "認購", "售": "認售", "牛": "cbbc", "熊": "cbbc"}.get(
+        match.group(1) if match else ""
+    )
+
+
+def classify_warrant_reference(
+    market: str, reference: dict[str, Any], quote_name: Any = None
+) -> dict[str, Any]:
+    """Classify official reference rows identically for live and cached payloads.
+
+    Direction alone is insufficient: t187ap37_L labels bear certificates 認售.
+    TWSE's introduction (pp. 2-3) distinguishes C/B/X/Y from plain warrants.
+    Unknown or contradictory evidence never enters the pure-warrant universe.
+    """
+    twse = market == "TWSE"
+    code = norm_name(reference.get("權證代號" if twse else "Code"))
+    name = clean_text(reference.get("權證簡稱" if twse else "Name"))
+    kind = clean_text(reference.get("權證類型" if twse else "Type"))
+    category = norm_name(reference.get("類別")) if twse else ""
+    code_valid = re.fullmatch(r"[0-9]{5}[0-9A-Z]", code) is not None
+    suffix = code[-1:] if code_valid else ""
+    code_kind = (
+        "認購" if suffix in "0123456789F" and suffix else
+        "認售" if suffix in {"P", "U", "T", "Q"} else None
+    )
+    name_kind = warrant_name_kind(name)
+    quote_kind = warrant_name_kind(quote_name) if clean_text(quote_name) else None
+    evidence = {
+        "code": code, "name": name, "reported_type": kind,
+        "reference_source": "twse_basic" if twse else "tpex_issue",
+        "reference_category": category or None,
+        "quote_name": clean_text(quote_name) or None,
+        "code_kind": code_kind, "name_kind": name_kind,
+    }
+    cbbc_reasons = []
+    if suffix in {"C", "B", "X", "Y"}:
+        cbbc_reasons.append("cbbc_code_suffix")
+    if "cbbc" in {name_kind, quote_kind} or kind in {"牛證", "熊證", "牛熊證"}:
+        cbbc_reasons.append("cbbc_product_name_or_type")
+    if "上限型" in category or "下限型" in category:
+        cbbc_reasons.append("cbbc_reference_category")
+    if not twse:
+        cap = to_float(reference.get("CapPrice/Index"))
+        floor = to_float(reference.get("FloorPrice/Index"))
+        evidence.update(cap_price=cap, floor_price=floor)
+        if (cap is not None and cap > 0) or (floor is not None and floor > 0):
+            cbbc_reasons.append("cbbc_cap_or_floor")
+
+    reasons = []
+    if market not in {"TWSE", "TPEx"}:
+        reasons.append("unknown_market")
+    if code_kind is None:
+        reasons.append("missing_or_unknown_code")
+    if kind not in {"認購", "認售"}:
+        reasons.append("missing_or_unknown_type")
+    if name_kind not in {"認購", "認售"}:
+        reasons.append("missing_or_unknown_name")
+    if twse:
+        # Reset plain warrants remain eligible; do not confuse reset with CBBC.
+        categories = set(category.split(";"))
+        if not categories <= {"一般型", "重設型-單一單價", "重設型-單一多價"}:
+            reasons.append("missing_or_unknown_reference_category")
+    directions = {x for x in (kind, code_kind, name_kind, quote_kind) if x in {"認購", "認售"}}
+    if len(directions) > 1:
+        reasons.append("conflicting_product_direction")
+    if clean_text(quote_name) and quote_kind is None:
+        reasons.append("unknown_quote_product_name")
+    return {
+        "policy": PRODUCT_CLASSIFICATION_POLICY,
+        "product_class": "cbbc" if cbbc_reasons else "unknown" if reasons else "plain_warrant",
+        "reasons": cbbc_reasons or reasons or ["corroborated_plain_warrant"],
+        "evidence": evidence,
+    }
+
+
+def product_classification_audit() -> dict[str, Any]:
+    return {
+        "policy": PRODUCT_CLASSIFICATION_POLICY,
+        "rules_source": PRODUCT_CLASSIFICATION_RULES,
+        "active_reference_count": 0, "plain_warrant_count": 0,
+        "cbbc_excluded_count": 0, "unknown_excluded_count": 0, "excluded": [],
+    }
+
+
+def record_product_classification(audit: dict[str, Any], classification: dict[str, Any]) -> bool:
+    audit["active_reference_count"] += 1
+    product_class = classification["product_class"]
+    if product_class == "plain_warrant":
+        audit["plain_warrant_count"] += 1
+        return True
+    audit[f"{product_class}_excluded_count"] += 1
+    audit["excluded"].append(classification)
+    return False
+
+
 def to_float(value: Any) -> float | None:
     text = clean_text(value).replace(",", "").replace("％", "").replace("%", "")
     if text in {"", "--", "---", "N/A", "NA", "-", "除權", "除息"}:
@@ -426,24 +530,26 @@ def build_twse(execution_date: date, close_date: date, basic: Any, daily: Any, s
 
     all_rows: list[dict[str, Any]] = []
     mother = 0
+    classification_audit = product_classification_audit()
     basic_dates: set[date] = set()
     if isinstance(basic, list):
         for b in basic:
             if not isinstance(b, dict):
                 continue
             kind = clean_text(b.get("權證類型"))
-            if kind not in {"認購", "認售"}:
-                continue
             expiry = roc_or_gregorian_date(b.get("履約截止日"))
             listed_or_active = expiry is not None and expiry >= execution_date
             if not listed_or_active:
+                continue
+            code = clean_text(b.get("權證代號"))
+            market = mi["security_by_code"].get(code, {})
+            classification = classify_warrant_reference("TWSE", b, market.get("name"))
+            if not record_product_classification(classification_audit, classification):
                 continue
             mother += 1
             report_d = roc_or_gregorian_date(b.get("出表日期"))
             if report_d:
                 basic_dates.add(report_d)
-            code = clean_text(b.get("權證代號"))
-            market = mi["security_by_code"].get(code, {})
             daily_row = daily_by_code.get(code, {})
             wc = market.get("close_num")
             strike = to_float(b.get("最新履約價格(元)/履約指數"))
@@ -468,6 +574,7 @@ def build_twse(execution_date: date, close_date: date, basic: Any, daily: Any, s
                 "underlying": underlying,
                 "issuer": None,
                 "type": kind,
+                "product_classification": classification,
                 "expiry_date": expiry,
                 "strike": strike,
                 "exercise_ratio": ratio,
@@ -492,7 +599,8 @@ def build_twse(execution_date: date, close_date: date, basic: Any, daily: Any, s
     complete_hard = sum(1 for r in all_rows if not r["hard_missing"])
     status.update({
         "mother_count": mother,
-        "mother_complete": isinstance(basic, list) and mother > 0,
+        "mother_complete": isinstance(basic, list) and mother > 0 and classification_audit["unknown_excluded_count"] == 0,
+        "product_classification": classification_audit,
         "basic_data_dates": sorted(iso(d) for d in basic_dates),
         "daily_data_dates": sorted(iso(d) for d in daily_dates),
         "hard_fields_complete_count": complete_hard,
@@ -533,26 +641,28 @@ def build_tpex(execution_date: date, close_date: date, issue: Any, daily: Any, t
     u_by_code, u_by_name = tpex_underlying_map(underlying_rows)
     issue_dates: set[date] = set()
     mother = 0
+    classification_audit = product_classification_audit()
     all_rows: list[dict[str, Any]] = []
     if isinstance(issue, list):
         for b in issue:
             if not isinstance(b, dict):
                 continue
             kind = clean_text(b.get("Type"))
-            if kind not in {"認購", "認售"}:
-                continue
             expiry = roc_or_gregorian_date(b.get("ExpiryDate"))
             listed = roc_or_gregorian_date(b.get("ListedDate"))
             if expiry is None or expiry < execution_date:
                 continue
             if listed and listed > close_date:
                 continue
+            code = clean_text(b.get("Code"))
+            q = daily_by_code.get(code, {})
+            classification = classify_warrant_reference("TPEx", b, q.get("Name"))
+            if not record_product_classification(classification_audit, classification):
+                continue
             mother += 1
             issue_d = roc_or_gregorian_date(b.get("Date"))
             if issue_d:
                 issue_dates.add(issue_d)
-            code = clean_text(b.get("Code"))
-            q = daily_by_code.get(code, {})
             t = trade_by_code.get(code, {})
             q_date = roc_or_gregorian_date(q.get("Date"))
             t_date = roc_or_gregorian_date(t.get("交易日期") or t.get("Date"))
@@ -581,6 +691,7 @@ def build_tpex(execution_date: date, close_date: date, issue: Any, daily: Any, t
                 "underlying": under_name or under_code,
                 "issuer": None,
                 "type": kind,
+                "product_classification": classification,
                 "expiry_date": expiry,
                 "strike": to_float(b.get("LatestExercisePrice")),
                 "exercise_ratio": to_float(b.get("Latest ExerciseRatio")),
@@ -605,7 +716,8 @@ def build_tpex(execution_date: date, close_date: date, issue: Any, daily: Any, t
     complete_hard = sum(1 for r in all_rows if not r["hard_missing"])
     status.update({
         "mother_count": mother,
-        "mother_complete": isinstance(issue, list) and mother > 0,
+        "mother_complete": isinstance(issue, list) and mother > 0 and classification_audit["unknown_excluded_count"] == 0,
+        "product_classification": classification_audit,
         "issue_data_dates": sorted(iso(d) for d in issue_dates),
         "daily_data_dates": sorted(iso(d) for d in daily_dates),
         "trade_data_dates": sorted(iso(d) for d in trade_dates),

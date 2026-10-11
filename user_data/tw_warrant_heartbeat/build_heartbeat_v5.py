@@ -79,6 +79,7 @@ def output_ranked_row(row: dict[str, Any], rank: int, execution_date: date, clos
         "warrant_code": row.get("code"),
         "name": row.get("name"),
         "type": row.get("type"),
+        "product_classification": row.get("product_classification"),
         "underlying": row.get("underlying"),
         "issuer": row.get("issuer") or "未知",
         "warrant_close": base.round_or_none(row.get("warrant_close"), 4),
@@ -146,6 +147,20 @@ def compare_snapshots(previous: dict[str, Any] | None, result: dict[str, Any]) -
     }
 
 
+def rank_pure_warrants(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Rank only rows admitted by the shared live/cache product classifier."""
+    rankable = [
+        r for r in rows
+        if r.get("product_classification", {}).get("product_class") == "plain_warrant"
+        and r.get("volume_lots") is not None
+    ]
+    return sorted(rankable, key=lambda r: (
+        -(r.get("volume_lots") or 0),
+        -(r.get("trade_value_ntd") or 0),
+        str(r.get("code") or ""),
+    ))
+
+
 def main() -> None:
     now = datetime.now(base.TZ)
     execution_date = now.date()
@@ -208,14 +223,7 @@ def main() -> None:
     twse_status["pure_warrant_volume_feed_complete"] = twse_volume_feed_complete
     tpex_status["pure_warrant_volume_feed_complete"] = tpex_volume_feed_complete
 
-    rankable = [r for r in rows if r.get("volume_lots") is not None]
-    rankable.sort(
-        key=lambda r: (
-            -(r.get("volume_lots") or 0),
-            -(r.get("trade_value_ntd") or 0),
-            str(r.get("code") or ""),
-        )
-    )
+    rankable = rank_pure_warrants(rows)
     top100_rows = rankable[:TOP_N]
     top100 = [output_ranked_row(r, i + 1, execution_date, close_date) for i, r in enumerate(top100_rows)]
 
@@ -314,7 +322,12 @@ def main() -> None:
         "pure_warrant_top100_summary": top100_summary,
         "pure_warrant_top100": top100,
         "filter_funnel": {
+            "classification_active_reference_count": sum(s["product_classification"]["active_reference_count"] for s in (twse_status, tpex_status)),
+            "cbbc_excluded_before_ranking_count": sum(s["product_classification"]["cbbc_excluded_count"] for s in (twse_status, tpex_status)),
+            "unknown_product_excluded_before_ranking_count": sum(s["product_classification"]["unknown_excluded_count"] for s in (twse_status, tpex_status)),
             "pure_warrant_mother_count": twse_status.get("mother_count", 0) + tpex_status.get("mother_count", 0),
+            "pure_warrant_rankable_count": len(rankable),
+            "pure_warrant_unknown_volume_count": sum(s["volume_unknown_count"] for s in (twse_status, tpex_status)),
             "twse_mother_count": twse_status.get("mother_count", 0),
             "tpex_mother_count": tpex_status.get("mother_count", 0),
             "top100_count": len(top100),

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import gzip
 import json
-import re
 import time
 from datetime import datetime
 from pathlib import Path
@@ -117,10 +116,7 @@ def _fetch_mi_for_close():
 
 
 def _warrant_like_name(value: Any) -> bool:
-    name = base.clean_text(value).replace(" ", "")
-    # Heartbeat universe is plain call/put warrants only.
-    # Explicitly exclude CBBC bull/bear certificates (牛/熊), which are different products.
-    return bool(re.search(r"(?:購|售)\d{2}$", name))
+    return base.warrant_name_kind(value) in {"認購", "認售"}
 
 
 def _reconcile_twse_basic_cache(basic: Any):
@@ -138,13 +134,15 @@ def _reconcile_twse_basic_cache(basic: Any):
     cached_codes = {
         base.clean_text(row.get("權證代號"))
         for row in basic
-        if isinstance(row, dict) and base.clean_text(row.get("權證類型")) in {"認購", "認售"}
+        if isinstance(row, dict)
+        and base.classify_warrant_reference("TWSE", row)["product_class"] == "plain_warrant"
     }
     cached_codes.discard("")
     unknown_current = sorted(current_warrant_codes - cached_codes)
 
     # Require a large current warrant set and zero current listed warrant codes missing from cache.
-    # Extra cached rows are acceptable because they receive no current MI_INDEX volume and cannot enter Top100.
+    # Both live and unchanged cached reference payloads are classified by base.build_twse
+    # before joining the ranking universe. Coverage validation alone is not a filter.
     ok = len(current_warrant_codes) >= 20000 and not unknown_current
     return ok, {
         "close_date": close_date.isoformat(),

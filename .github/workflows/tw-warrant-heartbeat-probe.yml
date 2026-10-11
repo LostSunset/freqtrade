@@ -61,9 +61,13 @@ jobs:
         run: |
           current=$(python - <<'PY'
           import json
+          import sys
           from datetime import datetime
           from pathlib import Path
           from zoneinfo import ZoneInfo
+
+          sys.path.insert(0, 'user_data/tw_warrant_heartbeat')
+          from build_heartbeat import PRODUCT_CLASSIFICATION_POLICY
 
           p = Path('user_data/tw_warrant_heartbeat/latest.json')
           ok = False
@@ -76,6 +80,12 @@ jobs:
                       pipe.get('execution_date') == today
                       and pipe.get('all_market_pure_warrant_top100_certifiable') is True
                       and pipe.get('final_count_certifiable') is True
+                      and all(
+                          d.get('data_status', {}).get(market, {})
+                          .get('product_classification', {}).get('policy')
+                          == PRODUCT_CLASSIFICATION_POLICY
+                          for market in ('twse', 'tpex')
+                      )
                   )
               except Exception:
                   ok = False
