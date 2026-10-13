@@ -1,0 +1,185 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1645" viewBox="0 0 1200 1645">
+<rect x="0" y="0" width="1200" height="1645" rx="0" fill="#F4F6F9" stroke="none"/>
+<rect x="30" y="25" width="1140" height="130" rx="22" fill="#10243E" stroke="none"/>
+<text x="64" y="78" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="40" font-weight="800" fill="#FFFFFF" text-anchor="start">台股權證每日篩選 Heartbeat</text>
+<text x="64" y="116" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="18" font-weight="500" fill="#CBD6E5" text-anchor="start">研究用途｜最近官方最後收盤價｜成交量僅指權證本身</text>
+<text x="1136" y="116" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="18" font-weight="700" fill="#FFFFFF" text-anchor="end">2026-10-13</text>
+<rect x="30" y="180" width="1140" height="155" rx="18" fill="#FFFFFF" stroke="#D7DFE8"/>
+<text x="55" y="218" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="24" font-weight="800" fill="#10243E" text-anchor="start">資料狀態</text>
+<text x="55" y="248" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="15" font-weight="650" fill="#66768A" text-anchor="start">最近完整交易日</text>
+<text x="55" y="282" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="23" font-weight="800" fill="#10243E" text-anchor="start">2026-10-12</text>
+<text x="300" y="248" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="15" font-weight="650" fill="#66768A" text-anchor="start">市場狀態</text>
+<text x="300" y="282" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="23" font-weight="800" fill="#B45E1C" text-anchor="start">交易日盤前</text>
+<text x="520" y="248" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="15" font-weight="650" fill="#66768A" text-anchor="start">全市場認證</text>
+<text x="520" y="282" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="23" font-weight="800" fill="#19704A" text-anchor="start">是</text>
+<text x="710" y="248" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="15" font-weight="650" fill="#66768A" text-anchor="start">純權證母體</text>
+<text x="710" y="282" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="23" font-weight="800" fill="#10243E" text-anchor="start">47,831</text>
+<text x="930" y="248" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="15" font-weight="650" fill="#66768A" text-anchor="start">Top100</text>
+<text x="930" y="282" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="23" font-weight="800" fill="#10243E" text-anchor="start">100</text>
+<text x="55" y="317" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="15" font-weight="650" fill="#66768A" text-anchor="start">TWSE 36473｜TPEx 11358｜Top100：TWSE 69 / TPEx 31｜認購 100 / 認售 0</text>
+<rect x="30" y="360" width="1140" height="110" rx="18" fill="#FFFFFF" stroke="#D7DFE8"/>
+<text x="55" y="398" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="24" font-weight="800" fill="#10243E" text-anchor="start">篩選漏斗</text>
+<text x="55" y="440" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="23" font-weight="800" fill="#173B60" text-anchor="start">100</text>
+<text x="95" y="440" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="15" font-weight="650" fill="#66768A" text-anchor="start">Top100</text>
+<text x="280" y="440" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="23" font-weight="800" fill="#173B60" text-anchor="start">85</text>
+<text x="320" y="440" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="15" font-weight="650" fill="#66768A" text-anchor="start">收盤價≤1.5</text>
+<text x="535" y="440" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="23" font-weight="800" fill="#173B60" text-anchor="start">26</text>
+<text x="575" y="440" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="15" font-weight="650" fill="#66768A" text-anchor="start">期限&gt;180天</text>
+<text x="820" y="440" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="23" font-weight="800" fill="#173B60" text-anchor="start">25 / 0</text>
+<text x="920" y="440" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="15" font-weight="650" fill="#66768A" text-anchor="start">認購 / 認售</text>
+<rect x="30" y="495" width="1140" height="980" rx="18" fill="#FFFFFF" stroke="#EAD8CA"/>
+<text x="55" y="535" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="23" font-weight="800" fill="#A34C1F" text-anchor="start">看多認購｜前 25 檔（正式認購共 25 檔）</text>
+<text x="620" y="535" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="23" font-weight="800" fill="#245B88" text-anchor="start">看空認售｜前 0 檔（正式認售共 0 檔）</text>
+<text x="55" y="571" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#5B697C" text-anchor="start">排名</text>
+<text x="103" y="571" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#5B697C" text-anchor="start">代號 / 名稱</text>
+<text x="375" y="571" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#5B697C" text-anchor="end">收盤</text>
+<text x="460" y="571" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#5B697C" text-anchor="end">天數</text>
+<text x="555" y="571" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#5B697C" text-anchor="end">成交量</text>
+<text x="55" y="603" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="start">1</text>
+<text x="103" y="603" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="600" fill="#173B60" text-anchor="start">712260 金山電統一6B購01</text>
+<text x="375" y="603" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">0.87</text>
+<text x="460" y="603" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">388</text>
+<text x="555" y="603" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">18,241</text>
+<rect x="47" y="615" width="508" height="29" rx="5" fill="#FAFBFD" stroke="none"/>
+<text x="55" y="637" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="start">2</text>
+<text x="103" y="637" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="600" fill="#173B60" text-anchor="start">715051 金山電統一6C購03</text>
+<text x="375" y="637" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">0.83</text>
+<text x="460" y="637" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">434</text>
+<text x="555" y="637" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">15,826</text>
+<text x="55" y="671" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="start">9</text>
+<text x="103" y="671" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="600" fill="#173B60" text-anchor="start">712261 金山電統一6C購01</text>
+<text x="375" y="671" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">0.88</text>
+<text x="460" y="671" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">419</text>
+<text x="555" y="671" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">8,139</text>
+<rect x="47" y="683" width="508" height="29" rx="5" fill="#FAFBFD" stroke="none"/>
+<text x="55" y="705" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="start">17</text>
+<text x="103" y="705" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="600" fill="#173B60" text-anchor="start">083649 玉晶光統一71購01</text>
+<text x="375" y="705" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">0.68</text>
+<text x="460" y="705" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">447</text>
+<text x="555" y="705" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">6,377</text>
+<text x="55" y="739" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="start">21</text>
+<text x="103" y="739" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="600" fill="#173B60" text-anchor="start">715632 金山電統一75購01</text>
+<text x="375" y="739" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">0.85</text>
+<text x="460" y="739" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">596</text>
+<text x="555" y="739" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">5,482</text>
+<rect x="47" y="751" width="508" height="29" rx="5" fill="#FAFBFD" stroke="none"/>
+<text x="55" y="773" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="start">36</text>
+<text x="103" y="773" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="600" fill="#173B60" text-anchor="start">071443 玉晶光統一6A購01</text>
+<text x="375" y="773" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">0.86</text>
+<text x="460" y="773" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">366</text>
+<text x="555" y="773" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">4,865</text>
+<text x="55" y="807" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="start">37</text>
+<text x="103" y="807" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="600" fill="#173B60" text-anchor="start">080923 貿聯元大64購07</text>
+<text x="375" y="807" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">0.74</text>
+<text x="460" y="807" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">188</text>
+<text x="555" y="807" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">4,816</text>
+<rect x="47" y="819" width="508" height="29" rx="5" fill="#FAFBFD" stroke="none"/>
+<text x="55" y="841" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="start">40</text>
+<text x="103" y="841" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="600" fill="#173B60" text-anchor="start">715717 昇達科元大67購01</text>
+<text x="375" y="841" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">0.66</text>
+<text x="460" y="841" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">261</text>
+<text x="555" y="841" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">4,650</text>
+<text x="55" y="875" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="start">41</text>
+<text x="103" y="875" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="600" fill="#173B60" text-anchor="start">084672 萬海元大67購02</text>
+<text x="375" y="875" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">1.01</text>
+<text x="460" y="875" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">266</text>
+<text x="555" y="875" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">4,529</text>
+<rect x="47" y="887" width="508" height="29" rx="5" fill="#FAFBFD" stroke="none"/>
+<text x="55" y="909" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="start">44</text>
+<text x="103" y="909" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="600" fill="#173B60" text-anchor="start">713830 雙鴻富邦66購04</text>
+<text x="375" y="909" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">0.82</text>
+<text x="460" y="909" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">233</text>
+<text x="555" y="909" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">4,298</text>
+<text x="55" y="943" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="start">49</text>
+<text x="103" y="943" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="600" fill="#173B60" text-anchor="start">071457 富世達統一66購01</text>
+<text x="375" y="943" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">1.20</text>
+<text x="460" y="943" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">244</text>
+<text x="555" y="943" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">4,093</text>
+<rect x="47" y="955" width="508" height="29" rx="5" fill="#FAFBFD" stroke="none"/>
+<text x="55" y="977" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="start">50</text>
+<text x="103" y="977" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="600" fill="#173B60" text-anchor="start">068784 台亞統一65購01</text>
+<text x="375" y="977" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">0.92</text>
+<text x="460" y="977" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">224</text>
+<text x="555" y="977" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">3,994</text>
+<text x="55" y="1011" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="start">52</text>
+<text x="103" y="1011" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="600" fill="#173B60" text-anchor="start">089817 天二統一75購01</text>
+<text x="375" y="1011" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">0.79</text>
+<text x="460" y="1011" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">569</text>
+<text x="555" y="1011" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">3,935</text>
+<rect x="47" y="1023" width="508" height="29" rx="5" fill="#FAFBFD" stroke="none"/>
+<text x="55" y="1045" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="start">59</text>
+<text x="103" y="1045" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="600" fill="#173B60" text-anchor="start">079015 大毅統一6C購01</text>
+<text x="375" y="1045" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">0.63</text>
+<text x="460" y="1045" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">419</text>
+<text x="555" y="1045" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">3,722</text>
+<text x="55" y="1079" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="start">60</text>
+<text x="103" y="1079" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="600" fill="#173B60" text-anchor="start">088654 台亞統一6C購01</text>
+<text x="375" y="1079" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">1.06</text>
+<text x="460" y="1079" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">441</text>
+<text x="555" y="1079" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">3,708</text>
+<rect x="47" y="1091" width="508" height="29" rx="5" fill="#FAFBFD" stroke="none"/>
+<text x="55" y="1113" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="start">62</text>
+<text x="103" y="1113" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="600" fill="#173B60" text-anchor="start">064775 貿聯富邦64購02</text>
+<text x="375" y="1113" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">0.44</text>
+<text x="460" y="1113" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">190</text>
+<text x="555" y="1113" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">3,590</text>
+<text x="55" y="1147" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="start">64</text>
+<text x="103" y="1147" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="600" fill="#173B60" text-anchor="start">089803 台亞統一66購01</text>
+<text x="375" y="1147" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">1.05</text>
+<text x="460" y="1147" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">234</text>
+<text x="555" y="1147" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">3,582</text>
+<rect x="47" y="1159" width="508" height="29" rx="5" fill="#FAFBFD" stroke="none"/>
+<text x="55" y="1181" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="start">70</text>
+<text x="103" y="1181" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="600" fill="#173B60" text-anchor="start">076285 台塑統一67購01</text>
+<text x="375" y="1181" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">1.02</text>
+<text x="460" y="1181" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">280</text>
+<text x="555" y="1181" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">3,492</text>
+<text x="55" y="1215" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="start">71</text>
+<text x="103" y="1215" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="600" fill="#173B60" text-anchor="start">071809 南茂統一6A購01</text>
+<text x="375" y="1215" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">0.79</text>
+<text x="460" y="1215" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">370</text>
+<text x="555" y="1215" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">3,419</text>
+<rect x="47" y="1227" width="508" height="29" rx="5" fill="#FAFBFD" stroke="none"/>
+<text x="55" y="1249" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="start">73</text>
+<text x="103" y="1249" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="600" fill="#173B60" text-anchor="start">716532 環球晶統一7A購01</text>
+<text x="375" y="1249" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">0.64</text>
+<text x="460" y="1249" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">729</text>
+<text x="555" y="1249" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">3,410</text>
+<text x="55" y="1283" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="start">77</text>
+<text x="103" y="1283" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="600" fill="#173B60" text-anchor="start">081320 南亞統一68購03</text>
+<text x="375" y="1283" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">0.75</text>
+<text x="460" y="1283" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">310</text>
+<text x="555" y="1283" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">3,269</text>
+<rect x="47" y="1295" width="508" height="29" rx="5" fill="#FAFBFD" stroke="none"/>
+<text x="55" y="1317" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="start">78</text>
+<text x="103" y="1317" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="600" fill="#173B60" text-anchor="start">710904 太普高國票65購01</text>
+<text x="375" y="1317" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">0.23</text>
+<text x="460" y="1317" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">209</text>
+<text x="555" y="1317" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">3,250</text>
+<text x="55" y="1351" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="start">80</text>
+<text x="103" y="1351" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="600" fill="#173B60" text-anchor="start">714120 金山電統一6C購02</text>
+<text x="375" y="1351" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">0.78</text>
+<text x="460" y="1351" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">422</text>
+<text x="555" y="1351" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">3,223</text>
+<rect x="47" y="1363" width="508" height="29" rx="5" fill="#FAFBFD" stroke="none"/>
+<text x="55" y="1385" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="start">93</text>
+<text x="103" y="1385" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="600" fill="#173B60" text-anchor="start">704353 精測統一71購01</text>
+<text x="375" y="1385" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">1.31</text>
+<text x="460" y="1385" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">475</text>
+<text x="555" y="1385" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">3,018</text>
+<text x="55" y="1419" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="start">94</text>
+<text x="103" y="1419" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="600" fill="#173B60" text-anchor="start">707848 旺矽富邦64購02</text>
+<text x="375" y="1419" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">1.05</text>
+<text x="460" y="1419" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">190</text>
+<text x="555" y="1419" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#26394F" text-anchor="end">2,992</text>
+<text x="620" y="571" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#5B697C" text-anchor="start">排名</text>
+<text x="668" y="571" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#5B697C" text-anchor="start">代號 / 名稱</text>
+<text x="940" y="571" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#5B697C" text-anchor="end">收盤</text>
+<text x="1025" y="571" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#5B697C" text-anchor="end">天數</text>
+<text x="1120" y="571" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="13" font-weight="700" fill="#5B697C" text-anchor="end">成交量</text>
+<text x="620" y="603" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="14" font-weight="600" fill="#8291A4" text-anchor="start">無正式候選</text>
+<rect x="30" y="1500" width="1140" height="105" rx="16" fill="#FFFFFF" stroke="#D7DFE8"/>
+<text x="55" y="1534" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="15" font-weight="650" fill="#66768A" text-anchor="start">Heartbeat：正式候選新增 16｜退出 16｜疑似券商介入：無法判斷</text>
+<text x="55" y="1562" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="15" font-weight="500" fill="#66768A" text-anchor="start">price_snapshot_date=2026-10-12｜全市場認證=是｜SVG 純文字/幾何、無 base64 圖片或字型</text>
+<text x="55" y="1588" font-family="Noto Sans TC, Microsoft JhengHei, PingFang TC, sans-serif" font-size="14" font-weight="500" fill="#8291A4" text-anchor="start">券商名稱僅供顯示；正式篩選資格只依 Top100、收盤價≤1.5、剩餘期限&gt;180天。</text>
+</svg>
